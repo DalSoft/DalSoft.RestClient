@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DalSoft.DuckObject">
-      <HintPath>..\..\..\src\packages\DalSoft.DuckObject.1.0.1-alpha\lib\net40\DalSoft.DuckObject.dll</HintPath>
+    <Reference Include="DalSoft.DuckObject, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\DalSoft.DuckObject.1.0.1\lib\net40\DalSoft.DuckObject.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("DalSoft.RestClient")]
 [assembly: AssemblyDescription("Dynamic RestClient")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("DalSoft")]
 [assembly: AssemblyProduct("DalSoft.RestClient")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
