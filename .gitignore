@@ -1,0 +1,26 @@
+# Visual Studio
+[Oo]bj
+[Bb]in
+*.suo
+*.Publish.xml
+App_Data
+packages
+
+# merge
+*.orig
+*.REMOTE.*
+*.BASE.*
+*.BACKUP.*
+*.LOCAL.*
+
+# ReSharper
+_ReSharper.*
+*.ReSharper
+*.user
+
+# DotCover
+*.dotCover
+
+#nuget
+*.nupkg
+
