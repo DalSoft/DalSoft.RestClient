@@ -9,9 +9,13 @@ namespace DalSoft.RestClient
     {
         private readonly IHttpClientWrapper _httpClientWrapper;
         
+        public IDictionary<string, string> DefaultRequestHeaders
+        {
+            get { return _httpClientWrapper.DefaultRequestHeaders; }
+        }
         public string BaseUri { get; private set; }
         
-        public RestClient(string baseUri) : this(new HttpClientWrapper(), baseUri, null) { }
+        public RestClient(string baseUri) : this(new HttpClientWrapper(), baseUri, new Dictionary<string, string>()) { }
 
         public RestClient(string baseUri, IDictionary<string, string> defaultRequestHeaders) : this(new HttpClientWrapper(defaultRequestHeaders), baseUri, defaultRequestHeaders) { }
 
@@ -19,6 +23,10 @@ namespace DalSoft.RestClient
         {
             _httpClientWrapper = httpClientWrapper;
             BaseUri = baseUri;
+            foreach (var header in defaultRequestHeaders)
+            {
+                _httpClientWrapper.DefaultRequestHeaders.Add(header.Key,header.Value);
+            }
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)

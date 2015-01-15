@@ -11,18 +11,21 @@ namespace DalSoft.RestClient
 {
     internal sealed class HttpClientWrapper : IHttpClientWrapper
     {
+        public IDictionary<string, string> DefaultRequestHeaders { get; set; }
         public const string JsonContentType = "application/json";
         private readonly HttpClient _httpClient;
 
-        public HttpClientWrapper() : this(new HttpClient(), null) { }
+        public HttpClientWrapper() : this(new HttpClient(), new Dictionary<string, string>()) { }
 
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders) { }
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders){}
 
         internal HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders)
         {
+            DefaultRequestHeaders = defaultRequestHeaders;
+            
             _httpClient = httpClient;
             
-            if (defaultRequestHeaders == null)
+            if (defaultRequestHeaders.Count==0)
             {
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonContentType));
             }
@@ -43,6 +46,14 @@ namespace DalSoft.RestClient
             {
                 Content = GetContent(content, requestHeaders),
             };
+
+            foreach (var header in DefaultRequestHeaders)
+            {
+                if (requestHeaders.Any(x=>x.Key==header.Key))
+                    requestHeaders.Remove(header.Key);
+
+                requestHeaders.Add(header.Key, header.Value);
+            }
 
             foreach (var header in requestHeaders)
             {
