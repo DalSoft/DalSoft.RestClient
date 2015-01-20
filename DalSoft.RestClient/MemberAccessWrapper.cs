@@ -114,7 +114,7 @@ namespace DalSoft.RestClient
                        .Select(x => x.Name + "=" + HttpUtility.UrlEncode(x.GetValue(args[0], null).ToString())).ToArray();
                     var queryString = "?" + string.Join("&", pairs);
 
-                    result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _callLog.Replace("Query", string.Empty) + "/" + queryString);
+                    result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _callLog.Replace("Query", string.Empty) + queryString);
                     
                     return true;
                 }

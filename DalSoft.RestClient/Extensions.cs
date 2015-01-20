@@ -29,6 +29,9 @@ namespace DalSoft.RestClient
 
         public static string GetUri(string currentUri, object[] args)
         {
+            if (currentUri.EndsWith("/"))
+                currentUri = currentUri.TrimEnd("/".ToCharArray());
+            
             if (args.Length > 0 && args[0] == null)
                 return currentUri;
 
