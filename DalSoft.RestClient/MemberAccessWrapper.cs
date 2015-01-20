@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace DalSoft.RestClient
 {
@@ -109,7 +110,8 @@ namespace DalSoft.RestClient
                     if (args[0].GetType().Namespace != null)
                         throw new ArgumentException("Query must be a anonymous type");
 
-                    var pairs = args[0].GetType().GetProperties().Select(x => x.Name + "=" + x.GetValue(args[0], null)).ToArray();
+                    var pairs = args[0].GetType().GetProperties()
+                       .Select(x => x.Name + "=" + HttpUtility.UrlEncode(x.GetValue(args[0], null).ToString())).ToArray();
                     var queryString = "?" + string.Join("&", pairs);
 
                     result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _callLog.Replace("Query", string.Empty) + "/" + queryString);

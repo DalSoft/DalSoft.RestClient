@@ -22,11 +22,7 @@ namespace DalSoft.RestClient
         public RestClient(IHttpClientWrapper httpClientWrapper, string baseUri, IDictionary<string, string> defaultRequestHeaders)
         {
             _httpClientWrapper = httpClientWrapper;
-            BaseUri = baseUri;
-            foreach (var header in defaultRequestHeaders)
-            {
-                _httpClientWrapper.DefaultRequestHeaders.Add(header.Key,header.Value);
-            }
+            BaseUri = baseUri; 
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
