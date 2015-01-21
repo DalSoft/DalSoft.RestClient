@@ -105,6 +105,16 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
+        
+        [Test]
+        public void Get_SinglePostSynchronously_GetsPostCorrectly()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            HttpResponseMessage httpResponseMessage = client.Posts(1).Get().Result;
+
+            Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
 
         [Test]
         public async Task Post_NewPostAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
