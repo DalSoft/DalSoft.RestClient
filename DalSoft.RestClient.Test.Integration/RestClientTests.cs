@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Integration
@@ -12,7 +13,7 @@ namespace DalSoft.RestClient.Test.Integration
         private const string BaseUri = "http://jsonplaceholder.typicode.com";
         
         [Test]
-        public static async void Get_SinglePostAsDynamic_ReturnsDynamicCorrectly()
+        public async Task Get_SinglePostAsDynamic_ReturnsDynamicCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
            
@@ -22,7 +23,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SinglePostImplicitCast_ReturnsTypeCorrectly()
+        public async Task Get_SinglePostImplicitCast_ReturnsTypeCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
@@ -32,7 +33,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_ArrayOfPostsImplicitCastToList_ReturnsTypeCorrectly()
+        public async Task Get_ArrayOfPostsImplicitCastToList_ReturnsTypeCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
@@ -42,7 +43,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_ArrayOfPostsAccessByIndex_ReturnsValueByIndexCorrectly()
+        public async Task Get_ArrayOfPostsAccessByIndex_ReturnsValueByIndexCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
@@ -52,7 +53,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
         
         [Test]
-        public static async void Get_ArrayOfPostsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
+        public async Task Get_ArrayOfPostsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
         {
             dynamic client = new RestClient(BaseUri);
             var i = 1;
@@ -67,7 +68,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SinglePostCastAsHttpResponseMessage_CastAsHttpResponseMessageCorrectly()
+        public async Task Get_SinglePostCastAsHttpResponseMessage_CastAsHttpResponseMessageCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
@@ -77,7 +78,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SinglePostGetHttpResponseMessageDynamically_GetsHttpResponseMessageCorrectly()
+        public async Task Get_SinglePostGetHttpResponseMessageDynamically_GetsHttpResponseMessageCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
             var post = await client.Posts.Get(1);
@@ -86,7 +87,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SinglePostUsingResourceMethod_GetsPostCorrectly()
+        public async Task Get_SinglePostUsingResourceMethod_GetsPostCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
@@ -96,7 +97,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SinglePostUsingInlineMethod_GetsPostCorrectly()
+        public async Task Get_SinglePostUsingInlineMethod_GetsPostCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
@@ -106,7 +107,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Post_NewPostAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
+        public async Task Post_NewPostAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
             var post = new {  title="foo", body="bar", userId=10 };
@@ -119,7 +120,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Post_NewPostAsStaticType_CreatesAndReturnsNewResourceAsStaticType()
+        public async Task Post_NewPostAsStaticType_CreatesAndReturnsNewResourceAsStaticType()
         {
             dynamic client = new RestClient(BaseUri);
             var post = new Post { title = "foo", body = "bar", userId = 10 };
@@ -132,7 +133,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Put_UpdatePostWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
+        public async Task Put_UpdatePostWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
             var post = new { title = "foo", body = "bar", userId = 10 };
@@ -145,7 +146,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Put_UpdatePostWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
+        public async Task Put_UpdatePostWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
         {
             dynamic client = new RestClient(BaseUri);
             var post = new Post { title = "foo", body = "bar", userId = 10 };
@@ -158,7 +159,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Delete_DeletePost_HttpResponseMessageReturnsNoContent()
+        public async Task Delete_DeletePost_HttpResponseMessageReturnsNoContent()
         {
             dynamic client = new RestClient(BaseUri);
             var result = await client.Posts.Delete(1);
@@ -167,7 +168,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Delete_DeletePostUsingInlineMethod_HttpResponseMessageReturnsNoContent()
+        public async Task Delete_DeletePostUsingInlineMethod_HttpResponseMessageReturnsNoContent()
         {
             dynamic client = new RestClient(BaseUri);
             var result = await client.Posts(1).Delete();
@@ -176,7 +177,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Delete_DeletePostUsingResourceMethod_HttpResponseMessageReturnsNoContent()
+        public async Task Delete_DeletePostUsingResourceMethod_HttpResponseMessageReturnsNoContent()
         {
             dynamic client = new RestClient(BaseUri);
             var result = await client.Posts().Resource(1).Delete();
@@ -185,7 +186,18 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SetDefaultHeaders_CorrectlySetsHeaders()
+        public async Task Query_PassQuery_CorrectlyAppendsQueryString()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            List<Post> posts = await client.Posts().Query(new { id = 2 }).Get();
+
+            Assert.That(posts.Count, Is.EqualTo(1));
+            Assert.That(posts[0].id, Is.EqualTo(2));
+        }
+
+        [Test]
+        public async Task Get_SetDefaultHeaders_CorrectlySetsHeaders()
         {
             dynamic client = new RestClient("http://headers.jsontest.com/", 
                 new Dictionary<string, string> {{ "MyDummyHeader", "MyValue" }, { "Accept", "application/json" }}
@@ -197,7 +209,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SetHeadersDefaultHeadersViaProperty_CorrectlySetsHeaders()
+        public async Task Get_SetHeadersDefaultHeadersViaProperty_CorrectlySetsHeaders()
         {
             dynamic client = new RestClient("http://headers.jsontest.com/");
             client.DefaultRequestHeaders.Add("MyDummyHeader", "MyValue");
@@ -209,7 +221,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public static async void Get_SetHeadersViaMethod_CorrectlySetsHeaders()
+        public async Task Get_SetHeadersViaMethod_CorrectlySetsHeaders()
         {
             dynamic client = new RestClient("http://headers.jsontest.com/");
 
@@ -217,5 +229,7 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(result.Accept, Is.EqualTo("application/json"));
             Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
         }
+        
+
     }
 }
