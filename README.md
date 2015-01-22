@@ -4,7 +4,7 @@ Inspired by Simple.Data and angular's $http service, DalSoft.RestClient is a ver
 
 Originally created to remove the boilerplate code involved in creating integration tests and SDK's for RestFul API's. I know there are a couple of dynamic rest clients out there but I wanted the syntax to look a particular way, and I wanted it to be particularly useful for testing.
 
-# Getting Started 
+## Getting Started 
 
 You start by new'ing up the RestClient passing in the base uri for your RESTful API. Then simply chain members that would make up the resource you want to access, ending with the HTTP verb you want to use. The Example below will perform a HTTP GET to http://jsonplaceholder.typicode.com/posts/. 
 ```cs
@@ -13,15 +13,27 @@ await client.Posts.Get();
 ```
 > Note all HTTP methods are async
 
-# Resources
+## Resources
 
-## Accessing resource by indentity 
+### Accessing resource by indentity 
 
 Accessing a resource by indentity works as you would expect for example if your wanted to perform a GET to http://jsonplaceholder.typicode.com/posts/1 you would do the following:
 
-## Nested resources
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+await client.Posts(1).Get();
+```
 
-## Awakward resources
+For GET, HEAD, DELETE you can also pass the resource indentity in the method for example:
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+await client.Posts().Delete(1);
+```
+### Nested resources
+
+Nested resources again work 
+
+### Awakward resources
 
 ## The dynamic return value
 
