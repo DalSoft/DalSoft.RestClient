@@ -17,7 +17,7 @@ await client.Posts.Get();
 
 ### Accessing resource by indentity 
 
-Accessing a resource by indentity works as you would expect for example if your wanted to perform a GET to http://jsonplaceholder.typicode.com/posts/1 you would do the following:
+Accessing a resource by indentity works as you would expect for example if your wanted to perform a GET against http://jsonplaceholder.typicode.com/posts/1 you would do the following:
 
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
@@ -31,15 +31,23 @@ await client.Posts().Delete(1);
 ```
 ### Nested resources
 
-Nested resources again work as your would expect for example if your wanted to perform a GET to http://jsonplaceholder.typicode.com/posts/2/comments you would do the following:
+Nested resources again work as your would expect for example if your wanted to perform a GET against http://jsonplaceholder.typicode.com/posts/2/comments you would do the following:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
-await client.Posts().Delete(1);
+await client.Posts(2).Comments.Get()
 ```
 
 ### Awakward resources
 
+You will always come across an API that has an resource that isn't valid C# syntax. To escape invalid C# syntax in an resource use the Resource method for example.
+
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+await client.Posts(2).Resource("awakward-resource-with-dashes").Get()
+```
+
 ## The dynamic return value
+The dynamic return type is 
 
 ## Methods
 
