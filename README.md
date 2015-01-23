@@ -208,10 +208,22 @@ dynamic client = new RestClient(BaseUri);
 List<Post> posts = await client.Posts.Get();
 ```
 
-## Sync
+## Synchronous usage
 
+The HTTP methods don't support synchronous usage but as they return Task you can just call the Result method.
+
+Example:
+```cs
+dynamic client = new RestClient(BaseUri);
+client.Posts(1).Get().Result;
+```
 ## Working with non JSON content
+
+Although DalSoft.RestClient is biased towards JSON you can use it to access any content, the only different is implicit casting isn't supported.
+
+Example:
+ 
 
 ## Disposing
 
-HttpContent is disposed for you, so trying to read 
+HttpContent is disposed for you, so trying to read the Content stream ReadAsStringAsync() etc will throw an exception, you can access the Content as a string by calling ToString(). Disposing of RestClient and therefore the underline HttpClient is left up to you. The general advise is to create one for the lifetime of your application as the RestClient and HttpClient it wraps are generally stateless and reusable across multiple calls.
