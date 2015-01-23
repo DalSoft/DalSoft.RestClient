@@ -54,7 +54,7 @@ await client.Posts(2).Resource("awakward-resource-with-dashes").Get()
 ```
 
 ## The dynamic return type
-The dynamic return type from a HTTP verb method is a type that represents the content of the resource you have performed an action on. For example:
+The dynamic return type from a HTTP method is a type deserialized from the content of the resource you have performed a request on. For example:
 
 ```cs
  dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
@@ -84,7 +84,7 @@ Assert.That(post.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 You can find more  examples of usage in DalSoft.RestClient.Test.Integration project.
 
-##  Get, Delete, Head
+###  Get, Delete, Head
 
 Performs a HTTP request on a resource. Takes two parameters both are optional, first parameter is an object (must be a primitive type) representing the resource identity, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Accept", and the value is a string representing the header field value for example "application/json".
 
@@ -104,7 +104,7 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 await client.Posts(1).Get();
 ```
 
-## Query
+### Query
 Query is used to add a query string to the uri. Takes one mandortory parameter an anoyumous object representing the query string.
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
@@ -112,28 +112,101 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 await client.Posts().Query(new { id = 2 }).Get(); //http://jsonplaceholder.typicode.com/posts?id=2
 ```
 
-## Put, Post
+### Put, Post
 
-Performs a HTTP action on a resource. Takes two parameters both are optional, first parameter is an object (can be annoymous or your own class) representing the data you want to submit, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Content-Type", and the value is a string representing the header field value for example "application/json".
+Performs a HTTP action on a resource. Takes two parameters both are optional, first parameter is an object (can be anonymous type or a static object type) representing the data you want to submit, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Content-Type", and the value is a string representing the header field value for example "application/json".
 
-dynamic client = new RestClient(BaseUri);
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 var post = new {  title="foo", body="bar", userId=10 };
-await client.Posts.Post(post);
+await client.Posts.Post(post, new Dictionary<string, string> {{ "Accept", "application/json" }});
+```
 
-
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+var post = new Post { title = "foo", body = "bar", userId = 10 };
+var result = await client.Posts(1).Put(post);
+```
 
 Members optionally take an object (must be a primitive type) representing the resource identity.
 
-
-
-## Resource
+### Resource
 > See awkward resources
 
 ## Default Headers
 
+DalSoft.RestClient is setup for JSON by default. You can add/override default headers by providing a Dictionary<string,string> the key is a string representing the header field for example "Accept", and the value is a string representing the header field value for example "application/json".
+
+Example:
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com", { "Accept", "application/json" });
+```
+You can add/override default headers via the DefaultHeaders property too.
+
+Example:
+```cs
+dynamic client = new RestClient("http://headers.jsontest.com/");
+
+client.DefaultRequestHeaders.Add("Accept", "application/json");
+```
+
 ## Implicit casting
 
+DalSoft.RestClient supports implicit casting to a static object type.
+
+Example:
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+
+Post post = await client.Posts.Get(1);
+```
+
+For convenience DalSoft.RestClient supports casting to HttpResponseMessage.
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+
+HttpResponseMessage httpResponseMessage = await client.Posts.Get(1);
+
+Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+```
 ## Collections
+
+DalSoft.RestClient supports collections either dynamically or as static object types. 
+
+You can iterate the dynamic type returned from HTTP method.
+
+Example:
+```cs
+dynamic client = new RestClient(BaseUri);
+var posts = await client.Posts.Get();
+
+foreach (var post in posts)
+{
+
+}
+```
+
+Using the dynamic type returned you can also also by index.
+
+Example:
+```cs
+dynamic client = new RestClient(BaseUri);
+
+var posts = await client.Posts.Get();
+
+Assert.That(posts[0].id, Is.EqualTo(1));
+```
+
+DalSoft.RestClient supports deserializing to same types as [Json.NET](http://james.newtonking.com/json/help/index.html?topic=html/SerializationGuide.htm)  IList, IEnumerable, IList<T>, Array, IDictionary, IDictionary<TKey, TValue> etc.
+
+Using implicit casting the dynamic type returned can be cast to a List of statically typed objects.
+
+Example:
+```cs
+dynamic client = new RestClient(BaseUri);
+
+List<Post> posts = await client.Posts.Get();
+```
 
 ## Sync
 
@@ -141,4 +214,4 @@ Members optionally take an object (must be a primitive type) representing the re
 
 ## Disposing
 
-Content Already
+HttpContent is disposed for you, so trying to read 
