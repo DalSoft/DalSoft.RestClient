@@ -47,7 +47,7 @@ await client.Posts(2).Resource("awakward-resource-with-dashes").Get()
 ```
 
 ## The dynamic return value
-The dynamic return type is 
+The dynamic return type is type that represents 
 
 ## Methods
 
