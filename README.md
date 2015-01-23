@@ -82,27 +82,52 @@ Assert.That(post.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 ## Methods
 
+You can find more  examples of usage in DalSoft.RestClient.Test.Integration project.
+
 ##  Get, Delete, Head
 
-Performs a HTTP request on a resource. Takes two parameters both are optional, first parameter is an object (must be a primitive type) representing the resource identity, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Content-Type", and the value is a string representing the header field value for example "application/json".
+Performs a HTTP request on a resource. Takes two parameters both are optional, first parameter is an object (must be a primitive type) representing the resource identity, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Accept", and the value is a string representing the header field value for example "application/json".
 
 Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
-var post = await client.Posts.Get(1);
+await client.Posts.Get(1, new Dictionary<string, string> {{ "Accept", "application/json" }});
 ```
 
-Members can also take the resource an object (must be a primitive type) representing the resource identity.
+Members can also optionally take an object (must be a primitive type) representing the resource identity.
 
 Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
-var post = await client.Posts(1).Get();
+await client.Posts(1).Get();
+```
+
+## Query
+Query is used to add a query string to the uri. Takes one mandortory parameter an anoyumous object representing the query string.
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+
+await client.Posts().Query(new { id = 2 }).Get(); //http://jsonplaceholder.typicode.com/posts?id=2
 ```
 
 ## Put, Post
+
+Performs a HTTP action on a resource. Takes two parameters both are optional, first parameter is an object (can be annoymous or your own class) representing the data you want to submit, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Content-Type", and the value is a string representing the header field value for example "application/json".
+
+dynamic client = new RestClient(BaseUri);
+var post = new {  title="foo", body="bar", userId=10 };
+await client.Posts.Post(post);
+
+
+
+Members optionally take an object (must be a primitive type) representing the resource identity.
+
+
+
+## Resource
+> See awkward resources
 
 ## Default Headers
 
