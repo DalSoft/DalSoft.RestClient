@@ -86,6 +86,9 @@ namespace DalSoft.RestClient
                     if (args.Length !=1)
                         throw new ArgumentException("Resource has one argument");
 
+                    if (args[0] == null)
+                        throw new ArgumentNullException("Resource can't be null");
+
                     if (!args[0].GetType().IsPrimitive)
                         throw new ArgumentException("Resource must be a Primitive type");
 
@@ -106,6 +109,9 @@ namespace DalSoft.RestClient
 
                     if (args.Length != 1)
                         throw new ArgumentException("Query has one argument");
+
+                    if (args[0]==null)
+                        throw new ArgumentNullException("Query can't be null");
 
                     if (args[0].GetType().Namespace != null)
                         throw new ArgumentException("Query must be a anonymous type");

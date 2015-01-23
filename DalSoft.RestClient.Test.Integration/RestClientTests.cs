@@ -47,11 +47,11 @@ namespace DalSoft.RestClient.Test.Integration
         {
             dynamic client = new RestClient(BaseUri);
 
-            List<Post> posts = await client.Posts.Get();
+            var posts = await client.Posts.Get();
 
             Assert.That(posts[0].id, Is.EqualTo(1));
         }
-        
+
         [Test]
         public async Task Get_ArrayOfPostsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
         {
@@ -115,6 +115,30 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
+
+        [Test]
+        public async Task Get_NestedCommentsFromPost_GetsCommentCorrectly()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            List<Post> post = await client.Posts(2).Comments.Get();
+
+            Assert.That(post.First().id, Is.EqualTo(6));
+        }
+
+        [Test]
+        public async Task Get_NoJsonContentFromGoogle_GetsContentCorrectly()
+        {
+            dynamic client = new RestClient("https://www.google.com", new Dictionary<string, string>{{ "Accept","text/html" }});
+
+            var google = await client.News.Get();
+            var result = google.ToString();
+
+            Assert.That(google.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result, Is.StringContaining("Top Stories"));
+        }
+
+
 
         [Test]
         public async Task Post_NewPostAsDynamic_CreatesAndReturnsNewResourceAsDynamic()

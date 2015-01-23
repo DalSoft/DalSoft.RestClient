@@ -24,7 +24,7 @@ namespace DalSoft.RestClient
         public static bool IsMutableVerb(this string httpMethod)
         {
             httpMethod = httpMethod.ToUpper();
-            return httpMethod == HttpMethodEnum.POST.ToString() || httpMethod == HttpMethodEnum.PUT.ToString() || httpMethod == HttpMethodEnum.PUT.ToString();
+            return httpMethod == HttpMethodEnum.POST.ToString() || httpMethod == HttpMethodEnum.PUT.ToString();
         }
 
         public static string GetUri(string currentUri, object[] args)
