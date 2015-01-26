@@ -65,7 +65,7 @@ await client.Posts(2).Resource("awkward-resource-with-dashes").Get()
 
 ## The dynamic return type
 
-The dynamic return type from a HTTP method is a type deserialized from the content of the resource you have performed the request on. 
+The dynamic return type from a HTTP method is a type deserialized from the content of the response to your request to a resource. 
 
 Example usage:
 ```cs
