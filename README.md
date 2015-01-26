@@ -76,7 +76,7 @@ Example usage:
  Assert.That(post.id, Is.EqualTo(1));
 ```
 
-The variable post represents a post object with the properties and values returned from the GET http://jsonplaceholder.typicode.com/posts/1
+The variable post represents a post object with the properties and values returned from GET http://jsonplaceholder.typicode.com/posts/1
 
 > Note this only works for JSON content
 
