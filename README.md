@@ -43,6 +43,7 @@ await client.Posts().Delete(1);
 ```
 
 > The resource identity can be any [primitive type](https://msdn.microsoft.com/en-us/library/aa711900%28v=vs.71%29.aspx) 
+
 ### Nested resources
 
 Nested resources again work as you would expect for example if your wanted to perform a GET against http://jsonplaceholder.typicode.com/posts/2/comments you would do the following:
