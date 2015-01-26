@@ -41,6 +41,8 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
 await client.Posts().Delete(1);
 ```
+
+> The resource identity can be any [primitive type](https://msdn.microsoft.com/en-us/library/aa711900%28v=vs.71%29.aspx) 
 ### Nested resources
 
 Nested resources again work as you would expect for example if your wanted to perform a GET against http://jsonplaceholder.typicode.com/posts/2/comments you would do the following:
@@ -96,7 +98,7 @@ Assert.That(post.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
 ###  Get, Delete, Head
 
-Performs a HTTP request on a resource. Takes two parameters both are optional, first parameter is an object (must be a primitive type) representing the resource identity, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Accept", and the value is a string representing the header field value for example "application/json".
+Performs a HTTP request on a resource. Takes two parameters both are optional, first parameter is an object (must be a [primitive type](https://msdn.microsoft.com/en-us/library/aa711900%28v=vs.71%29.aspx)  type) representing the resource identity, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Accept", and the value is a string representing the header field value for example "application/json".
 
 Example usage:
 ```cs
@@ -104,7 +106,7 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
 await client.Posts.Get(1, new Dictionary<string, string> {{ "Accept", "application/json" }});
 ```
-Members also optionally take an object (must be a primitive type) representing the resource identity.
+Members also optionally take an object (must be a [primitive type](https://msdn.microsoft.com/en-us/library/aa711900%28v=vs.71%29.aspx) ) representing the resource identity.
 
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
@@ -143,7 +145,7 @@ var post = new Post { title = "foo", body = "bar", userId = 10 };
 var result = await client.Posts(1).Put(post);
 ```
 
-> Members optionally take an object (must be a primitive type) representing the resource identity.
+> Members optionally take an object (must be a [primitive type](https://msdn.microsoft.com/en-us/library/aa711900%28v=vs.71%29.aspx)  type) representing the resource identity.
 
 ### Resource
 > See awkward resources
