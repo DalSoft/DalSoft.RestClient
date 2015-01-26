@@ -129,13 +129,13 @@ namespace DalSoft.RestClient.Test.Integration
         [Test]
         public async Task Get_NoJsonContentFromGoogle_GetsContentCorrectly()
         {
-            dynamic client = new RestClient("https://www.google.com", new Dictionary<string, string>{{ "Accept","text/html" }});
+            dynamic google = new RestClient("https://www.google.com", new Dictionary<string, string>{{ "Accept","text/html" }});
 
-            var google = await client.News.Get();
-            var result = google.ToString();
+            var result = await google.News.Get();
+            var content = result.ToString();
 
-            Assert.That(google.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result, Is.StringContaining("Top Stories"));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(content, Is.StringContaining("Top Stories"));
         }
 
 
