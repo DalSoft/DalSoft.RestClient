@@ -155,13 +155,13 @@ var result = await client.Posts(1).Put(post);
 
 DalSoft.RestClient is setup by default with accept and content headers for JSON. You can add/override the default headers by providing a Dictionary<string,string> to the constructor, the key is a string representing the header field for example "Accept", and the value is a string representing the header field value for example "application/json".
 
-Usage Example:
+Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com", { "Accept", "application/json" });
 ```
 You can add/override the default headers via the DefaultHeaders property too.
 
-Example:
+Example usage:
 ```cs
 dynamic client = new RestClient("http://headers.jsontest.com/");
 
@@ -172,7 +172,7 @@ client.DefaultRequestHeaders.Add("Accept", "application/json");
 
 DalSoft.RestClient supports implicit casting to a static object type.
 
-Usage Example:
+Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
@@ -181,7 +181,7 @@ Post post = await client.Posts.Get(1);
 
 For convenience DalSoft.RestClient supports casting to the returned HttpResponseMessage too.
 
-Usage Example:
+Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
@@ -195,7 +195,7 @@ DalSoft.RestClient supports collections either dynamically or as static object t
 
 You can iterate over the dynamic type returned from a HTTP method.
 
-Usage example::
+Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
@@ -209,7 +209,7 @@ foreach (var post in posts)
 
 Using the dynamic type returned you can also access by index.
 
-Usage example:
+Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
@@ -220,7 +220,7 @@ Assert.That(posts[0].id, Is.EqualTo(1));
 
 The dynamic type returned can be cast to a collection of statically typed objects. DalSoft.RestClient supports deserializing to same types as [Json.NET](http://james.newtonking.com/json/help/index.html?topic=html/SerializationGuide.htm)  IList, IEnumerable, IList<T>, Array, IDictionary, IDictionary<TKey, TValue> etc.
 
-Usage example:
+Example usage
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
@@ -231,20 +231,20 @@ List<Post> posts = await client.Posts.Get();
 
 The HTTP methods don't support synchronous usage but as they return a Task you can just call Result.
 
-Example:
+Example usage:
 ```cs
 dynamic client = new RestClient(BaseUri);
 client.Posts(1).Get().Result;
 ```
 ## Working with non JSON content
 
-Although DalSoft.RestClient is biased towards RESTFul API's returning JSON, you can use it to access anything, the only different is implicit casting isn't supported.
+Although DalSoft.RestClient is biased towards RESTFul API's returning JSON, you can use it to access anything, the only difference is implicit casting isn't supported.
 
-Usage example:
+Example usage:
 ```cs
 dynamic google = new RestClient("https://www.google.com", new Dictionary<string, string>{ {"accept", "text/html"} });
 
-var result  = await google.News.Get();
+var result = await google.News.Get();
 
 Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 Assert.That(result.ToString(), Is.StringContaining("Top Stories"));
@@ -254,4 +254,4 @@ Assert.That(result.ToString(), Is.StringContaining("Top Stories"));
 
 ## Disposing
 
-HttpContent is disposed for you, so trying to read the Content stream ReadAsStringAsync() etc will throw an exception, you can access the returned content as a string by calling ToString(). Disposing of RestClient and therefore the underline HttpClient is left up to you. The general advise is to create one instance for the lifetime of your application as the RestClient and HttpClient it wraps are generally stateless and reusable across multiple calls.
+The HttpContent object is disposed for you, so trying to read the Content stream ReadAsStringAsync() etc will throw an exception. You can access the returned content as a string by calling ToString(). Disposing of RestClient and therefore the underline HttpClient is left up to you. The general advise is to create one instance for the lifetime of your application as the RestClient and HttpClient it wraps are generally stateless and reusable across multiple calls.
