@@ -14,7 +14,7 @@ Install via NuGet
 PM> Install-Package DalSoft.RestClient
 ```
 
-You start by new'ing up the RestClient and passing in the base uri for your RESTful API. Then simply chain members that would make up the resource you want to access - ending with the HTTP method you want to use. The example below will perform a GET to http://jsonplaceholder.typicode.com/posts/: 
+You start by new'ing up the RestClient and passing in the base uri for your RESTful API. Then simply chain members that would make up the resource you want to access - ending with the HTTP method you want to use. The example below will perform a GET on http://jsonplaceholder.typicode.com/posts/: 
 
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
