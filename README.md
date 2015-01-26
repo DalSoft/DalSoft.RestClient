@@ -46,7 +46,7 @@ await client.Posts().Delete(1);
 
 ### Nested resources
 
-Nested resources again work as you would expect for example if your wanted to perform a GET against http://jsonplaceholder.typicode.com/posts/2/comments you would do the following:
+Nested resources again work as you would expect for example if your wanted to perform a GET on http://jsonplaceholder.typicode.com/posts/2/comments you would do the following:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
