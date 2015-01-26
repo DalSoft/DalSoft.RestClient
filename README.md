@@ -27,7 +27,7 @@ await client.Posts.Get();
 
 ### Accessing a resource by identity 
 
-Accessing a resource by identity works as you would expect for example if your wanted to perform a GET against http://jsonplaceholder.typicode.com/posts/1 you would do the following:
+Accessing a resource by identity works as you would expect for example if your wanted to perform a GET on http://jsonplaceholder.typicode.com/posts/1 you would do the following:
 
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
