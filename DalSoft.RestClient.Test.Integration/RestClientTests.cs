@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,7 +12,38 @@ namespace DalSoft.RestClient.Test.Integration
     public class RestClientTests
     {
         private const string BaseUri = "http://jsonplaceholder.typicode.com";
-        
+        private static object CreateTestRegistrationRequest()
+        {
+            var email = Guid.NewGuid() + "@" + Guid.NewGuid() + ".com";
+            return new
+            {
+                Email = email,
+                ConfirmEmail = email,
+                Password = "0nTreesTest",
+                SecurityQuestionId = 3,
+                SecurityAnswer = "London"
+            };
+        }
+        [Test]
+        public async Task TempBug()
+        {
+            dynamic client = new RestClient("http://local-api.ontwigs.com/");
+
+            client.DefaultRequestHeaders.Add("AppId", "pxtBmMEKyC77Qvd2GCjepejf");
+
+            var o = CreateTestRegistrationRequest();
+            var userToGet = await client.Users.Register.Post(o); //Register User First.
+
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + userToGet.Session.BearerToken);
+            var id = userToGet.User.UserId;
+            var response = await client.Users.Get(userToGet.User.UserId);
+
+            Assert.That(response.User.Email, Is.EqualTo(userToGet.User.Email));
+            Assert.That(response.User.HasVerifiedEmail, Is.EqualTo(false));
+            Assert.That(response.User.AuthenticationProviders[0], Is.EqualTo("Msm"));
+            Assert.That(response.User.UserId, Is.EqualTo(response.User.UserId));
+        }
+
         [Test]
         public async Task Get_SinglePostAsDynamic_ReturnsDynamicCorrectly()
         {

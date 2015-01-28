@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using DalSoft.Dynamic;
@@ -28,7 +29,7 @@ namespace DalSoft.RestClient
         public RestClientResponseObject(HttpResponseMessage httpResponseMessage, bool isJson)
         {
             _httpResponseMessage = httpResponseMessage;
-            
+
             this.Extend(new { HttpResponseMessage = httpResponseMessage });
 
             if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(HttpClientWrapper.JsonContentType)))
@@ -71,6 +72,14 @@ namespace DalSoft.RestClient
         {
             TryGetValue(binder.Name, out result);
 
+            //JObject
+            var jObject = result as JObject;
+            if (jObject != null)
+            {
+                result = new RestClientResponseObject(jObject, true, ToString());
+                return true;
+            }
+
             //JValue
             var jValue = result as JValue;
             if (jValue != null)
@@ -78,14 +87,24 @@ namespace DalSoft.RestClient
                 result = jValue.Value;
                 return true;
             }
+
             //JArray
+            var jArray = result as JArray;
+            if (jArray != null)
+            {
+                result = new RestClientResponseObject(new { Root = jArray.Select(x=> new RestClientResponseObject(x.Parent, true, ToString())).ToArray() }, true, ToString());
+                return true;
+            }
+
+            //Handle root Json being []
             var restClientResponseMessage = result as RestClientResponseObject;
             if (restClientResponseMessage != null && restClientResponseMessage["Root"] as JArray != null)
             {
-                var jArray = (JArray) restClientResponseMessage["Root"];
-                result = new RestClientResponseObject(jArray.Select(x => new RestClientResponseObject(x, true, ToString())).ToArray(), true,ToString());
+                jArray = (JArray)restClientResponseMessage["Root"];
+                result = new RestClientResponseObject(new { Root = jArray.ToArray() }, true, ToString());
                 return true;
             }
+
             //Default
             return base.TryGetMember(binder, out result);
         }
@@ -95,10 +114,10 @@ namespace DalSoft.RestClient
             if (this["Root"] as JArray != null)
             {
                 var jArray = (JArray)this["Root"];
-                result = new RestClientResponseObject(jArray[(int) indexes[0]], true, ToString());
+                result = new RestClientResponseObject(jArray[(int)indexes[0]], true, ToString());
                 return true;
             }
-            
+
             return base.TryGetIndex(binder, indexes, out result);
         }
 
@@ -106,7 +125,7 @@ namespace DalSoft.RestClient
         {
             if (_responseString != null)
                 return _responseString;
-            
+
             using (var content = _httpResponseMessage.Content)
             {
                 _responseString = content.ReadAsStringAsync().Result;
@@ -120,9 +139,9 @@ namespace DalSoft.RestClient
             {
                 var jArray = (JArray)this["Root"];
                 return jArray.Select(x => new RestClientResponseObject(x, true, ToString())).ToArray().GetEnumerator();
-                
+
             }
-            
+
             return (IEnumerator)this.GetEnumerator();
         }
     }
