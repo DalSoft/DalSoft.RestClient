@@ -1,54 +1,57 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
+using System.Dynamic;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using DalSoft.Dynamic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Dynamic;
-using System.Linq;
 
 namespace DalSoft.RestClient
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    internal class RestClientResponseObject : DuckObject, IEnumerable
+    internal class RestClientResponseObject : DynamicObject
     {
-        private readonly HttpResponseMessage _httpResponseMessage;
         private string _responseString;
+        private readonly HttpResponseMessage _httpResponseMessage;
+        private readonly bool _isRoot;
         private readonly bool _isJson;
+        private readonly dynamic _currentObject;
 
-        private RestClientResponseObject(object jObjectToWrap, bool isJson, string responseString)
+        public RestClientResponseObject(HttpResponseMessage httpResponseMessage) //Root
         {
-            _responseString = responseString;
-            _isJson = isJson;
-            this.Extend(jObjectToWrap);
-        }
+            _isRoot = true;
 
-        public RestClientResponseObject(HttpResponseMessage httpResponseMessage, bool isJson)
-        {
             _httpResponseMessage = httpResponseMessage;
-
-            this.Extend(new { HttpResponseMessage = httpResponseMessage });
 
             if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(HttpClientWrapper.JsonContentType)))
             {
-                dynamic responseObject = JsonConvert.DeserializeObject(ToString());
-                _isJson = true;
-                this.Extend((object)responseObject);
+                var isValidJson = ToString().TryParseJson(out _currentObject); //Just because we told the server we accpet JSON doesn't mean it will send us valid JSON back
+
+                if (isValidJson)
+                {
+                    _isJson = true;
+                }
             }
         }
 
+        public RestClientResponseObject(JObject jObjectToWrap)
+        {
+            _isRoot = false;
+            _currentObject = jObjectToWrap;
+        }
+
         /// <summary>
-        ///  If you don't call a method that invokes content you will need to dispose HttpContent, for Json this is doine for you
+        ///  If you don't call a method that invokes content you will need to dispose HttpContent, for Json this is done for you
         /// https://aspnetwebstack.codeplex.com/discussions/461495
         /// </summary>
         public override bool TryConvert(ConvertBinder binder, out object result)
         {
-            if (binder.Type == typeof(string))
+            if (!_isRoot)
             {
-                result = ToString();
+                throw new InvalidOperationException("Sorry implict cast not supported on child objects yet!");
+            }
+
+            if (binder.Type == typeof(IEnumerable) && _currentObject is JArray)
+            {
+                result = Extensions.WrapJToken(_currentObject);
                 return true;
             }
 
@@ -60,69 +63,52 @@ namespace DalSoft.RestClient
 
             if (_isJson)
             {
-                result = JsonConvert.DeserializeObject(ToString(), binder.Type);
-                return true;
+                var isValid = ToString().TryParseJson(out result, binder.Type);
+                return isValid;
             }
 
-            result = null;
-            return false;
+            throw new InvalidOperationException("Can not cast to " + binder.Type.FullName + OutputErrorString());
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            TryGetValue(binder.Name, out result);
-
-            //JObject
-            var jObject = result as JObject;
-            if (jObject != null)
+            //JToken
+            var jToken = _currentObject as JToken;
+            if (jToken != null)
             {
-                result = new RestClientResponseObject(jObject, true, ToString());
+                result = jToken[binder.Name].WrapJToken();
+                if (result != null)
+                {
+                    return true;
+                }
+            }
+
+            if (binder.Name == "HttpResponseMessage")
+            {
+                result = _httpResponseMessage;
                 return true;
             }
 
-            //JValue
-            var jValue = result as JValue;
-            if (jValue != null)
-            {
-                result = jValue.Value;
-                return true;
-            }
-
-            //JArray
-            var jArray = result as JArray;
-            if (jArray != null)
-            {
-                result = new RestClientResponseObject(new { Root = jArray.Select(x=> new RestClientResponseObject(x.Parent, true, ToString())).ToArray() }, true, ToString());
-                return true;
-            }
-
-            //Handle root Json being []
-            var restClientResponseMessage = result as RestClientResponseObject;
-            if (restClientResponseMessage != null && restClientResponseMessage["Root"] as JArray != null)
-            {
-                jArray = (JArray)restClientResponseMessage["Root"];
-                result = new RestClientResponseObject(new { Root = jArray.ToArray() }, true, ToString());
-                return true;
-            }
-
-            //Default
-            return base.TryGetMember(binder, out result);
+            throw new InvalidOperationException("Member not found (" + binder.Name + ")" + OutputErrorString());
         }
 
         public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
         {
-            if (this["Root"] as JArray != null)
+            var jArray = _currentObject as JArray;
+            if (_currentObject as JArray != null)
             {
-                var jArray = (JArray)this["Root"];
-                result = new RestClientResponseObject(jArray[(int)indexes[0]], true, ToString());
+                result = jArray[(int)indexes[0]].WrapJToken(); //TODO could do better validation here
                 return true;
             }
 
-            return base.TryGetIndex(binder, indexes, out result);
+            throw new InvalidOperationException("Can't apply index to object" + OutputErrorString());
         }
 
         public override sealed string ToString()
         {
+            if (!_isRoot)
+                return _currentObject.ToString();
+
             if (_responseString != null)
                 return _responseString;
 
@@ -133,16 +119,9 @@ namespace DalSoft.RestClient
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        private string OutputErrorString()
         {
-            if (this["Root"] as JArray != null)
-            {
-                var jArray = (JArray)this["Root"];
-                return jArray.Select(x => new RestClientResponseObject(x, true, ToString())).ToArray().GetEnumerator();
-
-            }
-
-            return (IEnumerator)this.GetEnumerator();
+            return " \r\nResponse: \r\n" + _httpResponseMessage + " \r\nResponse String:\r\n" + ToString();
         }
     }
 }

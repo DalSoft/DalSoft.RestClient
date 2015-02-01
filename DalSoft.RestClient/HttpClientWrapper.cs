@@ -17,15 +17,15 @@ namespace DalSoft.RestClient
 
         public HttpClientWrapper() : this(new HttpClient(), new Dictionary<string, string>()) { }
 
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders){}
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders) { }
 
         internal HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders)
         {
             DefaultRequestHeaders = defaultRequestHeaders;
-            
+
             _httpClient = httpClient;
-            
-            if (defaultRequestHeaders.Count==0)
+
+            if (defaultRequestHeaders.Count == 0)
             {
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonContentType));
             }
@@ -40,8 +40,8 @@ namespace DalSoft.RestClient
 
         public async Task<HttpResponseMessage> Send(HttpMethod method, string uri, IDictionary<string, string> requestHeaders, object content)
         {
-            requestHeaders = requestHeaders ?? new  Dictionary<string, string>(){ };
-            
+            requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
+
             var httpRequestMessage = new HttpRequestMessage(method, new Uri(uri))
             {
                 Content = GetContent(content, requestHeaders),
@@ -49,7 +49,7 @@ namespace DalSoft.RestClient
 
             foreach (var header in DefaultRequestHeaders)
             {
-                if (requestHeaders.Any(x=>x.Key==header.Key))
+                if (requestHeaders.Any(x => x.Key == header.Key))
                     requestHeaders.Remove(header.Key);
 
                 requestHeaders.Add(header.Key, header.Value);
@@ -59,19 +59,19 @@ namespace DalSoft.RestClient
             {
                 if (httpRequestMessage.Headers.Contains(header.Key))
                     httpRequestMessage.Headers.Remove(header.Key);
-                
+
                 httpRequestMessage.Headers.Add(header.Key, header.Value);
             }
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        private static HttpContent GetContent(object content, IDictionary<string, string>requestHeaders)
+        private static HttpContent GetContent(object content, IDictionary<string, string> requestHeaders)
         {
             if (content == null)
                 return null;
-                                           
-            var httpContent = new StringContent(JsonConvert.SerializeObject(content)); 
+
+            var httpContent = new StringContent(JsonConvert.SerializeObject(content));
 
             if (requestHeaders.Any(x => x.Key == "Content-Type"))
             {
@@ -81,7 +81,7 @@ namespace DalSoft.RestClient
                 requestHeaders.Remove("Content-Type"); //Remove because HttpClient requires the Content-Type to be attached to HttpContent
             }
             else
-            {   
+            {
                 httpContent.Headers.Remove("Content-Type");
                 httpContent.Headers.Add("Content-Type", JsonContentType);
             }

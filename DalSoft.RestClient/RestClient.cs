@@ -8,13 +8,13 @@ namespace DalSoft.RestClient
     public class RestClient : DynamicObject, IDisposable
     {
         private readonly IHttpClientWrapper _httpClientWrapper;
-        
+
         public IDictionary<string, string> DefaultRequestHeaders
         {
             get { return _httpClientWrapper.DefaultRequestHeaders; }
         }
         public string BaseUri { get; private set; }
-        
+
         public RestClient(string baseUri) : this(new HttpClientWrapper(), baseUri, new Dictionary<string, string>()) { }
 
         public RestClient(string baseUri, IDictionary<string, string> defaultRequestHeaders) : this(new HttpClientWrapper(defaultRequestHeaders), baseUri, defaultRequestHeaders) { }
@@ -22,7 +22,7 @@ namespace DalSoft.RestClient
         public RestClient(IHttpClientWrapper httpClientWrapper, string baseUri, IDictionary<string, string> defaultRequestHeaders)
         {
             _httpClientWrapper = httpClientWrapper;
-            BaseUri = baseUri; 
+            BaseUri = baseUri;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)

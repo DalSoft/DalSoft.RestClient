@@ -12,45 +12,14 @@ namespace DalSoft.RestClient.Test.Integration
     public class RestClientTests
     {
         private const string BaseUri = "http://jsonplaceholder.typicode.com";
-        private static object CreateTestRegistrationRequest()
-        {
-            var email = Guid.NewGuid() + "@" + Guid.NewGuid() + ".com";
-            return new
-            {
-                Email = email,
-                ConfirmEmail = email,
-                Password = "0nTreesTest",
-                SecurityQuestionId = 3,
-                SecurityAnswer = "London"
-            };
-        }
-        [Test]
-        public async Task TempBug()
-        {
-            dynamic client = new RestClient("http://local-api.ontwigs.com/");
-
-            client.DefaultRequestHeaders.Add("AppId", "pxtBmMEKyC77Qvd2GCjepejf");
-
-            var o = CreateTestRegistrationRequest();
-            var userToGet = await client.Users.Register.Post(o); //Register User First.
-
-            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + userToGet.Session.BearerToken);
-            var id = userToGet.User.UserId;
-            var response = await client.Users.Get(userToGet.User.UserId);
-
-            Assert.That(response.User.Email, Is.EqualTo(userToGet.User.Email));
-            Assert.That(response.User.HasVerifiedEmail, Is.EqualTo(false));
-            Assert.That(response.User.AuthenticationProviders[0], Is.EqualTo("Msm"));
-            Assert.That(response.User.UserId, Is.EqualTo(response.User.UserId));
-        }
-
+        
         [Test]
         public async Task Get_SinglePostAsDynamic_ReturnsDynamicCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
-           
+
             var post = await client.Posts.Get(1);
-            
+
             Assert.That(post.id, Is.EqualTo(1));
         }
 
@@ -83,7 +52,17 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(posts[0].id, Is.EqualTo(1));
         }
-        
+
+        [Test]
+        public async Task Get_ArrayOfPostsAsDynamicAccessByIndex_ReturnsValueByIndexCorrectly()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            var posts = await client.Posts.Get();
+
+            Assert.That(posts[0].id, Is.EqualTo(1));
+        }
+
         [Test]
         public async Task Get_ArrayOfPostsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
         {
@@ -137,7 +116,7 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
-        
+
         [Test]
         public void Get_SinglePostSynchronously_GetsPostCorrectly()
         {
@@ -149,10 +128,32 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
+        public async Task Get_NestedCommentsFromPost_GetsCommentCorrectly()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            List<Post> post = await client.Posts(2).Comments.Get();
+
+            Assert.That(post.First().id, Is.EqualTo(6));
+        }
+
+        [Test]
+        public async Task Get_NoJsonContentFromGoogle_GetsContentCorrectly()
+        {
+            dynamic google = new RestClient("https://www.google.com", new Dictionary<string, string> { { "Accept", "text/html" } });
+
+            var result = await google.News.Get();
+            var content = result.ToString();
+
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(content, Is.StringContaining("Top Stories"));
+        }
+
+        [Test]
         public async Task Post_NewPostAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new {  title="foo", body="bar", userId=10 };
+            var post = new { title = "foo", body = "bar", userId = 10 };
             var result = await client.Posts.Post(post);
 
             Assert.That(result.title, Is.EqualTo(post.title));
@@ -241,10 +242,10 @@ namespace DalSoft.RestClient.Test.Integration
         [Test]
         public async Task Get_SetDefaultHeaders_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/", 
-                new Dictionary<string, string> {{ "MyDummyHeader", "MyValue" }, { "Accept", "application/json" }}
+            dynamic client = new RestClient("http://headers.jsontest.com/",
+                new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }
             );
-            
+
             var result = await client.Get();
             Assert.That(result.Accept, Is.EqualTo("application/json"));
             Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
@@ -271,7 +272,7 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(result.Accept, Is.EqualTo("application/json"));
             Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
         }
-        
+
 
     }
 }
