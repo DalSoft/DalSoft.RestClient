@@ -38,11 +38,11 @@ namespace DalSoft.RestClient
             }
         }
 
-        public async Task<HttpResponseMessage> Send(HttpMethod method, string uri, IDictionary<string, string> requestHeaders, object content)
+        public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
             requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
 
-            var httpRequestMessage = new HttpRequestMessage(method, new Uri(uri))
+            var httpRequestMessage = new HttpRequestMessage(method, uri)
             {
                 Content = GetContent(content, requestHeaders),
             };

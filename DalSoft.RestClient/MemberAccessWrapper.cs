@@ -132,7 +132,7 @@ namespace DalSoft.RestClient
         {
             var resource = _baseUri + (_baseUri.EndsWith("/") ? string.Empty : "/");
             resource += _callLog.Replace(GetLastCall(), string.Empty);
-            return resource.ToLower();
+            return resource;
         }
     }
 }

@@ -29,7 +29,7 @@ namespace DalSoft.RestClient
             return httpMethod == HttpMethodEnum.POST.ToString() || httpMethod == HttpMethodEnum.PUT.ToString();
         }
 
-        public static string GetUri(string currentUri, object[] args)
+        public static Uri GetUri(string currentUri, object[] args)
         {
             if (args.Length > 0 && args[0] != null && args[0].GetType().IsPrimitive)
                 currentUri += args[0].ToString();
@@ -37,7 +37,10 @@ namespace DalSoft.RestClient
             if (currentUri.EndsWith("/"))
                 currentUri = currentUri.TrimEnd("/".ToCharArray());
 
-            return currentUri;
+            var uri = new Uri(currentUri);
+
+            //some https servers only support lowercase paths 
+            return uri.Query != string.Empty ? new Uri(uri.AbsoluteUri.Replace(uri.Query, string.Empty).ToLower() + uri.Query) : new Uri(currentUri.ToLower());
         }
 
         public static void ParseHttpVerbArgs(this object[] args)

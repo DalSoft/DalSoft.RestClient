@@ -202,30 +202,30 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Delete_DeletePost_HttpResponseMessageReturnsNoContent()
+        public async Task Delete_DeletePost_HttpResponseMessageReturnsOK()
         {
             dynamic client = new RestClient(BaseUri);
             var result = await client.Posts.Delete(1);
 
-            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Delete_DeletePostUsingInlineMethod_HttpResponseMessageReturnsNoContent()
+        public async Task Delete_DeletePostUsingInlineMethod_HttpResponseMessageReturnsOK()
         {
             dynamic client = new RestClient(BaseUri);
             var result = await client.Posts(1).Delete();
 
-            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Delete_DeletePostUsingResourceMethod_HttpResponseMessageReturnsNoContent()
+        public async Task Delete_DeletePostUsingResourceMethod_HttpResponseMessageReturnsOK()
         {
             dynamic client = new RestClient(BaseUri);
             var result = await client.Posts().Resource(1).Delete();
 
-            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
