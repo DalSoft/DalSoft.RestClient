@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Text;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Dynamic;
@@ -114,7 +115,9 @@ namespace DalSoft.RestClient
 
             using (var content = _httpResponseMessage.Content)
             {
-                _responseString = content.ReadAsStringAsync().Result;
+                var responseBytes = content.ReadAsByteArrayAsync().Result;
+                
+                _responseString = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
                 return _responseString;
             }
         }
