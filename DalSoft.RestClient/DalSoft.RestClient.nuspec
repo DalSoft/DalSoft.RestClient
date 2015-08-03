@@ -15,6 +15,6 @@
 	</description>
     <releaseNotes>Fixed bug when casting an object using composition. Fixed bug when casting to an object using composition when the target is a Array. Fixed trailing slash being appended to the uri.</releaseNotes>
     <copyright>Copyright 2015</copyright>
-    <tags>RestClient, Dynamic</tags>
+    <tags>RestClient, Dynamic, WebApi</tags>
   </metadata>
 </package>

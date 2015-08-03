@@ -24,6 +24,16 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
+        public async Task Get_AccessMissingMember_ReturnsNull()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            var post = await client.Posts.Get(1);
+
+            Assert.That(post.IAmAMissingMember, Is.Null);
+        }
+
+        [Test]
         public async Task Get_SinglePostImplicitCast_ReturnsTypeCorrectly()
         {
             dynamic client = new RestClient(BaseUri);

@@ -90,7 +90,10 @@ namespace DalSoft.RestClient
                 return true;
             }
 
-            throw new InvalidOperationException("Member not found (" + binder.Name + ")" + OutputErrorString());
+            //Member not found return null instead of throwing
+            result = null;
+
+            return true;
         }
 
         public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
