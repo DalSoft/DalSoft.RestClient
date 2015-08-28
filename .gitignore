@@ -5,6 +5,8 @@
 *.Publish.xml
 App_Data
 packages
+# Visual Studio 2015
+.vs
 
 # merge
 *.orig

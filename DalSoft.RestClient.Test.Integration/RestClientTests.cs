@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -142,7 +141,7 @@ namespace DalSoft.RestClient.Test.Integration
         {
             dynamic client = new RestClient(BaseUri);
 
-            List<Post> post = await client.Posts(2).Comments.Get();
+            List<Post> post = await client.posts(2).Comments.Get();
 
             Assert.That(post.First().id, Is.EqualTo(6));
         }
@@ -152,7 +151,7 @@ namespace DalSoft.RestClient.Test.Integration
         {
             dynamic google = new RestClient("https://www.google.com", new Dictionary<string, string> { { "Accept", "text/html" } });
 
-            var result = await google.News.Get();
+            var result = await google.news.Get();
             var content = result.ToString();
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -169,7 +168,7 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(result.title, Is.EqualTo(post.title));
             Assert.That(result.body, Is.EqualTo(post.body));
             Assert.That(result.userId, Is.EqualTo(post.userId));
-            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         }
 
         [Test]
@@ -182,7 +181,7 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(result.title, Is.EqualTo(post.title));
             Assert.That(result.body, Is.EqualTo(post.body));
             Assert.That(result.userId, Is.EqualTo(post.userId));
-            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         }
 
         [Test]
@@ -250,7 +249,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_SetDefaultHeaders_CorrectlySetsHeaders()
+        public async Task Get_SetDefaultHeadersViaCtor_CorrectlySetsHeaders()
         {
             dynamic client = new RestClient("http://headers.jsontest.com/",
                 new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }

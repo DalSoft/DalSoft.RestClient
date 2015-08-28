@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,59 +15,51 @@ namespace DalSoft.RestClient
     {
         private readonly IHttpClientWrapper _httpClientWrapper;
         private readonly string _baseUri;
-        private readonly string _callLog;
+        private readonly string _uri;
 
-        public MemberAccessWrapper(IHttpClientWrapper httpClientWrapper, string baseUri, string callLog)
+        public MemberAccessWrapper(IHttpClientWrapper httpClientWrapper, string baseUri, string uri)
         {
             _httpClientWrapper = httpClientWrapper;
             _baseUri = baseUri;
-            _callLog = callLog;
+            _uri = uri;
         }
 
         public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
         {
             if (binder == null) throw new ArgumentNullException("binder");
 
-            if (Resource(args, out result))
+            if (EscapedResource(args, out result))
                 return true;
 
             if (Query(args, out result))
                 return true;
 
-            if (Extensions.IsHttpVerb(GetLastCall()))
+            if (GetLastCall().IsHttpVerb())
             {
                 result = HttpVerb(args);
                 return true;
             }
 
-            var builder = new StringBuilder(_callLog);
-            foreach (var t in args)
-            {
-                builder.Append("/");
-                var s = t as string;
-                if (s != null)
-                    builder.Append("@\"").Append(s.Replace("\"", "\"\"")).Append("\"");
-                else
-                    builder.Append(t);
-            }
+            if (Resource(args, out result))
+                return true;
 
-            result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, builder.ToString());
-
+            result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _uri);
             return true;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _callLog + "/" + binder.Name);
+            result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _uri + "/" + binder.Name);
             return true;
         }
 
         private async Task<object> HttpVerb(object[] args)
         {
-            args.ParseHttpVerbArgs();
+            args.ValidateHttpVerbArgs();
 
             var httpMethodString = GetLastCall();
-            var uri = Extensions.GetUri(ToString(), args);
+
+            var uri = Extensions.GetUri(httpMethodString, ToString(), args);
             var requestHeaders = args.GetRequestHeaders();
             var httpMethod = (HttpMethod)typeof(HttpMethod).GetProperty(httpMethodString).GetValue(null);
 
@@ -78,18 +71,26 @@ namespace DalSoft.RestClient
 
         private bool Resource(object[] args, out object result)
         {
+            if (args.Length > 0)
+            {
+                args.ValidateResourceArgs();
+                
+                result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _uri + "/" + args[0]);
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        private bool EscapedResource(object[] args, out object result)
+        {
             if (GetLastCall() == "Resource")
             {
-                if (args.Length == 0)
-                    throw new ArgumentException("Please provide a resource");
+                args.ValidateResourceArgs();
+                if (args.Length != 1) throw new ArgumentException("Resource can only have one argument");
 
-                if (args.Length != 1)
-                    throw new ArgumentException("Resource has one argument");
-
-                if (!args[0].GetType().IsPrimitive)
-                    throw new ArgumentException("Resource must be a Primitive type");
-
-                result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _callLog.Replace("/Resource", string.Empty) + "/" + args[0]);
+                result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, GetRelativeUri() + "/" + args[0]);
                 return true;
             }
 
@@ -111,10 +112,10 @@ namespace DalSoft.RestClient
                     throw new ArgumentException("Query must be a anonymous type");
 
                 var pairs = args[0].GetType().GetProperties()
-                   .Select(x => x.Name + "=" + HttpUtility.UrlEncode(x.GetValue(args[0], null).ToString())).ToArray();
+                   .Select(x => x.Name + "=" + WebUtility.UrlEncode(x.GetValue(args[0], null).ToString())).ToArray();
                 var queryString = "?" + string.Join("&", pairs);
 
-                result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _callLog.Replace("/Query", string.Empty) + queryString);
+                result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, GetRelativeUri() + queryString);
 
                 return true;
             }
@@ -125,14 +126,19 @@ namespace DalSoft.RestClient
 
         private string GetLastCall()
         {
-            return _callLog.Split("/".ToCharArray()).Last();
+            return _uri.Split("/".ToCharArray()).Last();
+        }
+
+        private string GetRelativeUri()
+        {
+            var resources = _uri.Split("/".ToCharArray());
+            return string.Join("/", resources.Take(resources.Length - 1));
         }
 
         public override string ToString()
         {
-            var resource = _baseUri + (_baseUri.EndsWith("/") ? string.Empty : "/");
-            resource += _callLog.Replace(GetLastCall(), string.Empty);
-            return resource;
+            var baseUri = _baseUri + (_baseUri.EndsWith("/") ? string.Empty : "/");
+            return baseUri + GetRelativeUri();
         }
     }
 }
