@@ -9,7 +9,7 @@ namespace DalSoft.RestClient
 {
     internal static class Extensions
     {
-        public static bool IsHttpVerb(string httpMethod)
+        public static bool IsHttpVerb(this string httpMethod)
         {
             return typeof(HttpMethod).GetProperties().Any(x => x.Name == httpMethod);
         }
@@ -29,21 +29,25 @@ namespace DalSoft.RestClient
             return httpMethod == HttpMethodEnum.POST.ToString() || httpMethod == HttpMethodEnum.PUT.ToString();
         }
 
-        public static Uri GetUri(string currentUri, object[] args)
+        public static Uri GetUri(string httpMethod, string currentUri, object[] args)
         {
-            if (args.Length > 0 && args[0] != null && args[0].GetType().IsPrimitive)
-                currentUri += args[0].ToString();
+            if (args.Length > 0 && httpMethod.IsImmutableVerb())
+            {
+                args.ValidateResourceArgs();
+                currentUri += "/" + args[0];
+            }
 
             if (currentUri.EndsWith("/"))
                 currentUri = currentUri.TrimEnd("/".ToCharArray());
-
-            var uri = new Uri(currentUri);
-
-            //some https servers only support lowercase paths 
-            return uri.Query != string.Empty ? new Uri(uri.AbsoluteUri.Replace(uri.Query, string.Empty).ToLower() + uri.Query) : new Uri(currentUri.ToLower());
+            
+            Uri uri;
+            if (!Uri.TryCreate(currentUri, UriKind.Absolute, out uri))
+                throw new ArgumentException(string.Format("{0} is not a valid Uri", currentUri));
+            
+            return uri;
         }
 
-        public static void ParseHttpVerbArgs(this object[] args)
+        public static void ValidateHttpVerbArgs(this object[] args)
         {
             if (args.Length == 0)
                 return;
@@ -52,7 +56,19 @@ namespace DalSoft.RestClient
                 throw new ArgumentException("You can only pass two arguments, first is the resource or object to be serialized, second is the RequestHeaders");
 
             if (args.Length == 2 && (args[1] as IDictionary<string, string>) == null)
-                throw new ArgumentException("Second argument must be RequestHeaders");
+                throw new ArgumentException("Second argument must be a Dictionary of RequestHeaders");
+        }
+
+        public static void ValidateResourceArgs(this object[] args)
+        {
+            if (args.Length == 0)
+                throw new ArgumentException("Please provide a resource");
+
+            if (args[0]==null)
+                return;
+
+            if (!args[0].GetType().IsPrimitive && args[0].GetType() != typeof(string))
+                throw new ArgumentException("Resource must be a primitive type or a string");
         }
 
         public static IDictionary<string, string> GetRequestHeaders(this object[] args)
@@ -66,20 +82,20 @@ namespace DalSoft.RestClient
 
         public static object ParseContent(string httpMethod, object[] args)
         {
-            if (IsImmutableVerb(httpMethod))
-                return null;
-
-            if (!IsMutableVerb(httpMethod))
-                throw new ArgumentException("HttpMethod not supported");
-
             if (args.Length == 0)
                 return null;
 
             if (args[0] == null)
                 return null;
 
-            if (args[0].GetType().IsPrimitive)
+            if (IsImmutableVerb(httpMethod))
                 return null;
+
+            if (!IsMutableVerb(httpMethod))
+                throw new ArgumentException("HttpMethod not supported");
+
+            if (!args[0].GetType().IsClass || args[0] is string)
+                throw new ArgumentException("Please provide a class to be serialized to the request body for example new { hello = \"world\" }");
 
             return args[0];
         }
