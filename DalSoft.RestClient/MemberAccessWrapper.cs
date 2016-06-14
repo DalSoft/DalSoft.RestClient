@@ -61,10 +61,9 @@ namespace DalSoft.RestClient
 
             var uri = Extensions.GetUri(httpMethodString, ToString(), args);
             var requestHeaders = args.GetRequestHeaders();
-            var httpMethod = (HttpMethod)typeof(HttpMethod).GetProperty(httpMethodString).GetValue(null);
 
             var httpContent = Extensions.ParseContent(httpMethodString, args);
-            var httpResponseMessage = await _httpClientWrapper.Send(httpMethod, uri, requestHeaders, httpContent);
+            var httpResponseMessage = await _httpClientWrapper.Send(new HttpMethod(httpMethodString), uri, requestHeaders, httpContent);
 
             return new RestClientResponseObject(httpResponseMessage);
         }

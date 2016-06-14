@@ -5,7 +5,7 @@
         GET,
         POST,
         PUT,
-        //PATCH, not supported by HttpClient
+        PATCH,
         DELETE,
         HEAD,
         OPTIONS,
