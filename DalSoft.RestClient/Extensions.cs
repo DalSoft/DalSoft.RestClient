@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,12 +8,7 @@ namespace DalSoft.RestClient
 {
     internal static class Extensions
     {
-        public static bool IsHttpVerb(this string httpMethod)
-        {
-            return IsImmutableVerb(httpMethod) || IsMutableVerb(httpMethod);
-        }
-
-        private static string[] _immutableVerbs = new[] {
+        private static readonly string[] ImmutableVerbs = new[] {
             HttpMethodEnum.GET.ToString(),
             HttpMethodEnum.DELETE.ToString(),
             HttpMethodEnum.OPTIONS.ToString(),
@@ -22,22 +16,27 @@ namespace DalSoft.RestClient
             HttpMethodEnum.TRACE.ToString()
         };
 
-        public static bool IsImmutableVerb(this string httpMethod)
-        {
-            httpMethod = httpMethod.ToUpperInvariant();
-            return _immutableVerbs.Any(x => x == httpMethod);
-        }
-
-        private static string[] _mutableVerbs = new[] {
+        private static readonly string[] MutableVerbs = new[] {
             HttpMethodEnum.POST.ToString(),
             HttpMethodEnum.PUT.ToString(),
             HttpMethodEnum.PATCH.ToString()
         };
 
+        public static bool IsHttpVerb(this string httpMethod)
+        {
+            return IsImmutableVerb(httpMethod) || IsMutableVerb(httpMethod);
+        }
+        
+        public static bool IsImmutableVerb(this string httpMethod)
+        {
+            httpMethod = httpMethod.ToUpperInvariant();
+            return ImmutableVerbs.Any(x => x == httpMethod);
+        }
+        
         public static bool IsMutableVerb(this string httpMethod)
         {
             httpMethod = httpMethod.ToUpperInvariant();
-            return _mutableVerbs.Any(x => x == httpMethod);
+            return MutableVerbs.Any(x => x == httpMethod);
         }
 
         public static Uri GetUri(string httpMethod, string currentUri, object[] args)

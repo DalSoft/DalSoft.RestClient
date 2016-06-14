@@ -13,7 +13,7 @@
     <description>
 	Dynamic Rest Client with fluent API. Chains methods to create the uri and verb for example new RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get() Explicit and implicit casting from dynamic for example Post post = RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get()
 	</description>
-    <releaseNotes>Fixed some obvious bugs in parsing the uri from dynamic member access</releaseNotes>
+    <releaseNotes>Added support for Patch thanks to @joakimjm https://github.com/DalSoft/DalSoft.RestClient/pull/12</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>RestClient, Dynamic, WebApi</tags>
   </metadata>
