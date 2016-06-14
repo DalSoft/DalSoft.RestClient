@@ -11,22 +11,33 @@ namespace DalSoft.RestClient
     {
         public static bool IsHttpVerb(this string httpMethod)
         {
-            return typeof(HttpMethod).GetProperties().Any(x => x.Name == httpMethod);
+            return IsImmutableVerb(httpMethod) || IsMutableVerb(httpMethod);
         }
+
+        private static string[] _immutableVerbs = new[] {
+            HttpMethodEnum.GET.ToString(),
+            HttpMethodEnum.DELETE.ToString(),
+            HttpMethodEnum.OPTIONS.ToString(),
+            HttpMethodEnum.HEAD.ToString(),
+            HttpMethodEnum.TRACE.ToString()
+        };
 
         public static bool IsImmutableVerb(this string httpMethod)
         {
-            httpMethod = httpMethod.ToUpper();
-
-            return httpMethod == HttpMethodEnum.GET.ToString() || httpMethod == HttpMethodEnum.DELETE.ToString() ||
-                   httpMethod == HttpMethodEnum.HEAD.ToString() || httpMethod == HttpMethodEnum.OPTIONS.ToString() ||
-                   httpMethod == HttpMethodEnum.TRACE.ToString();
+            httpMethod = httpMethod.ToUpperInvariant();
+            return _immutableVerbs.Any(x => x == httpMethod);
         }
+
+        private static string[] _mutableVerbs = new[] {
+            HttpMethodEnum.POST.ToString(),
+            HttpMethodEnum.PUT.ToString(),
+            HttpMethodEnum.PATCH.ToString()
+        };
 
         public static bool IsMutableVerb(this string httpMethod)
         {
-            httpMethod = httpMethod.ToUpper();
-            return httpMethod == HttpMethodEnum.POST.ToString() || httpMethod == HttpMethodEnum.PUT.ToString();
+            httpMethod = httpMethod.ToUpperInvariant();
+            return _mutableVerbs.Any(x => x == httpMethod);
         }
 
         public static Uri GetUri(string httpMethod, string currentUri, object[] args)
