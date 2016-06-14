@@ -26,3 +26,5 @@ _ReSharper.*
 #nuget
 *.nupkg
 
+# NCrunch
+*.ncrunch*
