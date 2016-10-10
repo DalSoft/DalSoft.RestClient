@@ -63,7 +63,7 @@ namespace DalSoft.RestClient
             var requestHeaders = args.GetRequestHeaders();
 
             var httpContent = Extensions.ParseContent(httpMethodString, args);
-            var httpResponseMessage = await _httpClientWrapper.Send(new HttpMethod(httpMethodString), uri, requestHeaders, httpContent);
+            var httpResponseMessage = await _httpClientWrapper.Send(new HttpMethod(httpMethodString.ToUpperInvariant()), uri, requestHeaders, httpContent);
 
             return new RestClientResponseObject(httpResponseMessage);
         }
@@ -112,7 +112,6 @@ namespace DalSoft.RestClient
 
                 var pairs = args[0].GetType().GetProperties()
                    .Select(x => GetQueryParamValue(x, args[0])).ToArray();
-
                 var queryString = "?" + string.Join("&", pairs);
 
                 result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, GetRelativeUri() + queryString);

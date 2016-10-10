@@ -210,6 +210,33 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
+
+        [Test]
+        public async Task Patch_UpdatePostWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
+        {
+            dynamic client = new RestClient(BaseUri);
+            var post = new { title = "foo", body = "bar", userId = 10 };
+            var result = await client.Posts(1).Patch(post);
+
+            Assert.That(result.title, Is.EqualTo(post.title));
+            Assert.That(result.body, Is.EqualTo(post.body));
+            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        [Test]
+        public async Task Patch_UpdatePostWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
+        {
+            dynamic client = new RestClient(BaseUri);
+            var post = new Post { title = "foo", body = "bar", userId = 10 };
+            var result = await client.Posts(1).Patch(post);
+
+            Assert.That(result.title, Is.EqualTo(post.title));
+            Assert.That(result.body, Is.EqualTo(post.body));
+            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
         [Test]
         public async Task Delete_DeletePost_HttpResponseMessageReturnsOK()
         {
