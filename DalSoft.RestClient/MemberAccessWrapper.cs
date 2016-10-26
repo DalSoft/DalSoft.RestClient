@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Reflection;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace DalSoft.RestClient
 {
@@ -73,7 +73,7 @@ namespace DalSoft.RestClient
             if (args.Length > 0)
             {
                 args.ValidateResourceArgs();
-                
+
                 result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, _uri + "/" + args[0]);
                 return true;
             }
@@ -111,7 +111,7 @@ namespace DalSoft.RestClient
                     throw new ArgumentException("Query must be a anonymous type");
 
                 var pairs = args[0].GetType().GetProperties()
-                   .Select(x => x.Name + "=" + WebUtility.UrlEncode(x.GetValue(args[0], null).ToString())).ToArray();
+                   .Select(x => GetQueryParamValue(x, args[0])).ToArray();
                 var queryString = "?" + string.Join("&", pairs);
 
                 result = new MemberAccessWrapper(_httpClientWrapper, _baseUri, GetRelativeUri() + queryString);
@@ -121,6 +121,21 @@ namespace DalSoft.RestClient
 
             result = null;
             return false;
+        }
+
+        private string GetQueryParamValue(PropertyInfo propInfo, object obj)
+        {
+            var paramName = propInfo.Name + "=";
+            if (typeof(IEnumerable<object>).IsAssignableFrom(propInfo.PropertyType))
+            {
+                var values = (propInfo.GetValue(obj, null) as IEnumerable<object>)
+                    .Select(v => paramName + WebUtility.UrlEncode(v.ToString()))
+                    .ToArray();
+
+                return string.Join("&", values);
+            }
+
+            return paramName + WebUtility.UrlEncode(propInfo.GetValue(obj, null).ToString());
         }
 
         private string GetLastCall()
