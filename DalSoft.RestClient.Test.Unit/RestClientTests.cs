@@ -1,6 +1,9 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Moq;
 
 namespace DalSoft.RestClient.Test.Unit
 {
@@ -10,37 +13,45 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task Query_ShouldSerializeObjectToQueryString()
         {
-            // Arrange
-            var spy = new HttpClientWrapperSpy();
-            var baseUri = "http://test.test/";
+            const string baseUri = "http://test.test/";
+            var mockHttpClient = new Mock<IHttpClientWrapper>();
 
-            dynamic client = new RestClient(spy, baseUri);
+            mockHttpClient
+                .Setup(_ => _.Send(HttpMethod.Get, It.IsAny<Uri>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<object>()))
+                .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage()}));
 
-            // Act
-            var result = await client.Query(new { Id = "test", another = 1 }).Get();
+            dynamic client = new RestClient(mockHttpClient.Object, baseUri);
+            await client.Query(new { Id = "test", another = 1 }).Get();
 
-            // Assert
-            Assert.AreEqual(new Uri(baseUri + "?Id=test&another=1"), spy.Uri);
+            mockHttpClient.Verify(_ => _.Send
+            (
+                HttpMethod.Get, 
+                It.Is<Uri>(__ => __ == new Uri(baseUri + "?Id=test&another=1")),
+                It.IsAny<IDictionary<string, string>>(),
+                It.IsAny<object>()
+            ));
         }
 
         [Test]
         public async Task Query_ShouldSerializeArrayToQueryString()
         {
-            // Arrange
-            var spy = new HttpClientWrapperSpy();
-            var baseUri = "http://test.test/";
+            const string baseUri = "http://test.test/";
+            var mockHttpClient = new Mock<IHttpClientWrapper>();
 
-            dynamic client = new RestClient(spy, baseUri);
+            mockHttpClient
+                .Setup(_ => _.Send(HttpMethod.Get, It.IsAny<Uri>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<object>()))
+                .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage() }));
 
-            // Act
-            var result = await client.Query(new
-            {
-                variables = new[] { "one", "other" },
-                otherVar = "stillWorks"
-            }).Get();
+            dynamic client = new RestClient(mockHttpClient.Object, baseUri);
+            await client.Query(new { variables = new[] { "one", "other" }, otherVar = "stillWorks" }).Get();
 
-            // Assert
-            Assert.AreEqual(new Uri(baseUri + "?variables=one&variables=other&otherVar=stillWorks"), spy.Uri);
+            mockHttpClient.Verify(_ => _.Send
+            (
+                HttpMethod.Get,
+                It.Is<Uri>(__ => __ == new Uri(baseUri + "?variables=one&variables=other&otherVar=stillWorks")),
+                It.IsAny<IDictionary<string, string>>(),
+                It.IsAny<object>()
+            ));
         }
     }
 }
