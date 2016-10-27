@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0-*",
+
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1"
+  },
+
+  "frameworks": {
+
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Net.Http": { "type": "build" },
+        "Microsoft.CSharp": { "type": "build" }
+      }
+
+    },
+
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.1"
+        }
+      },
+      "imports": [
+        "dotnet5.6",
+        "portable-net45+win8"
+      ]
+    }
+  }
+}

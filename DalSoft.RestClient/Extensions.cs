@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -77,7 +78,7 @@ namespace DalSoft.RestClient
             if (args[0]==null)
                 return;
 
-            if (!args[0].GetType().IsPrimitive && args[0].GetType() != typeof(string))
+            if (!args[0].GetType().GetTypeInfo().IsPrimitive && args[0].GetType() != typeof(string))
                 throw new ArgumentException("Resource must be a primitive type or a string");
         }
 
@@ -104,7 +105,7 @@ namespace DalSoft.RestClient
             if (!IsMutableVerb(httpMethod))
                 throw new ArgumentException("HttpMethod not supported");
 
-            if (!args[0].GetType().IsClass || args[0] is string)
+            if (!args[0].GetType().GetTypeInfo().IsClass || args[0] is string)
                 throw new ArgumentException("Please provide a class to be serialized to the request body for example new { hello = \"world\" }");
 
             return args[0];

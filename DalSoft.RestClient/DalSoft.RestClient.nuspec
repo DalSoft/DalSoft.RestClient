@@ -1,20 +1,32 @@
-<?xml version="1.0"?>
-<package>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>$id$</id>
-    <version>$version$</version>
-    <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
+    <id>DalSoft.RestClient</id>
+    <version>2.0.0</version>
+    <authors>DalSoft</authors>
+    <owners>DalSoft</owners>
     <licenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/DalSoft/DalSoft.RestClient</projectUrl>
-    <!-- <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>
-	Dynamic Rest Client with fluent API. Chains methods to create the uri and verb for example new RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get() Explicit and implicit casting from dynamic for example Post post = RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get()
+    <title>Dynamic Rest Client with fluent API</title>
+	<description>Dynamic Rest Client with fluent API. 
+		Chains methods to create the uri and verb for example new RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get() 
+		Explicit and implicit casting from dynamic for example Post post = RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get()
 	</description>
-    <releaseNotes>Added support for Patch thanks to @joakimjm https://github.com/DalSoft/DalSoft.RestClient/pull/12</releaseNotes>
-    <copyright>Copyright 2015</copyright>
-    <tags>RestClient, Dynamic, WebApi</tags>
+    <releaseNotes>
+       Now supports .NET Core both netcoreapp1.0 and net45 frameworks.
+       Added support for array values as query string parameters thanks to @joakimjm https://github.com/DalSoft/DalSoft.RestClient/pull/13
+    </releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>RestClient, Dynamic, WebApi, DotNetCoreRestClient</tags>
+    <dependencies>
+      <group targetFramework=".NETCoreApp1.0">
+        <dependency id="Microsoft.NETCore.App" version="[1.0.1, )" />
+        <dependency id="Newtonsoft.Json" version="[9.0.1, )" />
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Newtonsoft.Json" version="[9.0.1, )" />
+      </group>
+    </dependencies>
   </metadata>
 </package>
