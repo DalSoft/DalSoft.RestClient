@@ -129,7 +129,6 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 await client.Posts().Query(new { id = 2 }).Get(); //http://jsonplaceholder.typicode.com/posts?id=2
 ```
 
-Example usage:
 ```cs
 dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 
