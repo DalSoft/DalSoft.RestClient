@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-*",
+  "version": "2.0.1-*",
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.1"
@@ -15,17 +15,13 @@
 
     },
 
-    "netcoreapp1.0": {
+    "netstandard1.4": {
       "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.1"
-        }
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Runtime.InteropServices": "4.1.0",
+        "System.Net.Http": "4.1.0"
       },
-      "imports": [
-        "dotnet5.6",
-        "portable-net45+win8"
-      ]
+        "imports": [ "portable-net45+wpa81+wp8+win8" ]
+      }
     }
-  }
 }

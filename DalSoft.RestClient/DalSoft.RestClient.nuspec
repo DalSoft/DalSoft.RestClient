@@ -1,30 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>DalSoft.RestClient</id>
-    <version>2.0.0</version>
-    <authors>DalSoft</authors>
-    <owners>DalSoft</owners>
-    <licenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/DalSoft/DalSoft.RestClient</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <title>Dynamic Rest Client with fluent API</title>
-	<description>Dynamic Rest Client with fluent API. 
-		Chains methods to create the uri and verb for example new RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get() 
-		Explicit and implicit casting from dynamic for example Post post = RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get()
+	<id>DalSoft.RestClient</id>
+	<version>2.0.1</version>
+	<authors>DalSoft, joakimjm</authors>
+	<owners>DalSoft</owners>
+	<licenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</licenseUrl>
+	<projectUrl>https://github.com/DalSoft/DalSoft.RestClient</projectUrl>
+	<requireLicenseAcceptance>false</requireLicenseAcceptance>
+	<iconUrl>http://dalsoft.co.uk/images/icon.png</iconUrl>
+
+	<description>
+	Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP.
+
+	Chain methods to create the uri and verb for example new RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get() 
+
+	Explicit and implicit casting from dynamic for example Post post = RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get()
 	</description>
-    <releaseNotes>
-       Now supports .NET Core both netcoreapp1.0 and net45 frameworks.
-       Added support for array values as query string parameters thanks to @joakimjm https://github.com/DalSoft/DalSoft.RestClient/pull/13
-    </releaseNotes>
-    <copyright>Copyright 2016</copyright>
-    <tags>RestClient, Dynamic, WebApi, DotNetCoreRestClient</tags>
+
+	<releaseNotes>
+	Dropped down to target .NET Standard 1.4 so we support more platforms (iOS, Android and UWP).
+	</releaseNotes>
+
+	<copyright>Copyright 2016</copyright>
+	<tags>RestClient, REST, Client, JSON, Dynamic, WebApi, HttpClient, Core, iOS, Android, UWP</tags>
+
     <dependencies>
-      <group targetFramework=".NETCoreApp1.0">
-        <dependency id="Microsoft.NETCore.App" version="[1.0.1, )" />
+      <group targetFramework=".NETFramework4.5">
         <dependency id="Newtonsoft.Json" version="[9.0.1, )" />
       </group>
-      <group targetFramework=".NETFramework4.5">
+      <group targetFramework=".NETStandard1.4">
+        <dependency id="System.Reflection.TypeExtensions" version="[4.1.0, )" />
+        <dependency id="System.Runtime.InteropServices" version="[4.1.0, )" />
+        <dependency id="System.Net.Http" version="[4.1.0, )" />
         <dependency id="Newtonsoft.Json" version="[9.0.1, )" />
       </group>
     </dependencies>

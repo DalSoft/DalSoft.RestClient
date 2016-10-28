@@ -254,4 +254,4 @@ Assert.That(result.ToString(), Is.StringContaining("Top Stories"));
 
 ## Disposing
 
-The HttpContent object is disposed for you, so trying to read the Content stream ReadAsStringAsync() etc will throw an exception. You can access the returned content as a string by calling ToString(). Disposing of RestClient and therefore the underline HttpClient is left up to you. The general advise is to create one instance for the lifetime of your application as the RestClient and HttpClient it wraps are generally stateless and reusable across multiple calls.
+The HttpContent object is disposed for you, so trying to read the Content stream ReadAsStringAsync() etc will throw an exception. You can access the returned content as a string by calling ToString(). Disposing of RestClient and therefore the underline HttpClient is left up to you. [The general advise is to create one instance for the lifetime of your application](http://aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/) as the RestClient and HttpClient it wraps are generally stateless and reusable across multiple calls.
