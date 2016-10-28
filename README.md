@@ -6,6 +6,10 @@ Originally created to remove the boilerplate code involved in creating integrati
 
 > This library is biased towards JSON content and is setup by default with accept and content headers for JSON. See Working with non JSON content
 
+## Supported Platforms
+
+DalSoft.RestClient targets .NET Standard 1.4 therefore supports Windows, Linux, Mac and Xamarin (iOS, Android and UWP).  
+
 ## Getting Started
 
 Install via NuGet
@@ -116,7 +120,7 @@ await client.Posts(1).Get();
 ```
 
 ### Query
-Query is used to add a query string to the uri. Takes one mandatory parameter an anonymous object representing the query string.
+Query is used to add a query string to the uri. Takes one mandatory parameter an anonymous object representing the query string. The anonymous object also supports array values representing the query string.
 
 Example usage:
 ```cs
@@ -125,7 +129,15 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 await client.Posts().Query(new { id = 2 }).Get(); //http://jsonplaceholder.typicode.com/posts?id=2
 ```
 
-### Put, Post
+Example usage:
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+
+await client.Posts().Query(new { id = new[] { 1, 2 } }).Get(); 
+//http://jsonplaceholder.typicode.com/posts?id=1&id=2
+```
+
+### Put, Post, Patch
 
 Performs a HTTP action on a resource. Takes two parameters both are optional, first parameter is an object (can be a anonymous type or a static object type) representing the data you want to submit, second parameter is a Dictionary<string,string> the key is a string representing the header field for example "Content-Type", and the value is a string representing the header field value for example "application/json".
 
@@ -144,6 +156,14 @@ dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
 var post = new Post { title = "foo", body = "bar", userId = 10 };
 
 var result = await client.Posts(1).Put(post);
+```
+
+```cs
+dynamic client = new RestClient("http://jsonplaceholder.typicode.com");
+
+var post = new Post { title = "foo", body = "bar", userId = 10 };
+
+var result = await client.Posts(1).Patch(post);
 ```
 
 > Members optionally take an object (must be a [primitive type](https://msdn.microsoft.com/en-us/library/aa711900%28v=vs.71%29.aspx)  type) representing the resource identity.
