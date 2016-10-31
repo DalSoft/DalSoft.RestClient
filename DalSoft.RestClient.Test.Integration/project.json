@@ -12,7 +12,7 @@
   "dependencies": {
     "NUnit": "3.4.1",
     "dotnet-test-nunit": "3.4.0-beta-2",
-    "DalSoft.RestClient": "2.0.1-*"
+    "DalSoft.RestClient": {"target": "project" } 
   },
 
   "frameworks": {
