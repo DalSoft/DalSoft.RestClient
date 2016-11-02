@@ -119,9 +119,9 @@ namespace DalSoft.RestClient
                 result = JsonConvert.DeserializeObject(json, type);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                result = null;
+                result = ex;
                 return false; //Eat invalid json  
             }
         }
