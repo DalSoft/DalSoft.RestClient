@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
 	<id>DalSoft.RestClient</id>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 	<authors>DalSoft, joakimjm</authors>
 	<owners>DalSoft</owners>
 	<licenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</licenseUrl>
@@ -19,7 +19,7 @@
 	</description>
 
 	<releaseNotes>
-	Dropped down to target .NET Standard 1.4 so we support more platforms (iOS, Android and UWP).
+	Returns the JSON.NET serialization error to the caller on trying to cast the response.
 	</releaseNotes>
 
 	<copyright>Copyright 2016</copyright>
