@@ -11,27 +11,30 @@ namespace DalSoft.RestClient
 {
     internal sealed class HttpClientWrapper : IHttpClientWrapper
     {
-        public IDictionary<string, string> DefaultRequestHeaders { get; set; }
-        public const string JsonContentType = "application/json";
         private readonly HttpClient _httpClient;
-
+        public const string JsonContentType = "application/json";
+        public IDictionary<string, string> DefaultRequestHeaders { get; set; } //ToDo: really this should be IDictionary<string, IEnumerable<string>>
+        public TimeSpan? Timeout { get; set; }
+        
         public HttpClientWrapper() : this(new HttpClient(), new Dictionary<string, string>()) { }
 
         public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders) { }
-
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler), defaultRequestHeaders) { }
+        public HttpClientWrapper(HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler), null) { }
+        
         internal HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders)
         {
-            DefaultRequestHeaders = defaultRequestHeaders;
+            DefaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
 
             _httpClient = httpClient;
 
-            if (defaultRequestHeaders.Count == 0)
+            if (DefaultRequestHeaders.Count == 0)
             {
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonContentType));
             }
             else
             {
-                foreach (var header in defaultRequestHeaders)
+                foreach (var header in DefaultRequestHeaders)
                 {
                     _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
@@ -40,6 +43,8 @@ namespace DalSoft.RestClient
 
         public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
+            _httpClient.Timeout = Timeout ?? _httpClient.Timeout;
+
             requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
 
             var httpRequestMessage = new HttpRequestMessage(method, uri)
