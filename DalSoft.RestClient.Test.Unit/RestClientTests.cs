@@ -13,7 +13,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task Query_ShouldSerializeObjectToQueryString()
         {
-            const string baseUri = "http://test.test/";
+            const string baseUri = "http://test.test";
             var mockHttpClient = new Mock<IHttpClientWrapper>();
 
             mockHttpClient
@@ -35,7 +35,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task Query_ShouldSerializeArrayToQueryString()
         {
-            const string baseUri = "http://test.test/";
+            const string baseUri = "http://test.test";
             var mockHttpClient = new Mock<IHttpClientWrapper>();
 
             mockHttpClient

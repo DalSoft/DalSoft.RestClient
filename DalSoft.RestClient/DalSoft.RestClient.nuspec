@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
 	<id>DalSoft.RestClient</id>
-	<version>2.0.2</version>
+	<version>2.0.3</version>
 	<authors>DalSoft, joakimjm</authors>
 	<owners>DalSoft</owners>
 	<licenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</licenseUrl>
@@ -19,7 +19,8 @@
 	</description>
 
 	<releaseNotes>
-	Returns the JSON.NET serialization error to the caller on trying to cast the response.
+	Added functionality so you can pass HandlerToHttpClient to the constructor. 
+	Added Timeout property.
 	</releaseNotes>
 
 	<copyright>Copyright 2016</copyright>

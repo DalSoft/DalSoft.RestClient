@@ -19,8 +19,8 @@ namespace DalSoft.RestClient
         public HttpClientWrapper() : this(new HttpClient(), new Dictionary<string, string>()) { }
 
         public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders) { }
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler), defaultRequestHeaders) { }
-        public HttpClientWrapper(HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler), null) { }
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), defaultRequestHeaders) { }
+        public HttpClientWrapper(HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), null) { }
         
         internal HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders)
         {
@@ -28,16 +28,12 @@ namespace DalSoft.RestClient
 
             _httpClient = httpClient;
 
-            if (DefaultRequestHeaders.Count == 0)
-            {
+            if (DefaultRequestHeaders.All(_ => _.Key.ToLower() != "accept"))
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonContentType));
-            }
-            else
+            
+            foreach (var header in DefaultRequestHeaders)
             {
-                foreach (var header in DefaultRequestHeaders)
-                {
-                    _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }
+                _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
         }
 

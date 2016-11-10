@@ -8,13 +8,13 @@ namespace DalSoft.RestClient
     /// <summary>RestClient is a conventions based dyanmic Rest Client by Darran Jones</summary>
     public class RestClient : DynamicObject, IDisposable
     {
-        private readonly IHttpClientWrapper _httpClientWrapper;
-        public IDictionary<string, string> DefaultRequestHeaders => _httpClientWrapper.DefaultRequestHeaders;
+        internal readonly IHttpClientWrapper HttpClientWrapper;
+        public IDictionary<string, string> DefaultRequestHeaders => HttpClientWrapper.DefaultRequestHeaders;
         public string BaseUri { get; }
         public TimeSpan? Timeout
         {
-            get { return _httpClientWrapper.Timeout; }
-            set { _httpClientWrapper.Timeout = value; }
+            get { return HttpClientWrapper.Timeout; }
+            set { HttpClientWrapper.Timeout = value; }
         }
 
         public RestClient(string baseUri) : this(new HttpClientWrapper(), baseUri) { }
@@ -25,19 +25,19 @@ namespace DalSoft.RestClient
 
         public RestClient(IHttpClientWrapper httpClientWrapper, string baseUri)
         {
-            _httpClientWrapper = httpClientWrapper;
+            HttpClientWrapper = httpClientWrapper;
             BaseUri = baseUri;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = new MemberAccessWrapper(_httpClientWrapper, BaseUri, binder.Name);
+            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, binder.Name);
             return true;
         }
 
         public void Dispose()
         {
-            _httpClientWrapper.Dispose();
+            HttpClientWrapper.Dispose();
         }
     }
 }
