@@ -1,6 +1,35 @@
 {
   "version": "2.0.3-*",
 
+  "description":
+    "Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP. \r\n\r\n Chain methods to create the uri and verb for example new RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get() \r\n\r\n  Explicit and implicit casting from dynamic for example Post post = RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get()",
+
+  "packOptions": {
+    "releaseNotes": "Added functionality so you can pass HandlerToHttpClient to the constructor.\r\nAdded Timeout property.",
+    "requireLicenseAcceptance": false,
+    "licenseUrl": "https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE",
+    "owners": [ "DalSoft" ],
+    "authors": [ "DalSoft", "joakimjm" ],
+    "iconUrl": "http://dalsoft.co.uk/images/icon.png",
+    "projectUrl": "https://github.com/DalSoft/DalSoft.RestClient",
+
+
+    "summary": "Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP",
+    "tags": [
+      "RestClient",
+      "REST",
+      "Client",
+      "JSON",
+      "Dynamic",
+      "WebApi",
+      "HttpClient",
+      "Core",
+      "iOS",
+      "Android",
+      "UWP"
+    ]
+  },
+  
   "dependencies": {
     "Newtonsoft.Json": "9.0.1"
   },
@@ -21,7 +50,7 @@
         "System.Runtime.InteropServices": "4.1.0",
         "System.Net.Http": "4.1.0"
       },
-        "imports": [ "portable-net45+wpa81+wp8+win8" ]
-      }
+      "imports": [ "portable-net45+wpa81+wp8+win8" ]
     }
+  }
 }
