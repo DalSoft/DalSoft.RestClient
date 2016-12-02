@@ -32,13 +32,11 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public void Timeout_SettingBeforeSend_ShouldPassTimeoutToHttpClient()
         {
-            dynamic restClient = new RestClient("https://www.google.com") { Timeout = TimeSpan.FromSeconds(3) };
+            var restClient = new RestClient("https://www.google.com", new Config (timeout:TimeSpan.FromSeconds(3)));
 
-            var httpClient = ((RestClient)restClient).GetHttpClient();
+            var httpClient = restClient.GetHttpClient();
 
-            restClient.Get();
-
-            Assert.That(httpClient.Timeout, Is.EqualTo(restClient.Timeout));
+            Assert.That(httpClient.Timeout, Is.EqualTo(restClient.Config.Timeout));
         }
     }
 }

@@ -14,19 +14,31 @@ namespace DalSoft.RestClient
         private readonly HttpClient _httpClient;
         public const string JsonContentType = "application/json";
         public IDictionary<string, string> DefaultRequestHeaders { get; set; } //ToDo: really this should be IDictionary<string, IEnumerable<string>>
-        public TimeSpan? Timeout { get; set; }
-        
-        public HttpClientWrapper() : this(new HttpClient(), new Dictionary<string, string>()) { }
+        public Config Config { get; }
 
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders) { }
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), defaultRequestHeaders) { }
-        public HttpClientWrapper(HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), null) { }
-        
-        internal HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders)
+        public HttpClientWrapper() : this(new HttpClient(), null, null) { }
+
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders, null) { }
+
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), defaultRequestHeaders, null) { }
+
+        public HttpClientWrapper(HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), null, null) { }
+
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler, Config config) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), defaultRequestHeaders, config) { }
+
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, Config config) : this(new HttpClient(), defaultRequestHeaders, config) { }
+
+        public HttpClientWrapper(Config config) : this(new HttpClient(), null, config) { }
+
+        private HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders, Config config)
         {
+            _httpClient = httpClient;
+
+            Config = config ?? new Config();
+            
             DefaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
 
-            _httpClient = httpClient;
+            _httpClient.Timeout = Config?.Timeout ?? _httpClient.Timeout;
 
             if (DefaultRequestHeaders.All(_ => _.Key.ToLower() != "accept"))
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonContentType));
@@ -39,8 +51,7 @@ namespace DalSoft.RestClient
 
         public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
-            _httpClient.Timeout = Timeout ?? _httpClient.Timeout;
-
+            
             requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
 
             var httpRequestMessage = new HttpRequestMessage(method, uri)

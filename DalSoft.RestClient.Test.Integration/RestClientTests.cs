@@ -308,7 +308,5 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(result.Accept, Is.EqualTo("application/json"));
             Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
         }
-
-
     }
 }

@@ -1,11 +1,11 @@
 {
-  "version": "2.0.3-*",
+  "version": "2.0.4-*",
 
   "description":
     "Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP. \r\n\r\n Chain methods to create the uri and verb for example new RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get() \r\n\r\n  Explicit and implicit casting from dynamic for example Post post = RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get()",
 
   "packOptions": {
-    "releaseNotes": "Added functionality so you can pass HandlerToHttpClient to the constructor.\r\nAdded Timeout property.",
+    "releaseNotes": "Made changes so that Timeout will only be set once per instance via the constructor only, this is because HttpClient Timeout is not safe https://github.com/dotnet/corefx/blob/master/src/System.Net.Http/src/System/Net/Http/HttpClient.cs#L71",
     "requireLicenseAcceptance": false,
     "licenseUrl": "https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE",
     "owners": [ "DalSoft" ],
