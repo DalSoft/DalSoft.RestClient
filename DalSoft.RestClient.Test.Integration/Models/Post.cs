@@ -1,12 +1,7 @@
-﻿
-namespace DalSoft.RestClient.Test.Integration
+﻿namespace DalSoft.RestClient.Test.Integration.Models
 {
-
-
-    //http://jsonplaceholder.typicode.com/posts/1
-    /// <summary>
-    /// Test Get Payload
-    /// </summary>
+    /* http://jsonplaceholder.typicode.com/posts/1 */
+    /// <summary>Test Get Payload</summary>
     public class Post
     {
         public long userId { get; set; }

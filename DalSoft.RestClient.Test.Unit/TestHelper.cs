@@ -7,7 +7,6 @@ namespace DalSoft.RestClient.Test.Unit
     internal static class TestHelper
     {
         /* Doing this with getting private fields because I don't own HttpClient and don't won't to make the wrapper more complex than it needs to be just for this test */
-
         internal static HttpMessageHandler GetHandler(this RestClient restClient)
         {
             var httpClientWrapper = (HttpClientWrapper)restClient.HttpClientWrapper;
@@ -15,6 +14,11 @@ namespace DalSoft.RestClient.Test.Unit
             var actualHandler = (HttpMessageHandler)GetPrivateField(httpClient, "handler");
 
             return actualHandler;
+        }
+
+        internal static T CastHandler<T>(this HttpMessageHandler handler) where T : HttpMessageHandler
+        {
+            return (T)handler;
         }
 
         internal static HttpClient GetHttpClient(this RestClient restClient)

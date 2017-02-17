@@ -53,5 +53,21 @@ namespace DalSoft.RestClient.Test.Unit
                 It.IsAny<object>()
             ));
         }
+
+        [Test]
+        public async Task ToString_NullContent_ReturnsEmptyString()
+        {
+            const string baseUri = "http://test.test";
+            var mockHttpClient = new Mock<IHttpClientWrapper>();
+
+            mockHttpClient
+                .Setup(_ => _.Send(HttpMethod.Get, It.IsAny<Uri>(), It.IsAny<IDictionary<string, string>>(), null))
+                .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage() }));
+
+            dynamic client = new RestClient(mockHttpClient.Object, baseUri);
+            var result = await client.Get();
+
+           Assert.That(result.ToString(), Is.EqualTo(string.Empty));
+        }
     }
 }

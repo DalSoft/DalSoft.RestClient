@@ -1,10 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using DalSoft.RestClient.Handlers;
 
 
 namespace DalSoft.RestClient
@@ -12,36 +11,27 @@ namespace DalSoft.RestClient
     internal sealed class HttpClientWrapper : IHttpClientWrapper
     {
         private readonly HttpClient _httpClient;
-        public const string JsonContentType = "application/json";
+        
         public IDictionary<string, string> DefaultRequestHeaders { get; set; } //ToDo: really this should be IDictionary<string, IEnumerable<string>>
-        public Config Config { get; }
+        
+        public HttpClientWrapper() : this(null, null) { }
 
-        public HttpClientWrapper() : this(new HttpClient(), null, null) { }
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(defaultRequestHeaders, null) { }
 
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(new HttpClient(), defaultRequestHeaders, null) { }
-
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), defaultRequestHeaders, null) { }
-
-        public HttpClientWrapper(HttpMessageHandler httpMessageHandler) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), null, null) { }
-
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, HttpMessageHandler httpMessageHandler, Config config) : this(new HttpClient(httpMessageHandler ?? new HttpClientHandler()), defaultRequestHeaders, config) { }
-
-        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, Config config) : this(new HttpClient(), defaultRequestHeaders, config) { }
-
-        public HttpClientWrapper(Config config) : this(new HttpClient(), null, config) { }
-
-        private HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders, Config config)
+        public HttpClientWrapper(Config config) : this(null, config) { }
+        
+        public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders, Config config)
         {
-            _httpClient = httpClient;
+            config = config ?? new Config();
 
-            Config = config ?? new Config();
-            
+            _httpClient = new HttpClient(CreatePipeline(config.Pipeline.OfType<HttpClientHandler>().SingleOrDefault() ?? new HttpClientHandler(), 
+                                                        config.Pipeline.Except(config.Pipeline.OfType<HttpClientHandler>())))
+            {
+                Timeout = config.Timeout,
+                MaxResponseContentBufferSize = config.MaxResponseContentBufferSize
+            };
+
             DefaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
-
-            _httpClient.Timeout = Config?.Timeout ?? _httpClient.Timeout;
-
-            if (DefaultRequestHeaders.All(_ => _.Key.ToLower() != "accept"))
-                _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonContentType));
             
             foreach (var header in DefaultRequestHeaders)
             {
@@ -51,14 +41,10 @@ namespace DalSoft.RestClient
 
         public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
-            
             requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
 
-            var httpRequestMessage = new HttpRequestMessage(method, uri)
-            {
-                Content = GetContent(content, requestHeaders),
-            };
-
+            var httpRequestMessage = new HttpRequestMessage(method, uri);
+            
             foreach (var header in DefaultRequestHeaders)
             {
                 if (requestHeaders.Any(x => x.Key == header.Key))
@@ -75,30 +61,39 @@ namespace DalSoft.RestClient
                 httpRequestMessage.Headers.Add(header.Key, header.Value);
             }
 
+            httpRequestMessage.Properties.Add(Config.Contentkey, content);
+
             return await _httpClient.SendAsync(httpRequestMessage);
         }
-
-        private static HttpContent GetContent(object content, IDictionary<string, string> requestHeaders)
+        
+        private static HttpMessageHandler CreatePipeline(HttpMessageHandler innerHandler, IEnumerable<HttpMessageHandler> handlers)
         {
-            if (content == null)
-                return null;
+            if (innerHandler == null)
+                throw new ArgumentNullException(nameof(innerHandler));
+            if (handlers == null)
+                return innerHandler;
 
-            var httpContent = new StringContent(JsonConvert.SerializeObject(content));
+            var httpMessageHandler = innerHandler;
 
-            if (requestHeaders.Any(x => x.Key == "Content-Type"))
+            foreach (var handler in handlers.Reverse())
             {
-                var contentType = requestHeaders.SingleOrDefault(x => x.Key == "Content-Type");
-                httpContent.Headers.Remove("Content-Type");
-                httpContent.Headers.Add(contentType.Key, contentType.Value);
-                requestHeaders.Remove("Content-Type"); //Remove because HttpClient requires the Content-Type to be attached to HttpContent
-            }
-            else
-            {
-                httpContent.Headers.Remove("Content-Type");
-                httpContent.Headers.Add("Content-Type", JsonContentType);
-            }
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handlers), "Delegating Handler Array Contains Null Item");
 
-            return httpContent;
+                var delegatingHandler = handler as DelegatingHandler;
+
+                if (delegatingHandler == null)
+                    delegatingHandler = new HttpMessageHandlerToDelegatingHandler(handler);
+                else
+                {
+                    if (delegatingHandler.InnerHandler != null)
+                        throw new ArgumentException("Delegating Handler Array Has Non Null Inner Handler", nameof(handlers));
+                    delegatingHandler.InnerHandler = httpMessageHandler;
+                }
+
+                httpMessageHandler = delegatingHandler;
+            }
+            return httpMessageHandler;
         }
 
         public void Dispose()

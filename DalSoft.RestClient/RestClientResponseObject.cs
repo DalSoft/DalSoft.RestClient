@@ -22,7 +22,7 @@ namespace DalSoft.RestClient
 
             _httpResponseMessage = httpResponseMessage;
 
-            if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(HttpClientWrapper.JsonContentType)))
+            if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(Config.JsonContentType)))
             {
                 var isValidJson = ToString().TryParseJson(out _currentObject); //Just because we told the server we accpet JSON doesn't mean it will send us valid JSON back
 
@@ -112,7 +112,7 @@ namespace DalSoft.RestClient
             throw new InvalidOperationException("Can't apply index to object" + OutputErrorString());
         }
 
-        public override sealed string ToString()
+        public sealed override string ToString()
         {
             if (!_isRoot)
                 return _currentObject.ToString();
@@ -122,6 +122,8 @@ namespace DalSoft.RestClient
 
             using (var content = _httpResponseMessage.Content)
             {
+                if (content == null) return string.Empty;
+
                 var responseBytes = content.ReadAsByteArrayAsync().Result;
                 
                 _responseString = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);

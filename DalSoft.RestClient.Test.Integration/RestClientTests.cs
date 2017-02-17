@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DalSoft.RestClient.Handlers;
+using DalSoft.RestClient.Test.Integration.Models;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Integration
@@ -155,7 +158,7 @@ namespace DalSoft.RestClient.Test.Integration
             var content = result.ToString();
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(content, Is.StringContaining("Top Stories"));
+            Assert.That(content, Does.Contain("Top Stories"));
         }
 
         [Test]
@@ -307,6 +310,91 @@ namespace DalSoft.RestClient.Test.Integration
             var result = await client.Get(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } });
             Assert.That(result.Accept, Is.EqualTo("application/json"));
             Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+        }
+
+        [Test]
+        public async Task Get_SetHttpMessageHandlersViaCtor_CorrectlyInvokesHandlers()
+        {
+            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config
+            (
+                new DelegatingHandlerWrapper(async (request, token, next) =>
+                {
+                    request.Headers.Add("TestHandlerHeader1", "TestHandler1");
+                    return await next(request, token);
+                }),
+                new DelegatingHandlerWrapper(async (request, token, next) =>
+                {
+                    request.Headers.Add("TestHandlerHeader2", "TestHandler2");
+                    return await next(request, token);
+                })
+            ));
+
+            var result = await restClient.Get();
+
+            Assert.That(result.TestHandlerHeader1, Is.EqualTo("TestHandler1"));
+            Assert.That(result.TestHandlerHeader2, Is.EqualTo("TestHandler2"));
+        }
+
+        [Test]
+        public async Task Get_SetHttpMessageHandlerFuncsViaCtor_CorrectlyInvokesHandlerFuncs()
+        {
+            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config(
+            async (request, token, next) =>
+            {
+                request.Headers.Add("TestHandlerHeader1", "TestHandler1");
+                return await  next(request, token);
+            }, 
+            async (request, token, next) =>
+            {
+                request.Headers.Add("TestHandlerHeader2", "TestHandler2");
+                return await next(request, token);
+            }));
+
+            var result = await restClient.Get();
+
+            Assert.That(result.TestHandlerHeader1, Is.EqualTo("TestHandler1"));
+            Assert.That(result.TestHandlerHeader2, Is.EqualTo("TestHandler2"));
+        }
+
+        [Test]
+        public async Task Get_SetCookieContainerUsingHttpClientHandlerViaCtor_CorrectlySetsCookie()
+        {
+            var cookieContainer = new CookieContainer();
+            var httpClientHandler = new HttpClientHandler { CookieContainer = cookieContainer };
+
+            dynamic restClient = new RestClient("https://httpbin.org/cookies/set?testcookie=darran", new Config(httpClientHandler));
+
+            await restClient.Get();
+
+            Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie"]?.Value, Is.EqualTo("darran"));
+        }
+
+        [Test]
+        public async Task Get_SetHttpClientHandlerAndDelegatingHandlersViaCtor_CorrectlyInvokesHttpClientHandlerAndDelegatingHandlers()
+        {
+            var cookieContainer = new CookieContainer();
+            var httpClientHandler = new HttpClientHandler { CookieContainer = cookieContainer };
+
+            dynamic restClient = new RestClient("https://httpbin.org/cookies/set?testcookie1=darran1",  new Config
+            (
+                httpClientHandler,
+                new DelegatingHandlerWrapper(async (request, token, next) =>
+                {
+                    request.RequestUri = new Uri(request.RequestUri + "&testcookie2=darran2");
+                    return await next(request, token);
+                }),
+                new DelegatingHandlerWrapper(async (request, token, next) =>
+                {
+                    request.RequestUri = new Uri(request.RequestUri + "&testcookie3=darran3"); ;
+                    return await next(request, token);
+                })
+            ));
+
+            await restClient.Get();
+
+            Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie1"]?.Value, Is.EqualTo("darran1"));
+            Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie2"]?.Value, Is.EqualTo("darran2"));
+            Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie3"]?.Value, Is.EqualTo("darran3"));
         }
     }
 }

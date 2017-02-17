@@ -9,6 +9,5 @@ namespace DalSoft.RestClient
     {
         Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content);
         IDictionary<string, string> DefaultRequestHeaders { get; set; }
-        Config Config { get; }
     }
 }
