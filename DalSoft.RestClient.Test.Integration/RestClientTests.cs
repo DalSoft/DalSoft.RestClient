@@ -16,13 +16,13 @@ namespace DalSoft.RestClient.Test.Integration
         private const string BaseUri = "http://jsonplaceholder.typicode.com";
         
         [Test]
-        public async Task Get_SinglePostAsDynamic_ReturnsDynamicCorrectly()
+        public async Task Get_SingleUserAsDynamic_ReturnsDynamicCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            var post = await client.Posts.Get(1);
+            var user = await client.Users.Get(1);
 
-            Assert.That(post.id, Is.EqualTo(1));
+            Assert.That(user.id, Is.EqualTo(1));
         }
 
         [Test]
@@ -30,123 +30,123 @@ namespace DalSoft.RestClient.Test.Integration
         {
             dynamic client = new RestClient(BaseUri);
 
-            var post = await client.Posts.Get(1);
+            var user = await client.Users.Get(1);
 
-            Assert.That(post.IAmAMissingMember, Is.Null);
+            Assert.That(user.IAmAMissingMember, Is.Null);
         }
 
         [Test]
-        public async Task Get_SinglePostImplicitCast_ReturnsTypeCorrectly()
+        public async Task Get_SingleUserImplicitCast_ReturnsTypeCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            Post post = await client.Posts.Get(1);
+            User user = await client.Users.Get(1);
 
-            Assert.That(post.id, Is.EqualTo(1));
+            Assert.That(user.id, Is.EqualTo(1));
         }
 
         [Test]
-        public async Task Get_ArrayOfPostsImplicitCastToList_ReturnsTypeCorrectly()
+        public async Task Get_ArrayOfUsersImplicitCastToList_ReturnsTypeCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            List<Post> posts = await client.Posts.Get();
+            List<User> users = await client.Users.Get();
 
-            Assert.That(posts.ElementAt(1).id, Is.EqualTo(2));
+            Assert.That(users.ElementAt(1).id, Is.EqualTo(2));
         }
 
         [Test]
-        public async Task Get_ArrayOfPostsAccessByIndex_ReturnsValueByIndexCorrectly()
+        public async Task Get_ArrayOfUsersAccessByIndex_ReturnsValueByIndexCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            List<Post> posts = await client.Posts.Get();
+            List<User> users = await client.Users.Get();
 
-            Assert.That(posts[0].id, Is.EqualTo(1));
+            Assert.That(users[0].id, Is.EqualTo(1));
         }
 
         [Test]
-        public async Task Get_ArrayOfPostsAsDynamicAccessByIndex_ReturnsValueByIndexCorrectly()
+        public async Task Get_ArrayOfUsersAsDynamicAccessByIndex_ReturnsValueByIndexCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            var posts = await client.Posts.Get();
+            var users = await client.Users.Get();
 
-            Assert.That(posts[0].id, Is.EqualTo(1));
+            Assert.That(users[0].id, Is.EqualTo(1));
         }
 
         [Test]
-        public async Task Get_ArrayOfPostsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
+        public async Task Get_ArrayOfUsersEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
         {
             dynamic client = new RestClient(BaseUri);
             var i = 1;
 
-            var posts = await client.Posts.Get();
+            var users = await client.Users.Get();
 
-            foreach (var post in posts)
+            foreach (var user in users)
             {
-                Assert.That(post.id, Is.EqualTo(i));
+                Assert.That(user.id, Is.EqualTo(i));
                 i++;
             }
         }
 
         [Test]
-        public async Task Get_SinglePostCastAsHttpResponseMessage_CastAsHttpResponseMessageCorrectly()
+        public async Task Get_SingleUserCastAsHttpResponseMessage_CastAsHttpResponseMessageCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            HttpResponseMessage httpResponseMessage = await client.Posts.Get(1);
+            HttpResponseMessage httpResponseMessage = await client.Users.Get(1);
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Get_SinglePostGetHttpResponseMessageDynamically_GetsHttpResponseMessageCorrectly()
+        public async Task Get_SingleUserGetHttpResponseMessageDynamically_GetsHttpResponseMessageCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = await client.Posts.Get(1);
+            var user = await client.Users.Get(1);
 
-            Assert.That(post.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(user.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Get_SinglePostUsingResourceMethod_GetsPostCorrectly()
+        public async Task Get_SingleUserUsingResourceMethod_GetsUserCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            HttpResponseMessage httpResponseMessage = await client.Posts.Resource(1).Get();
+            HttpResponseMessage httpResponseMessage = await client.Users.Resource(1).Get();
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Get_SinglePostUsingInlineMethod_GetsPostCorrectly()
+        public async Task Get_SingleUserUsingInlineMethod_GetsUserCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            HttpResponseMessage httpResponseMessage = await client.Posts(1).Get();
+            HttpResponseMessage httpResponseMessage = await client.Users(1).Get();
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public void Get_SinglePostSynchronously_GetsPostCorrectly()
+        public void Get_SingleUserSynchronously_GetsUserCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            HttpResponseMessage httpResponseMessage = client.Posts(1).Get().Result;
+            HttpResponseMessage httpResponseMessage = client.Users(1).Get().Result;
 
             Assert.That(httpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Get_NestedCommentsFromPost_GetsCommentCorrectly()
+        public async Task Get_NestedCommentsFromUser_GetsCommentCorrectly()
         {
             dynamic client = new RestClient(BaseUri);
 
-            List<Post> post = await client.posts(2).Comments.Get();
+            List<Comment> comment = await client.users(2).Comments.Get();
 
-            Assert.That(post.First().id, Is.EqualTo(6));
+            Assert.That(comment.First().postId, Is.EqualTo(1));
         }
 
         [Test]
@@ -162,107 +162,107 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Post_NewPostAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
+        public async Task Post_NewUserAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new { title = "foo", body = "bar", userId = 10 };
-            var result = await client.Posts.Post(post);
+            var user = new { name = "foo", username = "bar", email = "test@test.com"  };
+            var result = await client.Users.Post(user);
 
-            Assert.That(result.title, Is.EqualTo(post.title));
-            Assert.That(result.body, Is.EqualTo(post.body));
-            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.name, Is.EqualTo(user.name));
+            Assert.That(result.email, Is.EqualTo(user.email));
+            Assert.That(result.username, Is.EqualTo(user.username));
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         }
 
         [Test]
-        public async Task Post_NewPostAsStaticType_CreatesAndReturnsNewResourceAsStaticType()
+        public async Task Post_NewUserAsStaticType_CreatesAndReturnsNewResourceAsStaticType()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new Post { title = "foo", body = "bar", userId = 10 };
-            var result = await client.Posts.Post(post);
+            var user = new User { name = "foo", username = "bar", email = "test@test.com" };
+            var result = await client.Users.Post(user);
 
-            Assert.That(result.title, Is.EqualTo(post.title));
-            Assert.That(result.body, Is.EqualTo(post.body));
-            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.name, Is.EqualTo(user.name));
+            Assert.That(result.email, Is.EqualTo(user.email));
+            Assert.That(result.username, Is.EqualTo(user.username));
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         }
 
         [Test]
-        public async Task Put_UpdatePostWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
+        public async Task Put_UpdateUserWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new { title = "foo", body = "bar", userId = 10 };
-            var result = await client.Posts(1).Put(post);
+            var user = new { name = "foo1", username = "bar1", email = "test1@test.com" };
+            var result = await client.Users(1).Put(user);
 
-            Assert.That(result.title, Is.EqualTo(post.title));
-            Assert.That(result.body, Is.EqualTo(post.body));
-            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.name, Is.EqualTo(user.name));
+            Assert.That(result.email, Is.EqualTo(user.email));
+            Assert.That(result.username, Is.EqualTo(user.username));
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Put_UpdatePostWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
+        public async Task Put_UpdateUserWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new Post { title = "foo", body = "bar", userId = 10 };
-            var result = await client.Posts(1).Put(post);
+            var user = new User { name = "foo1", username = "bar1", email = "test1@test.com" };
+            var result = await client.Users(1).Put(user);
 
-            Assert.That(result.title, Is.EqualTo(post.title));
-            Assert.That(result.body, Is.EqualTo(post.body));
-            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.name, Is.EqualTo(user.name));
+            Assert.That(result.email, Is.EqualTo(user.email));
+            Assert.That(result.username, Is.EqualTo(user.username));
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
 
         [Test]
-        public async Task Patch_UpdatePostWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
+        public async Task Patch_UpdateUserWithDynamic_UpdatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new { title = "foo", body = "bar", userId = 10 };
-            var result = await client.Posts(1).Patch(post);
+            var user = new { name = "foo1", username = "bar1", email = "test1@test.com" };
+            var result = await client.Users(1).Patch(user);
 
-            Assert.That(result.title, Is.EqualTo(post.title));
-            Assert.That(result.body, Is.EqualTo(post.body));
-            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.name, Is.EqualTo(user.name));
+            Assert.That(result.email, Is.EqualTo(user.email));
+            Assert.That(result.username, Is.EqualTo(user.username));
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Patch_UpdatePostWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
+        public async Task Patch_UpdateUserWithStaticType_UpdatesAndReturnsNewResourceAsStaticType()
         {
             dynamic client = new RestClient(BaseUri);
-            var post = new Post { title = "foo", body = "bar", userId = 10 };
-            var result = await client.Posts(1).Patch(post);
+            var user = new User { name = "foo1", username = "bar1", email = "test1@test.com" };
+            var result = await client.Users(1).Patch(user);
 
-            Assert.That(result.title, Is.EqualTo(post.title));
-            Assert.That(result.body, Is.EqualTo(post.body));
-            Assert.That(result.userId, Is.EqualTo(post.userId));
+            Assert.That(result.name, Is.EqualTo(user.name));
+            Assert.That(result.email, Is.EqualTo(user.email));
+            Assert.That(result.username, Is.EqualTo(user.username));
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Delete_DeletePost_HttpResponseMessageReturnsOK()
+        public async Task Delete_DeleteUser_HttpResponseMessageReturnsOK()
         {
             dynamic client = new RestClient(BaseUri);
-            var result = await client.Posts.Delete(1);
-
-            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        }
-
-        [Test]
-        public async Task Delete_DeletePostUsingInlineMethod_HttpResponseMessageReturnsOK()
-        {
-            dynamic client = new RestClient(BaseUri);
-            var result = await client.Posts(1).Delete();
+            var result = await client.Users.Delete(1);
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
         [Test]
-        public async Task Delete_DeletePostUsingResourceMethod_HttpResponseMessageReturnsOK()
+        public async Task Delete_DeleteUserUsingInlineMethod_HttpResponseMessageReturnsOK()
         {
             dynamic client = new RestClient(BaseUri);
-            var result = await client.Posts().Resource(1).Delete();
+            var result = await client.Users(1).Delete();
+
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        [Test]
+        public async Task Delete_DeleteUserUsingResourceMethod_HttpResponseMessageReturnsOK()
+        {
+            dynamic client = new RestClient(BaseUri);
+            var result = await client.Users().Resource(1).Delete();
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
@@ -272,10 +272,10 @@ namespace DalSoft.RestClient.Test.Integration
         {
             dynamic client = new RestClient(BaseUri);
 
-            List<Post> posts = await client.Posts().Query(new { id = 2 }).Get();
+            List<User> users = await client.Users().Query(new { id = 2 }).Get();
 
-            Assert.That(posts.Count, Is.EqualTo(1));
-            Assert.That(posts[0].id, Is.EqualTo(2));
+            Assert.That(users.Count, Is.EqualTo(1));
+            Assert.That(users[0].id, Is.EqualTo(2));
         }
 
         [Test]

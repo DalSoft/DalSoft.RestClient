@@ -14,14 +14,11 @@ namespace DalSoft.RestClient.Handlers
         public DefaultJsonHandler(Config config)
         {
             _config = config;
-            //MaxResponseContentBufferSize  set in config and HttpWrapper   
         }        
         
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            
             //https://msdn.microsoft.com/en-us/library/ms346609(v=vs.110).aspx
-
             if (_config.UseDefaultHandlers)
             {
                 request.Content = GetContent(request);
