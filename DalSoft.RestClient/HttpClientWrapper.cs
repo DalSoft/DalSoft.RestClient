@@ -68,11 +68,6 @@ namespace DalSoft.RestClient
         
         private static HttpMessageHandler CreatePipeline(HttpMessageHandler innerHandler, IEnumerable<HttpMessageHandler> handlers)
         {
-            if (innerHandler == null)
-                throw new ArgumentNullException(nameof(innerHandler));
-            if (handlers == null)
-                return innerHandler;
-
             var httpMessageHandler = innerHandler;
 
             foreach (var handler in handlers.Reverse())
@@ -88,11 +83,13 @@ namespace DalSoft.RestClient
                 {
                     if (delegatingHandler.InnerHandler != null)
                         throw new ArgumentException("Delegating Handler Array Has Non Null Inner Handler", nameof(handlers));
+
                     delegatingHandler.InnerHandler = httpMessageHandler;
                 }
 
                 httpMessageHandler = delegatingHandler;
             }
+
             return httpMessageHandler;
         }
 

@@ -1,4 +1,4 @@
-﻿namespace DalSoft.RestClient.Test.Integration.Models
+﻿namespace DalSoft.RestClient.Test.Integration.TestModels
 {
     public class User
     {

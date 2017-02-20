@@ -12,7 +12,7 @@ namespace DalSoft.RestClient
     {
         internal static readonly string JsonContentType = "application/json";
 
-        public static readonly string Contentkey = "DalSoft.RestClient.Content";
+        internal static readonly string Contentkey = "DalSoft.RestClient.Content";
         
         public Config() : this((Func<HttpRequestMessage, CancellationToken, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>, Task <HttpResponseMessage>>) null) { }
 
@@ -35,7 +35,7 @@ namespace DalSoft.RestClient
 
         public TimeSpan Timeout { get; set; }
         public long MaxResponseContentBufferSize { get; set; }
-        public IEnumerable<HttpMessageHandler> Pipeline { get; set; }
+        public IEnumerable<HttpMessageHandler> Pipeline { get; internal set; }
         public bool UseDefaultHandlers { get; set; }
     }   
 }

@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
-using DalSoft.RestClient.Test.Integration.Models;
+using DalSoft.RestClient.Test.Integration.TestModels;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Integration
@@ -150,7 +150,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_NoJsonContentFromGoogle_GetsContentCorrectly()
+        public async Task Get_NonJsonContentFromGoogle_GetsContentCorrectly()
         {
             dynamic google = new RestClient("https://www.google.com", new Dictionary<string, string> { { "Accept", "text/html" } });
 
@@ -385,7 +385,7 @@ namespace DalSoft.RestClient.Test.Integration
                 }),
                 new DelegatingHandlerWrapper(async (request, token, next) =>
                 {
-                    request.RequestUri = new Uri(request.RequestUri + "&testcookie3=darran3"); ;
+                    request.RequestUri = new Uri(request.RequestUri + "&testcookie3=darran3");
                     return await next(request, token);
                 })
             ));

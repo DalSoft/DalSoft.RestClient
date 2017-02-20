@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace DalSoft.RestClient.Handlers
     {
         private readonly HttpResponseMessage _httpResponseMessage;
         private readonly Action<HttpRequestMessage> _onRequest;
+        private readonly Stream _streamContent;
 
         public UnitTestHandler() : this(new HttpResponseMessage(), request => { }) { }
 
@@ -19,6 +21,11 @@ namespace DalSoft.RestClient.Handlers
         public UnitTestHandler(HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage> onRequest)
         {
             _httpResponseMessage = httpResponseMessage;
+            _streamContent = new MemoryStream();
+
+            httpResponseMessage.Content = httpResponseMessage.Content ?? new StreamContent(_streamContent);
+            httpResponseMessage.Content.CopyToAsync(_streamContent);
+            
             _onRequest = onRequest;
         }
         
@@ -28,6 +35,15 @@ namespace DalSoft.RestClient.Handlers
 
             _onRequest(request);
 
+            _streamContent.Position = 0;
+
+            var localStream = new MemoryStream();
+            await _streamContent.CopyToAsync(localStream);
+
+            localStream.Position = 0;
+
+            _httpResponseMessage.Content = new StreamContent(localStream); //Allow content to be re-used in tests
+     
             return await Task.FromResult(_httpResponseMessage).ConfigureAwait(false);
         }
     }

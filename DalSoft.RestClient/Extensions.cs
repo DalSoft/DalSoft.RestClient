@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -53,7 +54,7 @@ namespace DalSoft.RestClient
             
             Uri uri;
             if (!Uri.TryCreate(currentUri, UriKind.Absolute, out uri))
-                throw new ArgumentException(string.Format("{0} is not a valid Uri", currentUri));
+                throw new ArgumentException($"{currentUri} is not a valid Uri");
             
             return uri;
         }
@@ -101,10 +102,7 @@ namespace DalSoft.RestClient
 
             if (IsImmutableVerb(httpMethod))
                 return null;
-
-            if (!IsMutableVerb(httpMethod))
-                throw new ArgumentException("HttpMethod not supported");
-
+            
             if (!args[0].GetType().GetTypeInfo().IsClass || args[0] is string)
                 throw new ArgumentException("Please provide a class to be serialized to the request body for example new { hello = \"world\" }");
 
@@ -152,6 +150,11 @@ namespace DalSoft.RestClient
             }
 
             return result;
+        }
+
+        public static object GetContent(this HttpRequestMessage request)
+        {
+            return request.Properties[Config.Contentkey];
         }
     }
 }

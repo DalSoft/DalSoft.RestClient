@@ -1,24 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
+using DalSoft.RestClient.Test.Unit.TestModels;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Unit
 {
     public class HttpClientWrapperTests
     {
+        public const string BaseUrl = "http://test.test";
+
+        [Test]
+        public void Ctor_Parameterless_ShouldNullObjectDefaultHeadersAndConfig()
+        {
+            var httpClientWrapper = new HttpClientWrapper();
+            var actualHandler = httpClientWrapper.GetHandler() as DefaultJsonHandler;
+
+            Assert.That(httpClientWrapper.DefaultRequestHeaders, Is.Not.Null);
+            Assert.IsInstanceOf<DefaultJsonHandler>(actualHandler); //set up by default config
+        }
+
+        [Test]
+        public void Ctor_PassingDefaultHeaders_ShouldDefaultHeadersToHttpClient()
+        {
+            var httpClientWrapper = new HttpClientWrapper(new Dictionary<string, string> { { "header1", "value1"}, { "header2", "value2" } });
+          
+            Assert.That(httpClientWrapper.DefaultRequestHeaders.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Ctor_NullHttpMessageHandler_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(()=>new HttpClientWrapper(new Config((HttpMessageHandler)null)));;
+        }
+
+        [Test]
+        public void Ctor_DelegatingHandlerWithNonNullInnerHandler_ThrowsArgumentException()
+        {
+            var delegatingHandler = new DelegatingHandlerWrapper((request, token, next) => next(request, token));
+            delegatingHandler.InnerHandler = delegatingHandler;
+
+            Assert.Throws<ArgumentException>(() => new HttpClientWrapper(new Config(delegatingHandler))); ;
+        }
+
         [Test]
         public void Ctor_PassingBaseUriAndHttpMessageHandler_ShouldPassHttpMessageHandlerToHttpClient()
         {
             var expectedHandler = new HttpClientHandler();
 
-            var restClient = new RestClient("https://www.google.com", new Config(expectedHandler));
+            var httpClientWrapper = new HttpClientWrapper(new Config(expectedHandler));
 
-            var actualHandler = (restClient.GetHandler() as DelegatingHandler)?.InnerHandler as HttpClientHandler;
+            var actualHandler = (httpClientWrapper.GetHandler() as DelegatingHandler)?.InnerHandler as HttpClientHandler;
 
             Assert.That(actualHandler, Is.EqualTo(expectedHandler));
         }
@@ -28,9 +63,9 @@ namespace DalSoft.RestClient.Test.Unit
         {
             var expectedHandler = new HttpClientHandler();
 
-            var restClient = new RestClient("https://www.google.com", new Dictionary<string, string>(), new Config(expectedHandler));
+            var httpClientWrapper = new HttpClientWrapper(new Dictionary<string, string>(), new Config(expectedHandler));
 
-            var actualHandler = (restClient.GetHandler() as DelegatingHandler)?.InnerHandler as HttpClientHandler;
+            var actualHandler = (httpClientWrapper.GetHandler() as DelegatingHandler)?.InnerHandler as HttpClientHandler;
 
             Assert.That(actualHandler, Is.EqualTo(expectedHandler));
         }
@@ -40,9 +75,9 @@ namespace DalSoft.RestClient.Test.Unit
         {
             var expectedHandler = new HttpClientHandler();
 
-            var restClient = new RestClient("https://www.google.com", new Config(new UnitTestHandler(), new UnitTestHandler(), expectedHandler, new UnitTestHandler(), new UnitTestHandler()));
+            var httpClientWrapper = new HttpClientWrapper(new Config(new UnitTestHandler(), new UnitTestHandler(), expectedHandler, new UnitTestHandler(), new UnitTestHandler()));
 
-            var actualHandler = restClient.GetHandler()
+            var actualHandler = httpClientWrapper.GetHandler()
                 .CastHandler<DefaultJsonHandler>().InnerHandler
                 .CastHandler<UnitTestHandler>().InnerHandler
                 .CastHandler<UnitTestHandler>().InnerHandler
@@ -57,9 +92,9 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public void Ctor_DefaultJsonHandler_WillAlwaysBeFirstInThePipeline()
         {
-            var restClient = new RestClient("https://www.google.com", new Config(new UnitTestHandler(), new UnitTestHandler(), new UnitTestHandler(), new UnitTestHandler()));
+            var httpClientWrapper = new HttpClientWrapper(new Config(new UnitTestHandler(), new UnitTestHandler(), new UnitTestHandler(), new UnitTestHandler()));
 
-            var actualHandler = restClient.GetHandler()
+            var actualHandler = httpClientWrapper.GetHandler()
                 .CastHandler<DefaultJsonHandler>();
             
             Assert.IsInstanceOf<DefaultJsonHandler>(actualHandler);
@@ -70,28 +105,30 @@ namespace DalSoft.RestClient.Test.Unit
         {
             var correctOrder = string.Empty;
 
-            dynamic restClient = new RestClient("https://www.google.com", new Dictionary<string, string>(),
-            new Config //Default ctor for Config sets UseDefaultHandlers to true
+            var httpClientWrapper = new HttpClientWrapper
             (
-                new DelegatingHandlerWrapper((request, token, next) => 
-                {
-                    correctOrder += "1";
-                    return next(request, token);
-                }),
-                new DelegatingHandlerWrapper((request, token, next) =>
-                {
-                    correctOrder += "2";
-                    return next(request, token);
-                }),
-                new DelegatingHandlerWrapper((request, token, next) =>
-                {
-                    correctOrder += "3";
-                    return next(request, token);
-                }),
-                new UnitTestHandler() //end pipeline
-            ));
+                new Config //Default ctor for Config sets UseDefaultHandlers to true
+                (
+                    new DelegatingHandlerWrapper((request, token, next) => 
+                    {
+                        correctOrder += "1";
+                        return next(request, token);
+                    }),
+                    new DelegatingHandlerWrapper((request, token, next) =>
+                    {
+                        correctOrder += "2";
+                        return next(request, token);
+                    }),
+                    new DelegatingHandlerWrapper((request, token, next) =>
+                    {
+                        correctOrder += "3";
+                        return next(request, token);
+                    }),
+                    new UnitTestHandler() //end pipeline
+                )
+            );
 
-            await restClient.Get();
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new {});
 
             Assert.That(correctOrder, Is.EqualTo("123"));
         }
@@ -101,28 +138,30 @@ namespace DalSoft.RestClient.Test.Unit
         {
             var correctOrder = string.Empty;
 
-            dynamic restClient = new RestClient("https://www.google.com", new Dictionary<string, string>(),
-            new Config //Default ctor for Config sets UseDefaultHandlers to true
+            var httpClientWrapper = new HttpClientWrapper
             (
-                (request, token, next) =>
-                {
-                    correctOrder += "1";
-                    return next(request, token);
-                },
-                (request, token, next) =>
-                {
-                    correctOrder += "2";
-                    return next(request, token);
-                },
-                (request, token, next) =>
-                {
-                    correctOrder += "3";
-                    return next(request, token);
-                },
-                (request, token, next) => Task.FromResult(new HttpResponseMessage { RequestMessage = request }) //end pipeline
-            ));
+                new Config //Default ctor for Config sets UseDefaultHandlers to true
+                (
+                    (request, token, next) =>
+                    {
+                        correctOrder += "1";
+                        return next(request, token);
+                    },
+                    (request, token, next) =>
+                    {
+                        correctOrder += "2";
+                        return next(request, token);
+                    },
+                    (request, token, next) =>
+                    {
+                        correctOrder += "3";
+                        return next(request, token);
+                    },
+                    (request, token, next) => Task.FromResult(new HttpResponseMessage { RequestMessage = request }) //end pipeline
+                )
+            );
 
-            await restClient.Get();
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new { });
 
             Assert.That(correctOrder, Is.EqualTo("123"));
         }
@@ -132,16 +171,18 @@ namespace DalSoft.RestClient.Test.Unit
         {
             HttpRequestMessage invokedRequest = null;
 
-            dynamic restClient = new RestClient("https://www.google.com", new Dictionary<string, string>(), 
-            new Config //Default ctor for Config sets UseDefaultHandlers to true
-            (
-                new UnitTestHandler(request =>
-                {
-                    invokedRequest = request;
-                })
-            ));
-            
-            await restClient.Get();
+            var httpClientWrapper = new HttpClientWrapper
+            ( 
+                new Config //Default ctor for Config sets UseDefaultHandlers to true
+                (
+                    new UnitTestHandler(request =>
+                    {
+                        invokedRequest = request;
+                    })
+                )
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new { });
 
             Assert.That(invokedRequest?.Headers.Accept.FirstOrDefault()?.MediaType, Is.EqualTo(Config.JsonContentType));
         }
@@ -151,16 +192,15 @@ namespace DalSoft.RestClient.Test.Unit
         {
             HttpRequestMessage invokedRequest = null;
 
-            dynamic restClient = new RestClient("https://www.google.com", new Dictionary<string, string>(),
-            new Config
+            var httpClientWrapper = new HttpClientWrapper
             (
-                new UnitTestHandler(request =>
+                new Config(new UnitTestHandler(request => { invokedRequest = request; }))
                 {
-                    invokedRequest = request;
-                })
-            ) { UseDefaultHandlers = false });
+                    UseDefaultHandlers = false
+                }
+            );
 
-            await restClient.Get();
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new { });
 
             Assert.True(invokedRequest?.Headers.Accept.Count == 0);
         }
@@ -170,9 +210,9 @@ namespace DalSoft.RestClient.Test.Unit
         public void Ctor_Timeout_ShouldPassTimeoutToHttpClient()
         {
             var timeout = TimeSpan.FromSeconds(3);
-            var restClient = new RestClient("https://www.google.com", new Config { Timeout = timeout });
+            var httpClientWrapper = new HttpClientWrapper(new Config { Timeout = timeout });
 
-            var httpClient = restClient.GetHttpClient();
+            var httpClient = httpClientWrapper.GetHttpClient();
 
             Assert.That(httpClient.Timeout, Is.EqualTo(timeout));
         }
@@ -181,11 +221,69 @@ namespace DalSoft.RestClient.Test.Unit
         public void Ctor_MaxResponseContentBufferSize_ShouldPassMaxResponseContentBufferSizeToHttpClient()
         {
             const long maxResponseContentBufferSize = 100;
-            var restClient = new RestClient("https://www.google.com", new Config { MaxResponseContentBufferSize = maxResponseContentBufferSize });
+            var httpClientWrapper = new HttpClientWrapper(new Config { MaxResponseContentBufferSize = maxResponseContentBufferSize });
 
-            var httpClient = restClient.GetHttpClient();
+            var httpClient = httpClientWrapper.GetHttpClient();
 
             Assert.That(httpClient.MaxResponseContentBufferSize, Is.EqualTo(maxResponseContentBufferSize));
+        }
+
+        [Test]
+        public async Task Send_PassingHeadersTheSameAsDefaultHeaders_DoesNotAddTheHeadersTwice()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Dictionary<string, string> { { "myheader1", "myheadervalue1" } }, 
+                new Config(new UnitTestHandler(request => actualRequest = request)) {  UseDefaultHandlers = false }
+            );
+            
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), new Dictionary<string, string> { { "myheader1", "myheadervalue1"} }, new { });
+
+            Assert.That(actualRequest.Headers.Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Send_PassesDefaultHeaders_CorrectlyToHttpClient()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Dictionary<string, string> { { "myheader1", "myheadervalue1" } },
+                new Config(new UnitTestHandler(request => actualRequest = request)) { UseDefaultHandlers = false }
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new { });
+
+            Assert.That(actualRequest.Headers.Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Send_PassesParameters_CorrectlyToHttpClient()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Config(new UnitTestHandler(request => actualRequest = request)) { UseDefaultHandlers = false }
+            );
+
+            var payload = new User { id=1 };
+            await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), new Dictionary<string, string> { { "myheader1", "myheadervalue1" } }, payload);
+
+            Assert.That(actualRequest.Method, Is.EqualTo(HttpMethod.Get));
+            Assert.That(actualRequest.RequestUri.AbsoluteUri, Is.EqualTo(BaseUrl + "/"));
+            Assert.That(actualRequest.Headers.Count(), Is.EqualTo(1));
+            Assert.That(actualRequest.GetContent(), Is.EqualTo(payload));
+        }
+
+        [Test]
+        public void Dispose_WhenCalled_DisposesOfHttpClient()
+        {
+            var httpClientWrapper = new HttpClientWrapper();
+
+            httpClientWrapper.Dispose();
+
+            Assert.True((bool)TestHelper.GetPrivateField(httpClientWrapper.GetHttpClient(), "disposed"));
         }
     }
 }

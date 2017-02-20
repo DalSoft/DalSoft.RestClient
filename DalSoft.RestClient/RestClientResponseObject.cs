@@ -77,6 +77,12 @@ namespace DalSoft.RestClient
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
+            if (binder.Name == "HttpResponseMessage")
+            {
+                result = _httpResponseMessage;
+                return true;
+            }
+
             //JToken
             var jToken = _currentObject as JToken;
             if (jToken != null)
@@ -87,13 +93,7 @@ namespace DalSoft.RestClient
                     return true;
                 }
             }
-
-            if (binder.Name == "HttpResponseMessage")
-            {
-                result = _httpResponseMessage;
-                return true;
-            }
-
+            
             //Member not found return null instead of throwing
             result = null;
 

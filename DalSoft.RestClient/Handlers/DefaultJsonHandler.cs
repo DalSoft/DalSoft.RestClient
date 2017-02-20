@@ -18,7 +18,6 @@ namespace DalSoft.RestClient.Handlers
         
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            //https://msdn.microsoft.com/en-us/library/ms346609(v=vs.110).aspx
             if (_config.UseDefaultHandlers)
             {
                 request.Content = GetContent(request);
@@ -33,7 +32,7 @@ namespace DalSoft.RestClient.Handlers
         private static HttpContent GetContent(HttpRequestMessage request)
         {
             var requestHeaders = request.Headers;
-            var content = request.Properties[Config.Contentkey];            
+            var content = request.GetContent();            
 
             if (content == null)
                 return null;

@@ -26,7 +26,7 @@ namespace DalSoft.RestClient
 
         public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
         {
-            if (binder == null) throw new ArgumentNullException("binder");
+            if (binder == null) throw new ArgumentNullException(nameof(binder));
 
             if (EscapedResource(args, out result))
                 return true;
