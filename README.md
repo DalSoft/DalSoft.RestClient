@@ -60,6 +60,6 @@ See [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.Res
 * [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.RestClient/wiki/Configuration,-Plugins-and-Pipeline)
   * [Available plugins] (https://github.com/DalSoft/DalSoft.RestClient/wiki/Configuration,-Plugins-and-Pipeline)
 
-* [Unit-Testing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Unit-Testing)
+* [Unit Testing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Unit-Testing)
 
 * [Guidance](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance)
