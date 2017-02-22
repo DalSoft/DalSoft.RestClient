@@ -8,32 +8,40 @@ namespace DalSoft.RestClient.Handlers
 {
     public class UnitTestHandler : DelegatingHandler
     {
-        private readonly HttpResponseMessage _httpResponseMessage;
-        private readonly Action<HttpRequestMessage> _onRequest;
-        private readonly Stream _streamContent;
+        private Stream _streamContent;
 
-        public UnitTestHandler() : this(new HttpResponseMessage(), request => { }) { }
-
-        public UnitTestHandler(HttpResponseMessage httpResponseMessage) : this(httpResponseMessage, request => { }) { }
-
-        public UnitTestHandler(Action<HttpRequestMessage> onRequest) : this(new HttpResponseMessage(), onRequest) { }
-
-        public UnitTestHandler(HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage> onRequest)
-        {
-            _httpResponseMessage = httpResponseMessage;
-            _streamContent = new MemoryStream();
-
-            httpResponseMessage.Content = httpResponseMessage.Content ?? new StreamContent(_streamContent);
-            httpResponseMessage.Content.CopyToAsync(_streamContent);
-            
-            _onRequest = onRequest;
-        }
+        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
         
+        public UnitTestHandler() : this((Action<HttpRequestMessage>) null) { }
+
+        public UnitTestHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
+        {
+            _handler = handler ?? (request => new HttpResponseMessage()) ;
+        }
+
+        public UnitTestHandler(Action<HttpRequestMessage> handler)
+        {
+            handler = handler ?? (request => { });
+
+            _handler = request =>
+            {
+                handler(request);
+                return new HttpResponseMessage();
+            };
+        }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            _httpResponseMessage.RequestMessage = _httpResponseMessage.RequestMessage ?? request ?? new HttpRequestMessage();
+            var response =  _handler(request);
 
-            _onRequest(request);
+            response.RequestMessage = response.RequestMessage ?? request ?? new HttpRequestMessage();
+            response.Content= response.Content?? new StringContent(string.Empty);
+
+            if (_streamContent == null)
+            {
+                _streamContent = new MemoryStream();
+                await response.Content.CopyToAsync(_streamContent);
+            }
 
             _streamContent.Position = 0;
 
@@ -42,9 +50,9 @@ namespace DalSoft.RestClient.Handlers
 
             localStream.Position = 0;
 
-            _httpResponseMessage.Content = new StreamContent(localStream); //Allow content to be re-used in tests
-     
-            return await Task.FromResult(_httpResponseMessage).ConfigureAwait(false);
+            response.Content = new StreamContent(localStream); //Allow content to be re-used in tests
+
+            return await Task.FromResult(response).ConfigureAwait(false);
         }
     }
 }

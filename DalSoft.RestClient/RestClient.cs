@@ -18,7 +18,7 @@ namespace DalSoft.RestClient
         
         public RestClient(IHttpClientWrapper httpClientWrapper, string baseUri)
         {
-            HttpClientWrapper = httpClientWrapper;
+            HttpClientWrapper = httpClientWrapper ?? new HttpClientWrapper();
             BaseUri = baseUri;
         }
 

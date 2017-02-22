@@ -77,7 +77,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_SingleObjectAsDynamic_ReturnsDynamicCorrectly()
         {
-           dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUserResponse())));
+           dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
 
            var verbs = new Func<Task<dynamic>>[]
            {
@@ -101,7 +101,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_AccessMissingMember_ReturnsNull()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUserResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
 
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -125,7 +125,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_SingleObjectImplicitCast_ReturnsTypeCorrectly()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUserResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
             
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -149,7 +149,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_ArrayOfObjectsImplicitCastToList_ReturnsTypeCorrectly()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUsersResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
 
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -173,7 +173,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_ArrayOfObjectAccessByIndex_ReturnsValueByIndexCorrectly()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUsersResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
             
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -197,7 +197,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_ArrayOfObjectsAsDynamicAccessByIndex_ReturnsValueByIndexCorrectly()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUsersResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
             
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -221,7 +221,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public async Task AllVerbs_ArrayOfObjectsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUsersResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
 
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -255,7 +255,7 @@ namespace DalSoft.RestClient.Test.Unit
             var response = GetMockUserResponse();
             response.StatusCode = HttpStatusCode.BadGateway;
 
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(response)));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => response)));
 
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -283,7 +283,7 @@ namespace DalSoft.RestClient.Test.Unit
         {
             var response = GetMockUserResponse();
             response.StatusCode = HttpStatusCode.BadGateway;
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(response)));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => response)));
            
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -309,7 +309,7 @@ namespace DalSoft.RestClient.Test.Unit
         [Test]
         public void AllVerbs_SingleObjectSynchronously_GetsObjectCorrectly()
         {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(GetMockUserResponse())));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
 
             var verbs = new Func<Task<dynamic>>[]
             {
@@ -342,7 +342,7 @@ namespace DalSoft.RestClient.Test.Unit
             dynamic google = new RestClient
             (
                 BaseUri, new Dictionary<string, string> { { "Accept", "text/html" } }, 
-                new Config(new UnitTestHandler(nonJsonContent))
+                new Config(new UnitTestHandler(request => nonJsonContent))
             );
 
             var result = await google.news.Get();
@@ -849,7 +849,25 @@ namespace DalSoft.RestClient.Test.Unit
                 Assert.That(resultingRequest.Headers.GetValues("TestHandlerHeader2").First(), Is.EqualTo("TestHandler2"));
             }
         }
-        
+
+        [Test]
+        public async Task Deserialize_UsingModelWithJsonProperty_CorrectlyDeserializes()
+        {
+            var user = new { phone_number = "+44 12345" };
+            var config = new Config()
+                .UseUnitTestHandler(request => new HttpResponseMessage
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(user))
+                });
+
+            dynamic restClient = new RestClient(BaseUri, config);
+
+            User response = await restClient.Get();
+            //PhoneNumber has JsonProperty attribute
+            Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
+
+        }
+
         private static HttpResponseMessage GetMockUserResponse()
         {
             return new HttpResponseMessage

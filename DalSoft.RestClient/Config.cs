@@ -11,18 +11,22 @@ namespace DalSoft.RestClient
     public class Config
     {
         internal static readonly string JsonContentType = "application/json";
-
         internal static readonly string Contentkey = "DalSoft.RestClient.Content";
+        internal IEnumerable<HttpMessageHandler> Pipeline { get; set; }
+
+        public TimeSpan Timeout { get; set; }
+        public long MaxResponseContentBufferSize { get; set; }
+        public bool UseDefaultHandlers { get; set; }
         
-        public Config() : this((Func<HttpRequestMessage, CancellationToken, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>, Task <HttpResponseMessage>>) null) { }
+        public Config() : this((HttpMessageHandler[])null) { }
 
         public Config(params Func<HttpRequestMessage, CancellationToken, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>, Task<HttpResponseMessage>>[] handlers) :
-            this(handlers.Select(handler => new DelegatingHandlerWrapper(handler)).ToArray()) {  }
+            this(handlers?.Select(handler => new DelegatingHandlerWrapper(handler)).ToArray()) {  }
 
         public Config(params HttpMessageHandler[] pipeline)
         {
-            if (pipeline.OfType<HttpClientHandler>().Count() > 1)
-                throw new ArgumentException("The pipeline can only have one HttpClientHandler", nameof(pipeline));
+            pipeline = pipeline ?? new HttpMessageHandler[] {};
+            pipeline.ValidatePipeline();
 
             var handlers = pipeline.ToList();
             handlers.Insert(0, new DefaultJsonHandler(this));
@@ -32,10 +36,5 @@ namespace DalSoft.RestClient
             MaxResponseContentBufferSize = int.MaxValue;  //Same default as HttpClient
             UseDefaultHandlers = true;
         }
-
-        public TimeSpan Timeout { get; set; }
-        public long MaxResponseContentBufferSize { get; set; }
-        public IEnumerable<HttpMessageHandler> Pipeline { get; internal set; }
-        public bool UseDefaultHandlers { get; set; }
     }   
 }

@@ -13,7 +13,7 @@ namespace DalSoft.RestClient.Handlers
 
         public DefaultJsonHandler(Config config)
         {
-            _config = config;
+            _config = config ?? new Config();
         }        
         
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

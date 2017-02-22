@@ -16,11 +16,11 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             (
                 new UnitTestHandler 
                 (
-                    new HttpResponseMessage(HttpStatusCode.Created)
+                    request => new HttpResponseMessage(HttpStatusCode.Created)
                 ),
                 new UnitTestHandler
                 (
-                    new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                    request => new HttpResponseMessage(HttpStatusCode.InternalServerError)
                 ))
             );
 
