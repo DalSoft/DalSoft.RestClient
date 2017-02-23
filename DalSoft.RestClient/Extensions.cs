@@ -151,10 +151,5 @@ namespace DalSoft.RestClient
 
             return result;
         }
-
-        public static object GetContent(this HttpRequestMessage request)
-        {
-            return request.Properties[Config.Contentkey];
-        }
     }
 }

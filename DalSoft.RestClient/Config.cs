@@ -10,8 +10,11 @@ namespace DalSoft.RestClient
 {
     public class Config
     {
-        internal static readonly string JsonContentType = "application/json";
-        internal static readonly string Contentkey = "DalSoft.RestClient.Content";
+        internal static readonly string JsonMediaType = "application/json";
+        internal static readonly string RequestContentKey = "DalSoft.RestClient.RequestContentKey";
+        internal static readonly string RequestContentType = "DalSoft.RestClient.RequestContentType";
+        internal static readonly string ResponseIsJsonKey = "DalSoft.RestClient.ResponseIsJsonKey";
+
         internal IEnumerable<HttpMessageHandler> Pipeline { get; set; }
 
         public TimeSpan Timeout { get; set; }

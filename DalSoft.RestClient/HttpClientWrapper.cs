@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
 
-
 namespace DalSoft.RestClient
 {
     internal sealed class HttpClientWrapper : IHttpClientWrapper
@@ -32,36 +31,35 @@ namespace DalSoft.RestClient
             };
 
             DefaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
-            
-            foreach (var header in DefaultRequestHeaders)
-            {
-                _httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
         }
 
         public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
             requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
 
-            var httpRequestMessage = new HttpRequestMessage(method, uri);
-            
-            foreach (var header in DefaultRequestHeaders)
+            foreach (var defaultHeader in DefaultRequestHeaders) //Don't add duplicates requestHeaders that have already been set by DefaultRequestHeaders
             {
-                if (requestHeaders.Any(x => x.Key == header.Key))
-                    requestHeaders.Remove(header.Key);
-
-                requestHeaders.Add(header.Key, header.Value);
+                if (!requestHeaders.ContainsKey(defaultHeader.Key))
+                    requestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
+
+            var httpRequestMessage = new HttpRequestMessage(method, uri);
+            httpRequestMessage.Headers.Clear(); //Clear the defaults we want to control all the headers
 
             foreach (var header in requestHeaders)
             {
-                if (httpRequestMessage.Headers.Contains(header.Key))
-                    httpRequestMessage.Headers.Remove(header.Key);
+                /* If we try and add the Content-Type header to The HttpRequest we get the following exception 
+                 * System.InvalidOperationException : Misused header name. Make sure request headers are used with HttpRequestMessage, response headers with HttpResponseMessage, 
+                 * and content headers with HttpContent objects.
+                 * So add it to the StateBag so that the Handlers can set the Content-Type header when building the HttpContent object */
 
-                httpRequestMessage.Headers.Add(header.Key, header.Value);
+                if (header.Key.ToLower() == "content-type")
+                    httpRequestMessage.SetContentType(header.Value);
+                else
+                    httpRequestMessage.Headers.Add(header.Key, header.Value);
             }
 
-            httpRequestMessage.Properties.Add(Config.Contentkey, content);
+            httpRequestMessage.SetContent(content);
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }

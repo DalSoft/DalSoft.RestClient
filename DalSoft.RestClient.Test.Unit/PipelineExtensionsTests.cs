@@ -104,5 +104,21 @@ namespace DalSoft.RestClient.Test.Unit
             Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
             Assert.That(TestHelper.GetPrivateField((UnitTestHandler)config.Pipeline.ElementAt(1), "_handler"), Is.EqualTo(handler));
         }
+
+        [Test]
+        public void ExpectJsonResponse_StateBagPropertyNull_ReturnsFalse()
+        {
+            Assert.False(new HttpRequestMessage().ExpectJsonResponse());
+        }
+
+        [Test]
+        public void ExpectJsonResponse_StateBagPropertyTrue_ReturnsTrue()
+        {
+            var request = new HttpRequestMessage();
+
+            request.ExpectJsonResponse(true);
+
+            Assert.True(request.ExpectJsonResponse());
+        }
     }
 }

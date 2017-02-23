@@ -23,7 +23,9 @@ namespace DalSoft.RestClient.Handlers
                 request.Content = GetContent(request);
                 
                 if (!request.Headers.Accept.Any())
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Config.JsonContentType));
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Config.JsonMediaType));
+
+                request.ExpectJsonResponse(true);
             }
             
             return await base.SendAsync(request, cancellationToken);
@@ -31,27 +33,16 @@ namespace DalSoft.RestClient.Handlers
 
         private static HttpContent GetContent(HttpRequestMessage request)
         {
-            var requestHeaders = request.Headers;
             var content = request.GetContent();            
 
             if (content == null)
                 return null;
 
             var httpContent = new StringContent(JsonConvert.SerializeObject(content));
-            
-            if (requestHeaders.Any(x => x.Key == "Content-Type"))
-            {
-                var contentType = requestHeaders.SingleOrDefault(x => x.Key == "Content-Type");
-                httpContent.Headers.Remove("Content-Type");
-                httpContent.Headers.Add(contentType.Key, contentType.Value);
-                requestHeaders.Remove("Content-Type"); //Remove because HttpClient requires the Content-Type to be attached to HttpContent
-            }
-            else
-            {
-                httpContent.Headers.Remove("Content-Type");
-                httpContent.Headers.Add("Content-Type", Config.JsonContentType);
-            }
 
+            httpContent.Headers.Clear(); //Clear the defaults we want to control all the headers
+            httpContent.Headers.Add("Content-Type", request.GetContentType() ?? Config.JsonMediaType);
+            
             return httpContent;
         }
     }

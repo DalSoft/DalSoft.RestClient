@@ -22,7 +22,8 @@ namespace DalSoft.RestClient
 
             _httpResponseMessage = httpResponseMessage;
 
-            if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(Config.JsonContentType)))
+            if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(Config.JsonMediaType)) ||
+                _httpResponseMessage.RequestMessage.ExpectJsonResponse())
             {
                 var isValidJson = ToString().TryParseJson(out _currentObject); //Just because we told the server we accpet JSON doesn't mean it will send us valid JSON back
 

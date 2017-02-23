@@ -10,6 +10,36 @@ namespace DalSoft.RestClient
 {
     public static class PipelineExtensions
     {
+        internal static void SetContent(this HttpRequestMessage request, object content)
+        {
+            request.Properties[Config.RequestContentKey] = content;
+        }
+
+        public static object GetContent(this HttpRequestMessage request)
+        {
+            return request.Properties.ContainsKey(Config.RequestContentKey) ? request.Properties[Config.RequestContentKey] : null;
+        }
+
+        internal static void SetContentType(this HttpRequestMessage request, string contentType)
+        {
+            request.Properties[Config.RequestContentType] = contentType;
+        }
+
+        public static string GetContentType(this HttpRequestMessage request)
+        {
+            return request.Properties.ContainsKey(Config.RequestContentType) ? request.Properties[Config.RequestContentType] as string : null;
+        }
+
+        public static void ExpectJsonResponse(this HttpRequestMessage request, bool expectJson)
+        {
+            request.Properties[Config.ResponseIsJsonKey] = expectJson;
+        }
+
+        public static bool ExpectJsonResponse(this HttpRequestMessage request)
+        {
+            return request.Properties.ContainsKey(Config.ResponseIsJsonKey) && (request.Properties[Config.ResponseIsJsonKey] as bool? ?? false);
+        }
+        
         public static Config UseNoDefaultHandlers(this Config config)
         {
             config.UseDefaultHandlers = false;

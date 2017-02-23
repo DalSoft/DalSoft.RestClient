@@ -184,7 +184,7 @@ namespace DalSoft.RestClient.Test.Unit
 
             await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new { });
 
-            Assert.That(invokedRequest?.Headers.Accept.FirstOrDefault()?.MediaType, Is.EqualTo(Config.JsonContentType));
+            Assert.That(invokedRequest?.Headers.Accept.FirstOrDefault()?.MediaType, Is.EqualTo(Config.JsonMediaType));
         }
 
         [Test]
@@ -229,7 +229,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public async Task Send_PassingHeadersTheSameAsDefaultHeaders_DoesNotAddTheHeadersTwice()
+        public async Task Send_PassingHeadersTheSameAsDefaultHeaders_DoesNotAddThemHeadersTwice()
         {
             HttpRequestMessage actualRequest = null;
             var httpClientWrapper = new HttpClientWrapper
@@ -256,6 +256,65 @@ namespace DalSoft.RestClient.Test.Unit
             await httpClientWrapper.Send(HttpMethod.Get, new Uri(BaseUrl), null, new { });
 
             Assert.That(actualRequest.Headers.Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Send_PassesContentType_CorrectlyToHttpClient()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, null);
+
+            Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
+        }
+
+        [Test]
+        public async Task Send_PassesContentTypeUsingDefaultHeaders_CorrectlyToHttpClient()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } },
+                new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, null);
+
+            Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
+        }
+
+        [Test]
+        public async Task Send_PassContentTypeAndTheSameContentTypeUsingDefaultHeaders_CorrectlyToHttpClient()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } },
+                new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, null);
+
+            Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
+        }
+
+        [Test]
+        public async Task Send_PassContentTypeAndContentTypeUsingDefaultHeadersIsDifferent_HttpClientUsesContentTypePassedToSend()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Dictionary<string, string> { { "Content-Type", "application/text" } },
+                new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, null);
+
+            Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
         }
 
         [Test]
