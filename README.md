@@ -1,6 +1,6 @@
 # DalSoft.RestClient
 
-Inspired by Simple.Data and angular's $http service, DalSoft.RestClient is a very lightweight wrapper around System.Net.HttpClient that uses the dynamic features of .NET 4 to provide a fluent way of accessing RESTFul API's. 
+Inspired by Simple.Data and AngularJS's $http service, DalSoft.RestClient is a very lightweight wrapper around System.Net.HttpClient that uses the dynamic features of .NET 4 to provide a fluent way of accessing RESTFul API's. 
 
 Originally created to remove the boilerplate code involved in creating integration tests and SDK's for RESTFul API's. I know there are a couple of dynamic rest clients out there but I wanted the syntax to look a particular way, and I wanted it to be particularly useful for testing.
 
@@ -63,3 +63,17 @@ See [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.Res
 * [Unit Testing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Unit-Testing)
 
 * [Guidance](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance)
+
+## Standing on the Shoulders of Giants
+
+DalSoft.RestClient is built using the following great open source projects:
+* [Json.NET](http://www.newtonsoft.com/json)
+* [System.Net.Http](https://github.com/dotnet/corefx/tree/master/src/System.Net.Http)
+
+DalSoft.RestClient is inspired by:
+* [Simple.Data](http://simplefx.org/simpledata/docs/index.html)
+* [This Stack Overflow question](http://stackoverflow.com/questions/12634250/possible-to-get-chained-value-of-dynamicobject)
+* [AngularJS (version 1.x) $http service](https://docs.angularjs.org/api/ng/service/$http)
+
+
+
