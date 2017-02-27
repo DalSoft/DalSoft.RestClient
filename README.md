@@ -4,7 +4,7 @@ Inspired by Simple.Data and angular's $http service, DalSoft.RestClient is a ver
 
 Originally created to remove the boilerplate code involved in creating integration tests and SDK's for RESTFul API's. I know there are a couple of dynamic rest clients out there but I wanted the syntax to look a particular way, and I wanted it to be particularly useful for testing.
 
-> This library is biased towards JSON content and is setup by default with accept and content headers for JSON. See Working with non JSON content
+> DalSoft.RestClient is biased towards RESTFul API's returning JSON - if you don't provide Accept and Content-Type headers then they are set to `application/json`. [See Working with non JSON content](https://github.com/DalSoft/DalSoft.RestClient/wiki/Working-with-non-JSON-content)
 
 ## Supported Platforms
 

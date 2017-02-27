@@ -103,9 +103,6 @@ namespace DalSoft.RestClient
             if (IsImmutableVerb(httpMethod))
                 return null;
             
-            if (!args[0].GetType().GetTypeInfo().IsClass || args[0] is string)
-                throw new ArgumentException("Please provide a class to be serialized to the request body for example new { hello = \"world\" }");
-
             return args[0];
         }
 

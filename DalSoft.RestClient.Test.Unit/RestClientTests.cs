@@ -410,6 +410,24 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
+        public void MutableVerbs_ChainingMethodsPassingStringThrowsArgumentException()
+        {
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client.Users.Post("This is a string"),
+                ()=>client.Users.Put("This is a string"),
+                ()=>client.Users.Patch("This is a string")
+            };
+
+            foreach (var verb in verbs)
+            {
+                Assert.ThrowsAsync<ArgumentException>(async () => await verb());
+            }
+        }
+
+        [Test]
         public void AllVerbs_SecondArgNotHeaderDictionary_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));

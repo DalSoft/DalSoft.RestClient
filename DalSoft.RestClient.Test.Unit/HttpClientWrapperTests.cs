@@ -87,7 +87,6 @@ namespace DalSoft.RestClient.Test.Unit
             
             Assert.That(actualHandler, Is.EqualTo(expectedHandler));
         }
-
         
         [Test]
         public void Ctor_DefaultJsonHandler_WillAlwaysBeFirstInThePipeline()
@@ -205,7 +204,6 @@ namespace DalSoft.RestClient.Test.Unit
             Assert.True(invokedRequest?.Headers.Accept.Count == 0);
         }
 
-
         [Test]
         public void Ctor_Timeout_ShouldPassTimeoutToHttpClient()
         {
@@ -267,7 +265,7 @@ namespace DalSoft.RestClient.Test.Unit
                 new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
             );
 
-            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, null);
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), requestHeaders:new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, content:null);
 
             Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
         }
@@ -282,7 +280,7 @@ namespace DalSoft.RestClient.Test.Unit
                 new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
             );
 
-            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, null);
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), requestHeaders:null, content:null);
 
             Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
         }
@@ -309,10 +307,10 @@ namespace DalSoft.RestClient.Test.Unit
             var httpClientWrapper = new HttpClientWrapper
             (
                 new Dictionary<string, string> { { "Content-Type", "application/text" } },
-                new Config(new UnitTestHandler(request => actualRequest = request)).UseNoDefaultHandlers()
+                new Config(new UnitTestHandler(request => actualRequest = request))
             );
 
-            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, null);
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } }, new { });
 
             Assert.That(actualRequest.GetContentType(), Is.EqualTo("application/x-www-form-urlencoded"));
         }

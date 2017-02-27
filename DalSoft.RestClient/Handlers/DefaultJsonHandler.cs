@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace DalSoft.RestClient.Handlers
 {
@@ -33,17 +35,33 @@ namespace DalSoft.RestClient.Handlers
 
         private static HttpContent GetContent(HttpRequestMessage request)
         {
-            var content = request.GetContent();            
+            if (!IsJsonContentType(request))
+                return null;
+
+            var content = request.GetContent();
 
             if (content == null)
                 return null;
 
+            if (!content.GetType().GetTypeInfo().IsClass || content is string)
+                throw new ArgumentException("Please provide a class to be serialized to the request body for example new { hello = \"world\" }");
+
             var httpContent = new StringContent(JsonConvert.SerializeObject(content));
 
             httpContent.Headers.Clear(); //Clear the defaults we want to control all the headers
-            httpContent.Headers.Add("Content-Type", request.GetContentType() ?? Config.JsonMediaType);
-            
+
+            httpContent.Headers.Add("Content-Type", request.GetContentType() ?? Config.JsonMediaType); //Default to Json Content-Type
+
             return httpContent;
+        }
+
+        private static bool IsJsonContentType(HttpRequestMessage request)
+        {
+            return
+                request.GetContentType() == null || //Default to Json Content-Type
+                request.GetContentType() == "application/json" ||
+                request.GetContentType() == "text/json" ||
+                request.GetContentType() == "application/json-patch+json";
         }
     }
 }
