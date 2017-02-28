@@ -9,8 +9,6 @@ namespace DalSoft.RestClient.Handlers
 {
     public class UnitTestHandler : DelegatingHandler
     {
-        private Stream _streamContent;
-
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
         
         public UnitTestHandler() : this((Action<HttpRequestMessage>) null) { }
@@ -33,13 +31,13 @@ namespace DalSoft.RestClient.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            request = await CloneRequestContent(request).ConfigureAwait(false); //Allow request content to be re-used in tests
+            request = await CloneRequestContent(request).ConfigureAwait(false);
 
             var response = _handler(request);
 
-            response.RequestMessage = response.RequestMessage ?? request ?? new HttpRequestMessage();
+            response = await CloneResponseContent(response).ConfigureAwait(false);
 
-            await CloneResponseContent(response).ConfigureAwait(false); //Allow response content to be re-used in tests
+            response.RequestMessage = response.RequestMessage ?? request ?? new HttpRequestMessage();
 
             return await Task.FromResult(response).ConfigureAwait(false);
         }
@@ -50,7 +48,7 @@ namespace DalSoft.RestClient.Handlers
                 return await Task.FromResult(httpRequestMessage).ConfigureAwait(false);
 
             var localStream = new MemoryStream();
-            await httpRequestMessage.Content.CopyToAsync(localStream);
+            await httpRequestMessage.Content.CopyToAsync(localStream);  //Allow content to be re-read in tests
 
             localStream.Position = 0;
 
@@ -69,24 +67,27 @@ namespace DalSoft.RestClient.Handlers
             return request;
         }
 
-        private async Task CloneResponseContent(HttpResponseMessage response)
+        private static async Task<HttpResponseMessage> CloneResponseContent(HttpResponseMessage httpResponseMessage)
         {
-            response.Content = response.Content ?? new StringContent(string.Empty);
-
-            if (_streamContent == null)
-            {
-                _streamContent = new MemoryStream();
-                await response.Content.CopyToAsync(_streamContent).ConfigureAwait(false);
-            }
-
-            _streamContent.Position = 0;
+            httpResponseMessage.Content = httpResponseMessage.Content ?? new StringContent(string.Empty);
 
             var localStream = new MemoryStream();
-            await _streamContent.CopyToAsync(localStream).ConfigureAwait(false);
+            await httpResponseMessage.Content.CopyToAsync(localStream); //Allow content to be re-read in tests
 
             localStream.Position = 0;
 
-            response.Content = new StreamContent(localStream); //Allow content to be re-used in tests
+            var response = new HttpResponseMessage
+            {
+                Content = new StreamContent(localStream),
+                StatusCode = httpResponseMessage.StatusCode,
+                ReasonPhrase = httpResponseMessage.ReasonPhrase,
+                Version = httpResponseMessage.Version
+            };
+
+            httpResponseMessage.Content.Headers.ToList().ForEach(contentHeader => { response.Content.Headers.Add(contentHeader.Key, contentHeader.Value); });
+            httpResponseMessage.Headers.ToList().ForEach(header => { response.Headers.Add(header.Key, header.Value); });
+         
+            return response;
         }
     }
 }
