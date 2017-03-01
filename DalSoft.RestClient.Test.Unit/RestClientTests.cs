@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -347,7 +348,7 @@ namespace DalSoft.RestClient.Test.Unit
 
             var result = await google.news.Get();
             var content = result.ToString();
-
+            
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(content, Does.Contain("Top Stories"));
         }
@@ -491,6 +492,27 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
+        public void AllVerbs_UsingNullUri_ThrowsArgumentException()
+        {
+            dynamic client = new RestClient(null, new Config(new UnitTestHandler()));
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client.Users.Get(),
+                ()=>client.Users.Head(),
+                ()=>client.Users.Delete(),
+                ()=>client.Users.Post(),
+                ()=>client.Users.Put(),
+                ()=>client.Users.Patch(),
+            };
+
+            foreach (var verb in verbs)
+            {
+                Assert.ThrowsAsync<ArgumentException>(async () => await verb());
+            }
+        }
+
+        [Test]
         public async Task AllVerbs_ChainingMethods_GeneratesCorrectUri()
         {
             HttpRequestMessage resultingRequest = null;
@@ -510,6 +532,56 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 await verb();
                 Assert.That(resultingRequest.RequestUri.ToString().ToLower(), Is.EqualTo(BaseUri + "/users/1"));
+            }
+        }
+
+        [Test]
+        public async Task AllVerbs_ChainingMethodsUsingGuid_GeneratesCorrectUri()
+        {
+            HttpRequestMessage resultingRequest = null;
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
+
+            var testGuid = Guid.NewGuid();
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client.Users(testGuid).Get(),
+                ()=>client.Users(testGuid).Head(),
+                ()=>client.Users(testGuid).Delete(),
+                ()=>client.Users(testGuid).Post(),
+                ()=>client.Users(testGuid).Put(),
+                ()=>client.Users(testGuid).Patch()
+            };
+
+            foreach (var verb in verbs)
+            {
+                await verb();
+                Assert.That(resultingRequest.RequestUri.ToString().ToLower(), Is.EqualTo($"{BaseUri}/users/{testGuid}"));
+            }
+        }
+
+        [Test]
+        public async Task AllVerbs_ChainingMethodsUsingEnum_GeneratesCorrectUri()
+        {
+            HttpRequestMessage resultingRequest = null;
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
+
+            var testEnum= HttpStatusCode.Accepted;
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client.Users(testEnum).Get(),
+                ()=>client.Users(testEnum).Head(),
+                ()=>client.Users(testEnum).Delete(),
+                ()=>client.Users(testEnum).Post(),
+                ()=>client.Users(testEnum).Put(),
+                ()=>client.Users(testEnum).Patch()
+            };
+
+            foreach (var verb in verbs)
+            {
+                await verb();
+                Assert.That(resultingRequest.RequestUri.ToString().ToLower(), Is.EqualTo($"{BaseUri}/users/{testEnum}".ToLower()));
             }
         }
 

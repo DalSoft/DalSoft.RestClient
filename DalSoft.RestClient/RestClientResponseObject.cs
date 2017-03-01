@@ -5,6 +5,7 @@ using System.Collections;
 using System.Dynamic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using DalSoft.RestClient.Extensions;
 
 namespace DalSoft.RestClient
 {
@@ -53,7 +54,7 @@ namespace DalSoft.RestClient
 
             if (binder.Type == typeof(IEnumerable) && _currentObject is JArray)
             {
-                result = Extensions.WrapJToken(_currentObject);
+                result = Json.WrapJToken(_currentObject);
                 return true;
             }
 
@@ -104,7 +105,7 @@ namespace DalSoft.RestClient
         public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
         {
             var jArray = _currentObject as JArray;
-            if (_currentObject as JArray != null)
+            if (_currentObject is JArray)
             {
                 result = jArray[(int)indexes[0]].WrapJToken(); //TODO could do better validation here
                 return true;
@@ -134,7 +135,7 @@ namespace DalSoft.RestClient
 
         private string OutputErrorString()
         {
-            return " \r\nResponse: \r\n" + _httpResponseMessage + " \r\nResponse String:\r\n" + ToString();
+            return " \r\nHttpResponseMessage: \r\n" + _httpResponseMessage + " \r\nResponse String:\r\n" + ToString();
         }
     }
 }
