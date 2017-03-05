@@ -70,7 +70,7 @@ DalSoft.RestClient is built using the following great open source projects:
 * [Json.NET](http://www.newtonsoft.com/json)
 * [System.Net.Http](https://github.com/dotnet/corefx/tree/master/src/System.Net.Http)
 
-DalSoft.RestClient is inspired by:
+DalSoft.RestClient is inspired by and gives credit to:
 * [Simple.Data](http://simplefx.org/simpledata/docs/index.html)
 * [This Stack Overflow question](http://stackoverflow.com/questions/12634250/possible-to-get-chained-value-of-dynamicobject)
 * [AngularJS (version 1.x) $http service](https://docs.angularjs.org/api/ng/service/$http)
