@@ -1,50 +1,70 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Net.Http;
-//using System.Net.Http.Headers;
-//using System.Threading;
-//using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using DalSoft.RestClient.Extensions;
+using Object = DalSoft.RestClient.Extensions.Object;
 
-//namespace DalSoft.RestClient.Handlers
-//{
-//    internal class MultipartFormDataHandler : DelegatingHandler
-//    {
-//        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-//        {
-//            if (IsMultipartFormDataHandler(request))
-//            {
-//                request.Content = GetContent(request);
+namespace DalSoft.RestClient.Handlers
+{
+    public class MultipartFormDataHandler : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (IsMultipartFormDataHandler(request))
+            {
+                request.Content = GetContent(request);
+            }
 
-//            }
+            return await base.SendAsync(request, cancellationToken); //next in the pipeline
+        }
 
-//            return await base.SendAsync(request, cancellationToken); //next in the pipeline
-//        }
+        private bool IsMultipartFormDataHandler(HttpRequestMessage request)
+        {
+            return request.GetContentType() != null && request.GetContentType().StartsWith("multipart/form-data");
+        }
 
-//        private MultipartFormDataContent GetContent(HttpRequestMessage request)
-//        {
-//            var content = request.GetContent();
-//            var contentType = request.GetContentType().Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-//            var boundry = contentType.Length > 1 ? contentType[1].Replace("boundary=", string.Empty) : null;
+        private MultipartFormDataContent GetContent(HttpRequestMessage request)
+        {
+            var content = request.GetContent();
+            if (content == null)
+                return null;
 
-//            var multipartFormDataContent = contentType.Length > 1 ? new MultipartFormDataContent(boundry) : new MultipartFormDataContent();
+            var contentType = request.GetContentType().Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            var boundry = contentType.Length > 1 ? contentType[1].Replace("boundary=", string.Empty).Replace("\"", string.Empty) : null;
+            var multipartFormDataContent = contentType.Length > 1 ? new MultipartFormDataContent(boundry) : new MultipartFormDataContent();
 
+            var formData = content.FlattenObjectToKeyValuePairs<object>(includeThisType:Object.IsValueTypeOrPrimitiveOrStringOrGuidOrDateTimeOrByteArrayOrStream);
 
-//            var stringContent = new StringContent(JsonConvert.SerializeObject(request));
-//            stringContent.Headers.Add("Content-Disposition", "form-data; name=\"json\"");
-//            content.Add(stringContent, "json");
+            foreach (var pairs in formData.GroupBy(_ => _.Key.Split(".".ToCharArray()).Length))
+            {
+                foreach (var groupedPair in pairs)
+                {
+                    if (groupedPair.Key.ToLower() == "filename") continue;
 
-//            FileStream fs = File.OpenRead(path);
+                    var bytes = groupedPair.Value as byte[];
+                    var stream = groupedPair.Value as Stream;
 
-//            var streamContent = new StreamContent(fs);
-//            streamContent.Headers.Add("Content-Type", "application/octet-stream");
-//            //Content-Disposition: form-data; name="file"; filename="C:\B2BAssetRoot\files\596090\596090.1.mp4";
-//            streamContent.Headers.Add("Content-Disposition", "form-data; name=\"file\"; filename=\"" + Path.GetFileName(path) + "\"");
-//            content.Add(streamContent, "file", Path.GetFileName(path));
+                    if (bytes != null || stream!=null)
+                    {
+                        stream = stream ?? new MemoryStream(bytes);
+                        var filename = pairs.Where(_ => _.Key.ToLower() == "filename").ToList();
+                        
+                        if (filename.Any())
+                            multipartFormDataContent.Add(new StreamContent(stream), groupedPair.Key, filename.First().Value.ToString());
+                        else
+                            multipartFormDataContent.Add(new StreamContent(stream), groupedPair.Key);
+                    }
+                    else
+                    {
+                        multipartFormDataContent.Add(new StringContent(groupedPair.Value.ToString()), groupedPair.Key);
+                    }
+                }
+            }
 
-//            //content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
-
-
-//        }
-//    }
-//}
+            return multipartFormDataContent;
+        }
+    }
+}

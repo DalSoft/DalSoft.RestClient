@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -55,6 +54,28 @@ namespace DalSoft.RestClient.Test.Unit
             (
                 HttpMethod.Get,
                 It.Is<Uri>(__ => __ == new Uri(BaseUri + "?variables=one&variables=other&otherVar=stillWorks")),
+                It.IsAny<IDictionary<string, string>>(),
+                It.IsAny<object>()
+            ));
+        }
+
+
+        [Test]
+        public async Task Query_StringThatRequiresEncoding_EncodesStringCorrectly()
+        {
+            var mockHttpClient = new Mock<IHttpClientWrapper>();
+
+            mockHttpClient
+                .Setup(_ => _.Send(HttpMethod.Get, It.IsAny<Uri>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<object>()))
+                .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage() }));
+
+            dynamic client = new RestClient(mockHttpClient.Object, BaseUri);
+            await client.Query(new { variables = new[] { "!@£$%", "*[&]^" }, otherVar = "ƻƻƳƳ" }).Get();
+
+            mockHttpClient.Verify(_ => _.Send
+            (
+                HttpMethod.Get,
+                It.Is<Uri>(__ => __ == new Uri(BaseUri + "?variables=!%40£%24%25&variables=*[%26]^&otherVar=ƻƻƳƳ")),
                 It.IsAny<IDictionary<string, string>>(),
                 It.IsAny<object>()
             ));

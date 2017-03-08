@@ -1,21 +1,27 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace DalSoft.RestClient.Extensions
 {
-    internal static class Object
+    internal static class Object //TODO: this whole class is ugly and hurts my eye
     {
         /// <summary>Returns a List KeyValuePair to pass into FormUrlEncodedContent supports complex objects People[0]First=Darran&amp;People[0]Last=Darran</summary>
-        internal static List<KeyValuePair<string, string>> ObjectToKeyValuePair(this object o, List<KeyValuePair<string, string>> nameValueCollection = null, string prefix = null, int recrusions = 0)
+        internal static List<KeyValuePair<string, TValue>> FlattenObjectToKeyValuePairs<TValue>(
+            this object o,
+            Func<TypeInfo, bool> includeThisType,
+            List<KeyValuePair<string, TValue>> nameValueCollection = null, 
+            string prefix = null, int recrusions = 0) 
         {
-            const int maxRecrusions = 100;
+            const int maxRecrusions = 30;
             recrusions = prefix == null ? 0 : recrusions + 1;
             if (recrusions > maxRecrusions) throw new InvalidOperationException("Object supplied to be UrlEncoded is nested too deeply");
 
-            nameValueCollection = nameValueCollection ?? new List<KeyValuePair<string, string>>();
+            nameValueCollection = nameValueCollection ?? new List<KeyValuePair<string, TValue>>();
 
             foreach (var property in o.GetType().GetProperties())
             {
@@ -24,9 +30,9 @@ namespace DalSoft.RestClient.Extensions
 
                 if (propertyValue == null) continue;
 
-                if (IsValueTypeOrPrimitiveOrStringOrGuidOrDateTime(property.PropertyType.GetTypeInfo()))
+                if (includeThisType(property.PropertyType.GetTypeInfo()))
                 {
-                    nameValueCollection.Add(new KeyValuePair<string, string>(propertyName, propertyValue.ToString()));
+                    nameValueCollection.Add(new KeyValuePair<string, TValue>(propertyName, (TValue)(typeof(TValue) == typeof(string) ? propertyValue.FormatAsString() : propertyValue)));
                 }
                 else if (propertyValue is IEnumerable)
                 {
@@ -34,8 +40,11 @@ namespace DalSoft.RestClient.Extensions
 
                     for (var i = 0; i < enumerable.Length; i++)
                     {
-                        if (IsValueTypeOrPrimitiveOrStringOrGuidOrDateTime(enumerable[i].GetType().GetTypeInfo()))
-                            nameValueCollection.Add(new KeyValuePair<string, string>(propertyName, enumerable[i].ToString()));
+                        if (includeThisType(enumerable[i].GetType().GetTypeInfo())) 
+                        { 
+                            nameValueCollection.Add(new KeyValuePair<string, TValue>(propertyName, (TValue)(typeof(TValue) == typeof(string) ? enumerable[i].FormatAsString() : enumerable[i])));
+                            continue;
+                        }
 
                         foreach (var propertyItem in enumerable[i].GetType().GetProperties())
                         {
@@ -44,24 +53,32 @@ namespace DalSoft.RestClient.Extensions
 
                             if (propertyItemValue == null) continue;
 
-                            if (IsValueTypeOrPrimitiveOrStringOrGuidOrDateTime(propertyItem.PropertyType.GetTypeInfo()))
+                            if (includeThisType(propertyItem.PropertyType.GetTypeInfo()))
                             {
-                                nameValueCollection.Add(new KeyValuePair<string, string>(propertyItemName, propertyItemValue.ToString()));
+                                nameValueCollection.Add(new KeyValuePair<string, TValue>(propertyItemName, (TValue)(typeof(TValue) == typeof(string) ? propertyItemValue.FormatAsString() : propertyItemValue)));
                             }
                             else
                             {
-                                ObjectToKeyValuePair(propertyItemValue, nameValueCollection, propertyItemName, recrusions);
+                                FlattenObjectToKeyValuePairs<TValue>(propertyItemValue, includeThisType, nameValueCollection, propertyItemName, recrusions);
                             }
                         }
                     }
                 }
                 else
                 {
-                    ObjectToKeyValuePair(property.GetValue(o), nameValueCollection, propertyName, recrusions);
+                    FlattenObjectToKeyValuePairs<TValue>(property.GetValue(o), includeThisType, nameValueCollection, propertyName, recrusions);
                 }
             }
 
             return nameValueCollection;
+        }
+
+        internal static string FormatAsString(this object o)
+        {
+            if (o is DateTime)
+                return ((DateTime) o).ToString("s", CultureInfo.InvariantCulture);
+
+            return o.ToString();
         }
 
         internal static bool IsValueTypeOrPrimitiveOrStringOrGuid(TypeInfo type)
@@ -72,6 +89,11 @@ namespace DalSoft.RestClient.Extensions
         internal static bool IsValueTypeOrPrimitiveOrStringOrGuidOrDateTime(TypeInfo type)
         {
             return IsValueTypeOrPrimitiveOrStringOrGuid(type) || type.AsType() == typeof(DateTime);
+        }
+
+        internal static bool IsValueTypeOrPrimitiveOrStringOrGuidOrDateTimeOrByteArrayOrStream(TypeInfo type)
+        {
+            return IsValueTypeOrPrimitiveOrStringOrGuidOrDateTime(type) || type.AsType() == typeof(byte[]) || type.AsType() == typeof(Stream);
         }
     }
 }

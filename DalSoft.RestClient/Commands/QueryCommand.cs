@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Reflection;
+using System.Text;
+using DalSoft.RestClient.Extensions;
+using Object = DalSoft.RestClient.Extensions.Object;
 
 namespace DalSoft.RestClient.Commands
 {
@@ -27,10 +27,7 @@ namespace DalSoft.RestClient.Commands
 
         protected override object Handle(object[] args, MemberAccessWrapper next)
         {
-            var pairs = args[0].GetType().GetProperties()
-                   .Select(x => GetQueryParamValue(x, args[0])).ToArray();
-
-            var queryString = "?" + string.Join("&", pairs);
+           var queryString = ToQueryString(args[0].FlattenObjectToKeyValuePairs<string>(includeThisType: Object.IsValueTypeOrPrimitiveOrStringOrGuidOrDateTime));
 
             return new MemberAccessWrapper
             (
@@ -40,20 +37,22 @@ namespace DalSoft.RestClient.Commands
             );
         }
 
-        private static string GetQueryParamValue(PropertyInfo propInfo, object obj)
+        private static string ToQueryString(IEnumerable<KeyValuePair<string, string>> nameValueCollection)
         {
-            var paramName = propInfo.Name + "=";
-
-            if (typeof(IEnumerable<object>).IsAssignableFrom(propInfo.PropertyType))
+            var stringBuilder = new StringBuilder();
+            foreach (var nameValue in nameValueCollection)
             {
-                var values = (propInfo.GetValue(obj, null) as IEnumerable<object>)
-                    .Select(v => paramName + WebUtility.UrlEncode(v.ToString()))
-                    .ToArray();
-
-                return string.Join("&", values);
+                stringBuilder.Append(stringBuilder.Length == 0 ? '?' : '&');    
+                stringBuilder.Append(Encode(nameValue.Key));
+                stringBuilder.Append('=');
+                stringBuilder.Append(Encode(nameValue.Value));
             }
+            return stringBuilder.ToString();
+        }
 
-            return paramName + WebUtility.UrlEncode(propInfo.GetValue(obj, null).ToString());
+        private static string Encode(string data)
+        {
+            return string.IsNullOrEmpty(data) ? string.Empty : Uri.EscapeDataString(data).Replace("%20", "+");
         }
     }
 }

@@ -84,6 +84,11 @@ namespace DalSoft.RestClient
             return UseHandler(config, new UnitTestHandler(handler));
         }
 
+        public static Config UseFormUrlEncodedHandler(this Config config)
+        {
+            return UseHandler(config, new FormUrlEncodedHandler());
+        }
+
         internal static void ValidatePipeline(this IEnumerable<HttpMessageHandler> pipeline)
         {
             if (pipeline.OfType<HttpClientHandler>().Count() > 1)

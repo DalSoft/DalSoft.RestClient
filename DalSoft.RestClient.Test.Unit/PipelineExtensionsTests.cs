@@ -106,6 +106,16 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
+        public void UseFormUrlEncodedHandler_AddHandlers_CorrectlyAddHandlers()
+        {
+            var config = new Config()
+                .UseFormUrlEncodedHandler();
+
+            Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
+            Assert.That(config.Pipeline.ElementAt(1), Is.InstanceOf<FormUrlEncodedHandler>());
+        }
+
+        [Test]
         public void ExpectJsonResponse_StateBagPropertyNull_ReturnsFalse()
         {
             Assert.False(new HttpRequestMessage().ExpectJsonResponse());
