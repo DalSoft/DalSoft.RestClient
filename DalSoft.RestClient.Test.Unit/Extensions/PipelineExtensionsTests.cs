@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
 using NUnit.Framework;
 
-namespace DalSoft.RestClient.Test.Unit
+namespace DalSoft.RestClient.Test.Unit.Extensions
 {
     [TestFixture]
     public class PipelineExtensionsTests
@@ -113,6 +113,16 @@ namespace DalSoft.RestClient.Test.Unit
 
             Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
             Assert.That(config.Pipeline.ElementAt(1), Is.InstanceOf<FormUrlEncodedHandler>());
+        }
+
+        [Test]
+        public void UseMultipartFormDataHandler_AddHandlers_CorrectlyAddHandlers()
+        {
+            var config = new Config()
+                .UseMultipartFormDataHandler();
+
+            Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
+            Assert.That(config.Pipeline.ElementAt(1), Is.InstanceOf<MultipartFormDataHandler>());
         }
 
         [Test]

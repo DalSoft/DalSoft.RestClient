@@ -33,8 +33,8 @@ namespace DalSoft.RestClient.Handlers
                 return null;
 
             var contentType = request.GetContentType().Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            var boundry = contentType.Length > 1 ? contentType[1].Replace("boundary=", string.Empty).Replace("\"", string.Empty) : null;
-            var multipartFormDataContent = contentType.Length > 1 ? new MultipartFormDataContent(boundry) : new MultipartFormDataContent();
+            var boundry = contentType.Length > 1 ? contentType.SingleOrDefault(_=>_.Contains("boundary="))?.Replace("boundary=", string.Empty).Replace("\"", string.Empty) : null;
+            var multipartFormDataContent = contentType.Any(_ => _.Contains("boundary=")) ? new MultipartFormDataContent(boundry) : new MultipartFormDataContent();
 
             var formData = content.FlattenObjectToKeyValuePairs<object>(includeThisType:Object.IsValueTypeOrPrimitiveOrStringOrGuidOrDateTimeOrByteArrayOrStream);
 

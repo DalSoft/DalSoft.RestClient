@@ -88,6 +88,11 @@ namespace DalSoft.RestClient
         {
             return UseHandler(config, new FormUrlEncodedHandler());
         }
+        
+        public static Config UseMultipartFormDataHandler(this Config config)
+        {
+            return UseHandler(config, new MultipartFormDataHandler());
+        }
 
         internal static void ValidatePipeline(this IEnumerable<HttpMessageHandler> pipeline)
         {

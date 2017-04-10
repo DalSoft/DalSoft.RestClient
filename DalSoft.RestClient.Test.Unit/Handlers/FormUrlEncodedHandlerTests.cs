@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Unit.Handlers
 {
+    [TestFixture]
     public class FormUrlEncodedHandlerTests
     {
         private const string FormUrlEncodedContentType = "application/x-www-form-urlencoded";
@@ -247,6 +248,38 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             Assert.That(formUrlDictionary["nested.level1.level2.level3.level3complexArray[0].LastName"][0], Is.EqualTo("Washington3"));
             Assert.That(formUrlDictionary["nested.level1.level2.level3.level3complexArray[1].FirstName"][0], Is.EqualTo("Abraham3"));
             Assert.That(formUrlDictionary["nested.level1.level2.level3.level3complexArray[1].LastName"][0], Is.EqualTo("Lincoln3"));
+        }
+
+        [Test]
+        public async Task Send_NestedObjectSimpleArrayInNestedInComplexArray_FormatsAsUrlFormEncodedAsExpected()
+        {
+            //Bug simple Array nested in complex array loops properties rather the array value
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Config(new FormUrlEncodedHandler(), new UnitTestHandler(request => actualRequest = request))
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), FormUrlEncodedHeader,
+            new
+            {
+                nestedArray = new[] 
+                {
+                    new
+                    {
+                        simpleProp = "simple prop",
+                        simpleArray = new[] { "simple 0", "simple 1" }
+
+                    }
+                }
+            });
+
+            var formUrlEncoded = await actualRequest.Content.ReadAsStringAsync();
+            var formUrlDictionary = QueryHelpers.ParseQuery(formUrlEncoded);
+
+            Assert.That(formUrlDictionary["nestedArray[0].simpleProp"][0], Is.EqualTo("simple prop"));
+            Assert.That(formUrlDictionary["nestedArray[0].simpleProp"][0], Is.EqualTo("simple 0"));
+            Assert.That(formUrlDictionary["nestedArray[0].simpleProp"][1], Is.EqualTo("simple 1"));
         }
     }
 }
