@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace DalSoft.RestClient
     {
         private readonly HttpClient _httpClient;
         
-        public IDictionary<string, string> DefaultRequestHeaders { get; set; } //ToDo: really this should be IDictionary<string, IEnumerable<string>>
+        public IReadOnlyDictionary<string, string> DefaultRequestHeaders { get; set; } //ToDo: really this should be IDictionary<string, IEnumerable<string>>
         
         public HttpClientWrapper() : this(null, null) { }
 
@@ -30,19 +31,20 @@ namespace DalSoft.RestClient
                 MaxResponseContentBufferSize = config.MaxResponseContentBufferSize
             };
 
-            DefaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
+            defaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
+            DefaultRequestHeaders = new ReadOnlyDictionary<string, string>(defaultRequestHeaders);
         }
 
         public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
-            requestHeaders = requestHeaders ?? new Dictionary<string, string>() { };
+            requestHeaders = requestHeaders ?? new Dictionary<string, string>();
 
-            foreach (var defaultHeader in DefaultRequestHeaders) //Don't add duplicates requestHeaders that have already been set by DefaultRequestHeaders
+            foreach (var defaultHeader in DefaultRequestHeaders) 
             {
-                if (!requestHeaders.ContainsKey(defaultHeader.Key))
+                if (!requestHeaders.ContainsKey(defaultHeader.Key)) //Only add the defaultHeader if it's not in passed in the requestHeaders argument allowing us to override default headers
                     requestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
-
+            
             var httpRequestMessage = new HttpRequestMessage(method, uri);
             httpRequestMessage.Headers.Clear(); //Clear the defaults we want to control all the headers
 

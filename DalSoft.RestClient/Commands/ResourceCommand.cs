@@ -17,7 +17,8 @@ namespace DalSoft.RestClient.Commands
             (
                 next.HttpClientWrapper, 
                 next.BaseUri, 
-                next.Uri + "/" + args[0]
+                next.Uri + "/" + args[0],
+                next.Headers
             );
         }
 

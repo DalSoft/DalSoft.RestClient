@@ -36,6 +36,12 @@ namespace DalSoft.RestClient.Commands
             var requestHeaders = ParseRequestHeaders(args);
             var httpContent = ParseContent(httpMethodString, args);
 
+            foreach (var header in memberAccessWrapper.Headers) 
+            {
+                if (!requestHeaders.ContainsKey(header.Key)) //Only add the header if it's not in passed in the verb's header argument allowing us to override headers set via the Headers() method
+                    requestHeaders.Add(header.Key, header.Value);
+            }
+
             var httpResponseMessage = await memberAccessWrapper.HttpClientWrapper.Send
             (
                 new HttpMethod(httpMethodString.ToUpperInvariant()), uri, requestHeaders, httpContent
@@ -64,7 +70,7 @@ namespace DalSoft.RestClient.Commands
 
         internal static IDictionary<string, string> ParseRequestHeaders(object[] args)
         {
-            IDictionary<string, string> requestHeaders = new Dictionary<string, string> { };
+            IDictionary<string, string> requestHeaders = new Dictionary<string, string>();
 
             if (args.Length == 2)
                 requestHeaders = (IDictionary<string, string>)args[1];

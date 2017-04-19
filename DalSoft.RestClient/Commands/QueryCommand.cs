@@ -33,7 +33,8 @@ namespace DalSoft.RestClient.Commands
             (
                 next.HttpClientWrapper, 
                 next.BaseUri, 
-                next.GetRelativeUri() + queryString
+                next.GetRelativeUri() + queryString,
+                next.Headers
             );
         }
 

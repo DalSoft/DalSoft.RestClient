@@ -8,7 +8,7 @@ namespace DalSoft.RestClient
     public class RestClient : DynamicObject, IDisposable
     {
         internal readonly IHttpClientWrapper HttpClientWrapper;
-        public IDictionary<string, string> DefaultRequestHeaders => HttpClientWrapper.DefaultRequestHeaders;
+        public IReadOnlyDictionary<string, string> DefaultRequestHeaders => HttpClientWrapper.DefaultRequestHeaders;
         public string BaseUri { get; }
      
         public RestClient(string baseUri) : this(new HttpClientWrapper(), baseUri) { }
@@ -24,7 +24,7 @@ namespace DalSoft.RestClient
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, binder.Name);
+            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, binder.Name, new Dictionary<string, string>());
             return true;
         }
 
