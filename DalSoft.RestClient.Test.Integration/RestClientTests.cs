@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
 using DalSoft.RestClient.Test.Integration.TestModels;
@@ -395,6 +397,62 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie1"]?.Value, Is.EqualTo("darran1"));
             Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie2"]?.Value, Is.EqualTo("darran2"));
             Assert.That(cookieContainer.GetCookies(new Uri("https://httpbin.org"))["testcookie3"]?.Value, Is.EqualTo("darran3"));
+        }
+
+        [Test]
+        public async Task Post_DataUsingFormUrlEncodedContentType_CorrectlyPostsData()
+        {
+            var formUrlEncodedHeader = new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } };
+            dynamic restClient = new RestClient("https://httpbin.org/post", formUrlEncodedHeader, new Config()
+                .UseFormUrlEncodedHandler()
+            );
+
+            var formUrlEncodedData = new
+            {
+                custname = "George Washington",
+                custtel = "449098090",
+                custemail = "George.Washington@gov.org",
+                size = "small",
+                topping = new [] { "bacon", "cheese", "onion" },
+                delivery = "11:00",
+                comments = "Leave at the whitehouse"
+            };
+
+            var response = await restClient.Post(formUrlEncodedData);
+
+            Assert.That(response.form.comments, Is.EqualTo(formUrlEncodedData.comments));
+            Assert.That(response.form.custtel, Is.EqualTo(formUrlEncodedData.custtel));
+            Assert.That(response.form.custemail, Is.EqualTo(formUrlEncodedData.custemail));
+            Assert.That(response.form.size, Is.EqualTo(formUrlEncodedData.size));
+            Assert.That(response.form.topping[0], Is.EqualTo("bacon"));
+            Assert.That(response.form.topping[1], Is.EqualTo("cheese"));
+            Assert.That(response.form.topping[2], Is.EqualTo("onion"));
+            Assert.That(response.form.delivery, Is.EqualTo(formUrlEncodedData.delivery));
+            Assert.That(response.form.comments, Is.EqualTo(formUrlEncodedData.comments));
+        }
+
+        [Test]
+        public async Task Post_MultipartForm_CorrectPostFile()
+        {
+            dynamic restClient = new RestClient("http://en.directupload.net/index.php", new Config
+            (
+                new MultipartFormDataHandler()
+            ));
+            
+            var multipartContentType = new Dictionary<string, string> { { "Content-Type", $"multipart/form-data;boundary=\"Upload----{Guid.NewGuid()}\"" } };
+            var filepath = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg";
+            var fileBytes = File.ReadAllBytes(filepath);
+
+            var result = await restClient.Query(new { mode = "upload" })
+                .Post(new
+                {
+                    bilddatei = fileBytes, filename = "dalsoft.jpg" //bilddatei is image file in german incase you were wondering
+                }, 
+                multipartContentType
+            );
+
+            Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.ToString(), Does.Contain("http://www.directupload.net/file/d/"));
         }
     }
 }

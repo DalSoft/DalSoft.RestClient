@@ -3,6 +3,10 @@
 
   "testRunner": "nunit",
 
+  "buildOptions": {
+    "copyToOutput": { "includeFiles": [ "DalSoft.jpg" ] }
+  },
+
   "runtimes": {
     "win7-x64": {},
     "win8-x64": {},
@@ -12,7 +16,8 @@
   "dependencies": {
     "NUnit": "3.4.1",
     "dotnet-test-nunit": "3.4.0-beta-2",
-    "DalSoft.RestClient": { "target": "project" }
+    "DalSoft.RestClient": { "target": "project" },
+    "Microsoft.AspNetCore.WebUtilities": "1.1.0"
   },
 
   "frameworks": {
