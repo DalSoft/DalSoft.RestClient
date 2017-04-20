@@ -8,6 +8,6 @@ namespace DalSoft.RestClient
     public interface IHttpClientWrapper : IDisposable
     {
         Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content);
-        IDictionary<string, string> DefaultRequestHeaders { get; set; }
+        IReadOnlyDictionary<string, string> DefaultRequestHeaders { get; set; }
     }
 }

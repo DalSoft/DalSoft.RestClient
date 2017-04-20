@@ -831,23 +831,39 @@ namespace DalSoft.RestClient.Test.Unit
                 Assert.That(resultingRequest.Headers.GetValues("MyDummyHeader").First(), Is.EqualTo("MyValue"));
             }
         }
-
+        
         [Test]
-        public async Task AllVerbs_SetHeadersDefaultHeadersViaProperty_CorrectlySetsHeaders()
+        public async Task AllVerbs_SetHeadersUsingHeadersMethod_CorrectlySetsHeaders()
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
-            client.DefaultRequestHeaders.Add("MyDummyHeader", "MyValue");
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
-
+            
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Get(),
-                ()=>client.Head(),
-                ()=>client.Delete(),
-                ()=>client.Post(),
-                ()=>client.Put(),
-                ()=>client.Patch()
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
+                    .Get(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
+                    .Head(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
+                    .Delete(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
+                    .Post(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
+                    .Put(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
+                    .Patch()
             };
 
             foreach (var verb in verbs)
@@ -859,7 +875,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public async Task AllVerbs_SetHeadersViaMethod_CorrectlySetsHeaders()
+        public async Task AllVerbs_SetHeadersViaVerbMethod_CorrectlySetsHeaders()
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));

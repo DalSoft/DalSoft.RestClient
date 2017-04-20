@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using DalSoft.RestClient.Commands;
@@ -10,12 +11,14 @@ namespace DalSoft.RestClient
         internal readonly IHttpClientWrapper HttpClientWrapper;
         internal readonly string BaseUri;
         internal readonly string Uri;
+        internal readonly Dictionary<string, string> Headers;
 
-        public MemberAccessWrapper(IHttpClientWrapper httpClientWrapper, string baseUri, string uri)
+        public MemberAccessWrapper(IHttpClientWrapper httpClientWrapper, string baseUri, string uri, Dictionary<string, string> headers)
         {
             HttpClientWrapper = httpClientWrapper;
             BaseUri = baseUri ?? string.Empty;
             Uri = uri ?? string.Empty;
+            Headers = headers ?? new Dictionary<string, string>();
         }
 
         public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
@@ -29,13 +32,13 @@ namespace DalSoft.RestClient
                 return true;
             }
             
-            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri);
+            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri, Headers);
             return true;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri + "/" + binder.Name);
+            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri + "/" + binder.Name, Headers);
             return true;
         }
         

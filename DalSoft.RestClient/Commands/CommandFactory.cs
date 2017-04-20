@@ -8,6 +8,7 @@ namespace DalSoft.RestClient.Commands
     {
         private static readonly ReadOnlyCollection<Command> Commands = new ReadOnlyCollection<Command>(new List<Command>
         {
+            new HeadersCommand(),
             new EscapedResourceCommand(),
             new QueryCommand(),
             new HttpVerbCommand()
