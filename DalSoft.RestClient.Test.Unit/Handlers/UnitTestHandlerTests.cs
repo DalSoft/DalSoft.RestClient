@@ -9,6 +9,23 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
     [TestFixture]
     public class UnitTestHandlerTests
     {
+
+        [Test]
+        public async Task Ctor_NullHttpResponseMessagePassed_ReturnsEmptyHttpResponseMessage()
+        {
+            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config
+            (
+                new UnitTestHandler
+                (
+                    request => null
+                )
+            ));
+
+            HttpResponseMessage result = await restClient.Get();
+
+            Assert.NotNull(result);
+        }
+
         [Test]
         public async Task Ctor_HttpResponseMessagePassed_HttpResponseMessageReturnAndPipelineEnds()
         {

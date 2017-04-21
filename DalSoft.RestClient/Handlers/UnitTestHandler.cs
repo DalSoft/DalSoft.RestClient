@@ -33,7 +33,7 @@ namespace DalSoft.RestClient.Handlers
         {
             request = await CloneRequestContent(request).ConfigureAwait(false);
 
-            var response = _handler(request);
+            var response = _handler(request) ?? new HttpResponseMessage();
 
             response = await CloneResponseContent(response).ConfigureAwait(false);
 
