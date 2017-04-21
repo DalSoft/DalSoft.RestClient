@@ -31,6 +31,11 @@ await client.Users.Get();
 
 See [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.RestClient/wiki/Configuration,-Plugins-and-Pipeline)
 
+## Breaking Change Since Version 3.1
+Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way to add DefaultHeaders is passing a Dictionary to the [constructor](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers). You can add/override the headers on a per request basis using the [Headers](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers#per-request-headers) method.
+
+~~client.DefaultRequestHeaders.Add("Accept", "application/json");~~ //Not supported since version 3.1
+
 ## Everything You Need To Know
 
 * [Getting Started](https://github.com/DalSoft/DalSoft.RestClient/wiki/Getting-Started)
@@ -47,18 +52,27 @@ See [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.Res
 
 * [Put, Post, Patch](https://github.com/DalSoft/DalSoft.RestClient/wiki/Put,-Post,-Patch)
 
-* [Default Headers](https://github.com/DalSoft/DalSoft.RestClient/wiki/Default-Headers)
+* [Headers](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers)
+  * [Default Headers](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers#default-headers)
+    * [Breaking Change Since Version 3.1](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers#breaking-change-since-version-31)
+  * [Per Request Headers](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers#per-request-headers)
 
 * [Casting](https://github.com/DalSoft/DalSoft.RestClient/wiki/Casting)
 
 * [Synchronous Usage](https://github.com/DalSoft/DalSoft.RestClient/wiki/Synchronous-Usage)
 
 * [Working with non JSON content](https://github.com/DalSoft/DalSoft.RestClient/wiki/Working-with-non-JSON-content)
+  * [Posting forms](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#formurlencodedhandler)
+  * [Posting files](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#multipartformdatahandler)
 
 * [Disposing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Disposing)
 
 * [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.RestClient/wiki/Configuration,-Plugins-and-Pipeline)
-  * [Available plugins] (https://github.com/DalSoft/DalSoft.RestClient/wiki/Configuration,-Plugins-and-Pipeline)
+
+* [Available plugins](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins)
+  * [UnitTestHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#unittesthandler)
+  * [FormUrlEncodedHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#formurlencodedhandler)
+  * [MultipartFormDataHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#multipartformdatahandler)
 
 * [Unit Testing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Unit-Testing)
 
