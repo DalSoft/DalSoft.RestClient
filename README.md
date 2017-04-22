@@ -65,8 +65,6 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
   * [Posting forms](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#formurlencodedhandler)
   * [Posting files](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#multipartformdatahandler)
 
-* [Disposing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Disposing)
-
 * [Configuration, Plugins and Pipeline](https://github.com/DalSoft/DalSoft.RestClient/wiki/Configuration,-Plugins-and-Pipeline)
 
 * [Available plugins](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins)
@@ -77,6 +75,7 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
 * [Unit Testing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Unit-Testing)
 
 * [Guidance](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance)
+  * [Disposing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance#disposing)
 
 ## Standing on the Shoulders of Giants
 
