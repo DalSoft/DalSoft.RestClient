@@ -1,11 +1,11 @@
 {
-  "version": "3.1.0-*",
+  "version": "3.1.1-*",
 
   "description":
     "Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP. \r\n\r\n Chain methods to create the uri and verb for example new RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get() \r\n\r\n  Explicit and implicit casting from dynamic for example Post post = RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get()",
 
   "packOptions": {
-    "releaseNotes": "Now supports FormUrlEncoded and MultipartFormData content types. BREAKING CHANGE - Made DefaultRequestHeaders Readonly use Headers() method instead.",
+    "releaseNotes": "Header method now supports annoymous objects.",
     "requireLicenseAcceptance": false,
     "licenseUrl": "https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE",
     "owners": [ "DalSoft" ],
