@@ -34,7 +34,7 @@ namespace DalSoft.RestClient.Test.Unit.Commands
 
             var exception = Assert.Throws<ArgumentException>(() => headerCommand.Execute(null, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>())));
 
-            Assert.That(exception.Message, Is.EqualTo("Headers must have one argument that is Dictionary<string, string>"));
+            Assert.That(exception.Message, Is.EqualTo("Headers must have one not null argument only"));
         }
 
         [Test]
@@ -44,7 +44,7 @@ namespace DalSoft.RestClient.Test.Unit.Commands
 
             var exception = Assert.Throws<ArgumentException>(() => headerCommand.Execute(new object[] { }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>())));
 
-            Assert.That(exception.Message, Is.EqualTo("Headers must have one argument that is Dictionary<string, string>"));
+            Assert.That(exception.Message, Is.EqualTo("Headers must have one not null argument only"));
         }
 
         [Test]
@@ -54,17 +54,29 @@ namespace DalSoft.RestClient.Test.Unit.Commands
 
             var exception = Assert.Throws<ArgumentException>(() => headerCommand.Execute(new object[] { 1, 2 }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>())));
 
-            Assert.That(exception.Message, Is.EqualTo("Headers must have one argument that is Dictionary<string, string>"));
+            Assert.That(exception.Message, Is.EqualTo("Headers must have one not null argument only"));
         }
 
-        [Test]
-        public void Execute_HeadersArgumentIsNotIDictionaryOfString_ThrowsArgumentException()
+        [TestCase("Not IDictionary Of String")]
+        [TestCase(1)]
+        [TestCase(new [] {1})]
+        public void Execute_HeadersArgumentIsNotIDictionaryOrObjectRepresentingHeaders_ThrowsArgumentException(object notIDictionaryOrObjectRepresentingHeaders)
         {
             var headerCommand = new HeadersCommand();
 
-            var exception = Assert.Throws<ArgumentException>(() => headerCommand.Execute(new object[] { "Not IDictionary Of String" }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>())));
+            var exception = Assert.Throws<ArgumentException>(() => headerCommand.Execute(new object[] { notIDictionaryOrObjectRepresentingHeaders }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>())));
 
-            Assert.That(exception.Message, Is.EqualTo("Headers must be Dictionary<string, string>"));
+            Assert.That(exception.Message, Is.EqualTo("Headers must be Dictionary<string, string> or a simple object representing the Headers new { ContentType = \"application/json\", Accept = \"application/json\" }"));
+        }
+
+        [Test]
+        public void Execute_HeadersArgumentObjectRepresentingHeadersIsInvalid_ThrowsArgumentException()
+        {
+            var headerCommand = new HeadersCommand();
+            var invalidObjectRepresentingHeaders = new { Accept = 1 };
+            var exception = Assert.Throws<ArgumentException>(() => headerCommand.Execute(new object[] { invalidObjectRepresentingHeaders }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>())));
+
+            Assert.That(exception.Message, Is.EqualTo("Headers must be Dictionary<string, string> or a simple object representing the Headers new { ContentType = \"application/json\", Accept = \"application/json\" }"));
         }
 
         [Test]
@@ -78,6 +90,22 @@ namespace DalSoft.RestClient.Test.Unit.Commands
             };
 
             var result  = (MemberAccessWrapper)headerCommand.Execute(new object[] { headers }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>()));
+
+            Assert.That(result.Headers["Content-Type"], Is.EqualTo("application/json"));
+            Assert.That(result.Headers["Accept"], Is.EqualTo("text/html"));
+        }
+
+        [Test]
+        public void Execute_HeadersArgumentObject_CorrectAddedToMemberAccessWrapperHeaders()
+        {
+            var headerCommand = new HeadersCommand();
+            var headers = new
+            {
+                Accept = "text/html",
+                ContentType = "application/json"
+            };
+
+            var result = (MemberAccessWrapper)headerCommand.Execute(new object[] { headers }, new MemberAccessWrapper(new HttpClientWrapper(), "http://test", "testresource", new Dictionary<string, string>()));
 
             Assert.That(result.Headers["Content-Type"], Is.EqualTo("application/json"));
             Assert.That(result.Headers["Accept"], Is.EqualTo("text/html"));

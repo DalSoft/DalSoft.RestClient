@@ -293,7 +293,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_SetHeadersViaHeadersMethod_CorrectlySetsHeaders()
+        public async Task Get_SetHeadersViaHeadersMethodDictionary_CorrectlySetsHeaders()
         {
             dynamic client = new RestClient("http://headers.jsontest.com/");
             
@@ -304,6 +304,20 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(result.Accept, Is.EqualTo("application/json"));
             Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+        }
+
+        [Test]
+        public async Task Get_SetHeadersViaHeadersMethodObject_CorrectlySetsHeaders()
+        {
+            dynamic client = new RestClient("http://headers.jsontest.com/");
+
+            var result = await client
+                .Headers(new { Accept = "application/json" })
+                .Headers(new { DummyHeader = "MyValue" })
+                .Get();
+
+            Assert.That(result.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.ToString(), Does.Contain("\"Dummy-Header\": \"MyValue\""));
         }
 
         [Test]

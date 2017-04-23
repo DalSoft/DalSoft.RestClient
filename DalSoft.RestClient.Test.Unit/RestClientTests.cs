@@ -833,7 +833,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
         
         [Test]
-        public async Task AllVerbs_SetHeadersUsingHeadersMethod_CorrectlySetsHeaders()
+        public async Task AllVerbs_SetHeadersUsingHeadersMethodDictionary_CorrectlySetsHeaders()
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
@@ -871,6 +871,48 @@ namespace DalSoft.RestClient.Test.Unit
                 await verb();
                 Assert.That(resultingRequest.Headers.Accept.First().MediaType, Is.EqualTo("application/json"));
                 Assert.That(resultingRequest.Headers.GetValues("MyDummyHeader").First(), Is.EqualTo("MyValue"));
+            }
+        }
+
+        [Test]
+        public async Task AllVerbs_SetHeadersUsingHeadersMethodObject_CorrectlySetsHeaders()
+        {
+            HttpRequestMessage resultingRequest = null;
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Headers(new { Accept = "application/json" })
+                    .Get(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Headers(new { Accept = "application/json" })
+                    .Head(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Headers(new { Accept = "application/json" })
+                    .Delete(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Headers(new { Accept = "application/json" })
+                    .Post(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Headers(new { Accept = "application/json" })
+                    .Put(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Headers(new { Accept = "application/json" })
+                    .Patch()
+            };
+
+            foreach (var verb in verbs)
+            {
+                await verb();
+                Assert.That(resultingRequest.Headers.Accept.First().MediaType, Is.EqualTo("application/json"));
+                Assert.That(resultingRequest.Headers.GetValues("Dummy-Header").First(), Is.EqualTo("MyValue"));
             }
         }
 
