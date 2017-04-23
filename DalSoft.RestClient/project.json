@@ -1,11 +1,11 @@
 {
-  "version": "3.1.1-*",
+  "version": "3.2.0-*",
 
   "description":
     "Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP. \r\n\r\n Chain methods to create the uri and verb for example new RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get() \r\n\r\n  Explicit and implicit casting from dynamic for example Post post = RestClient(\"http://jsonplaceholder.typicode.com\").Posts(1).Get()",
 
   "packOptions": {
-    "releaseNotes": "Header method now supports annoymous objects.",
+    "releaseNotes": "DalSoft.RestClient now supports exponential or linear retries on transient exceptions using the RetryHandler. Fixes Headers method bug #34",
     "requireLicenseAcceptance": false,
     "licenseUrl": "https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE",
     "owners": [ "DalSoft" ],
@@ -28,9 +28,9 @@
       "UWP"
     ]
   },
-  
+
   "dependencies": {
-    "Newtonsoft.Json": "9.0.1"
+    "Newtonsoft.Json": "9.0.1",
   },
 
   "frameworks": {
@@ -38,16 +38,18 @@
     "net45": {
       "frameworkAssemblies": {
         "System.Net.Http": { "type": "build" },
-        "Microsoft.CSharp": { "type": "build" }
+        "Microsoft.CSharp": { "type": "build" },
+        "System.Net.Requests": { "type": "build" }
       }
-
     },
 
     "netstandard1.4": {
       "dependencies": {
         "System.Reflection.TypeExtensions": "4.1.0",
         "System.Runtime.InteropServices": "4.1.0",
-        "System.Net.Http": "4.1.0"
+        "System.Net.Http": "4.1.0",
+        "System.Net.Requests": "4.0.11",
+        "Microsoft.Win32.Primitives": "4.3.0"
       },
       "imports": [ "portable-net45+wpa81+wp8+win8" ]
     }

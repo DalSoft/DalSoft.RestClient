@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -16,7 +17,7 @@ namespace DalSoft.RestClient.Test.Integration
     public class RestClientTests
     {
         private const string BaseUri = "http://jsonplaceholder.typicode.com";
-        
+
         [Test]
         public async Task Get_SingleUserAsDynamic_ReturnsDynamicCorrectly()
         {
@@ -167,7 +168,7 @@ namespace DalSoft.RestClient.Test.Integration
         public async Task Post_NewUserAsDynamic_CreatesAndReturnsNewResourceAsDynamic()
         {
             dynamic client = new RestClient(BaseUri);
-            var user = new { name = "foo", username = "bar", email = "test@test.com"  };
+            var user = new { name = "foo", username = "bar", email = "test@test.com" };
             var result = await client.Users.Post(user);
 
             Assert.That(result.name, Is.EqualTo(user.name));
@@ -296,7 +297,7 @@ namespace DalSoft.RestClient.Test.Integration
         public async Task Get_SetHeadersViaHeadersMethodDictionary_CorrectlySetsHeaders()
         {
             dynamic client = new RestClient("http://headers.jsontest.com/");
-            
+
             var result = await client
                 .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
                 .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue" } })
@@ -360,8 +361,8 @@ namespace DalSoft.RestClient.Test.Integration
             async (request, token, next) =>
             {
                 request.Headers.Add("TestHandlerHeader1", "TestHandler1");
-                return await  next(request, token);
-            }, 
+                return await next(request, token);
+            },
             async (request, token, next) =>
             {
                 request.Headers.Add("TestHandlerHeader2", "TestHandler2");
@@ -393,7 +394,7 @@ namespace DalSoft.RestClient.Test.Integration
             var cookieContainer = new CookieContainer();
             var httpClientHandler = new HttpClientHandler { CookieContainer = cookieContainer };
 
-            dynamic restClient = new RestClient("https://httpbin.org/cookies/set?testcookie1=darran1",  new Config
+            dynamic restClient = new RestClient("https://httpbin.org/cookies/set?testcookie1=darran1", new Config
             (
                 httpClientHandler,
                 new DelegatingHandlerWrapper(async (request, token, next) =>
@@ -429,7 +430,7 @@ namespace DalSoft.RestClient.Test.Integration
                 custtel = "449098090",
                 custemail = "George.Washington@gov.org",
                 size = "small",
-                topping = new [] { "bacon", "cheese", "onion" },
+                topping = new[] { "bacon", "cheese", "onion" },
                 delivery = "11:00",
                 comments = "Leave at the whitehouse"
             };
@@ -450,11 +451,11 @@ namespace DalSoft.RestClient.Test.Integration
         [Test]
         public async Task Post_MultipartForm_CorrectPostFile()
         {
-            dynamic restClient = new RestClient("http://en.directupload.net/index.php", new Config
+                dynamic restClient = new RestClient("http://en.directupload.net/index.php", new Config
             (
                 new MultipartFormDataHandler()
             ));
-            
+
             var multipartContentType = new Dictionary<string, string> { { "Content-Type", $"multipart/form-data;boundary=\"Upload----{Guid.NewGuid()}\"" } };
             var filepath = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg";
             var fileBytes = File.ReadAllBytes(filepath);
@@ -462,13 +463,43 @@ namespace DalSoft.RestClient.Test.Integration
             var result = await restClient.Query(new { mode = "upload" })
                 .Post(new
                 {
-                    bilddatei = fileBytes, filename = "dalsoft.jpg" //bilddatei is image file in german incase you were wondering
-                }, 
+                    bilddatei = fileBytes,
+                    filename = "dalsoft.jpg" //bilddatei is image file in german incase you were wondering
+                },
                 multipartContentType
             );
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(result.ToString(), Does.Contain("http://www.directupload.net/file/d/"));
+        }
+        
+        [Test]
+        public void Get_UsingRetryHandlerWhenTransientExceptionEncountered_ShouldBeRetried()
+        {
+            // ReSharper disable once InconsistentNaming
+            const int ERROR_WINHTTP_NAME_NOT_RESOLVED = 12007;
+
+            var retryCount = 0;
+
+            dynamic restClient = new RestClient("http://A_Url_The_Will_Cause_A_Transient_Exception", new Config()
+            .UseRetryHandler(maxRetries:3, waitToRetryInSeconds:2, maxWaitToRetryInSeconds: 10, backOffStrategy: RetryHandler.BackOffStrategy.Exponential)
+            .UseHandler((request, token, next) =>
+            {
+                retryCount++;
+                return next(request, token);
+            }));
+
+            var exception = Assert.ThrowsAsync<HttpRequestException>(async () => await restClient.Get());
+            var webException = exception.InnerException as WebException;
+            var win32Exception = exception.InnerException as Win32Exception;
+
+            if (webException!=null) //.NET 4.5, .NET Standard all platforms except Windows
+                Assert.That(webException.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
+
+            if (win32Exception != null) //.NET Standard Windows only https://github.com/dotnet/corefx/issues/19185
+                Assert.That(win32Exception.NativeErrorCode, Is.EqualTo(ERROR_WINHTTP_NAME_NOT_RESOLVED));
+
+            Assert.That(retryCount, Is.EqualTo(3));
         }
     }
 }
