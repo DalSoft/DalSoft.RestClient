@@ -45,6 +45,7 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
 * [How to Access Resources](https://github.com/DalSoft/DalSoft.RestClient/wiki/How-to-Access-Resources)
 
 * [The Dynamic Return Type and HttpResponseMessage](https://github.com/DalSoft/DalSoft.RestClient/wiki/The-Dynamic-Return-Type-and-HttpResponseMessage)
+  * [Mapping Models to Responses using JSON.Net](https://github.com/DalSoft/DalSoft.RestClient/wiki/The-Dynamic-Return-Type-and-HttpResponseMessage#mapping-models-to-responses-using-jsonnet)
 
 * [Get, Delete, Head](https://github.com/DalSoft/DalSoft.RestClient/wiki/Get,-Delete,-Head)
 
@@ -61,6 +62,7 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
 
 * [Synchronous Usage](https://github.com/DalSoft/DalSoft.RestClient/wiki/Synchronous-Usage)
 
+**Advanced**
 * [Working with non JSON content](https://github.com/DalSoft/DalSoft.RestClient/wiki/Working-with-non-JSON-content)
   * [Posting forms](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#formurlencodedhandler)
   * [Posting files](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#multipartformdatahandler)
@@ -76,7 +78,7 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
 
 * [Guidance](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance)
   * [Disposing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance#disposing)
-
+  
 ## Standing on the Shoulders of Giants
 
 DalSoft.RestClient is built using the following great open source projects:
