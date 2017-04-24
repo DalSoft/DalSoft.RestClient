@@ -38,7 +38,7 @@ namespace DalSoft.RestClient
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri + "/" + binder.Name, Headers);
+            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri.TrimStart("/".ToCharArray()) + "/" + binder.Name, Headers);
             return true;
         }
         
@@ -55,7 +55,7 @@ namespace DalSoft.RestClient
         
         public override string ToString()
         {
-            var baseUri = BaseUri + (BaseUri.EndsWith("/") ? string.Empty : "/");
+            var baseUri = BaseUri.TrimEnd("/".ToCharArray()) + "/";
             return baseUri + GetRelativeUri();
         }
     }
