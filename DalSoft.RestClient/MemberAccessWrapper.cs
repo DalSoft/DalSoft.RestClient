@@ -55,7 +55,7 @@ namespace DalSoft.RestClient
         
         public override string ToString()
         {
-            var baseUri = BaseUri + (BaseUri.EndsWith("/") ? string.Empty : "/");
+            var baseUri = BaseUri.TrimEnd("/".ToCharArray()) + "/";
             return baseUri + GetRelativeUri();
         }
     }
