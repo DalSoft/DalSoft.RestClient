@@ -906,29 +906,29 @@ namespace DalSoft.RestClient.Test.Unit
             var verbs = new Func<Task<dynamic>>[]
             {
                 ()=>client
-                    //.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
                     .Users
                     .Get(),
                 ()=>client
                     .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
                     .Users
                     .Head(),
-                //()=>client
-                //    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                //    .Users
-                //    .Delete(),
-                //()=>client
-                //    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                //    .Users
-                //    .Post(),
-                //()=>client
-                //    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                //    .Users
-                //    .Put(),
-                //()=>client
-                //    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                //    .Users
-                //    .Patch()
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Users
+                    .Delete(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Users
+                    .Post(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Users
+                    .Put(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Users
+                    .Patch()
             };
 
             foreach (var verb in verbs)
@@ -978,6 +978,48 @@ namespace DalSoft.RestClient.Test.Unit
                 await verb();
                 Assert.That(resultingRequest.Headers.Accept.First().MediaType, Is.EqualTo("application/json"));
                 Assert.That(resultingRequest.Headers.GetValues("Dummy-Header").First(), Is.EqualTo("MyValue"));
+            }
+        }
+
+        [Test]
+        public async Task AllVerbs_SetHeadersUsingHeadersMethodObject_CorrectlyGeneratesUrl()
+        {
+            HttpRequestMessage resultingRequest = null;
+            dynamic client = new RestClient(BaseUri + "/", new Config(new UnitTestHandler(request => resultingRequest = request)));
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Get(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Head(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Delete(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Post(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Put(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Patch()
+            };
+
+            foreach (var verb in verbs)
+            {
+                await verb();
+
+                Assert.That(resultingRequest.RequestUri.ToString(), Is.EqualTo($"{BaseUri}/Users"));
             }
         }
 
