@@ -44,9 +44,6 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
 
 * [How to Access Resources](https://github.com/DalSoft/DalSoft.RestClient/wiki/How-to-Access-Resources)
 
-* [The Dynamic Return Type and HttpResponseMessage](https://github.com/DalSoft/DalSoft.RestClient/wiki/The-Dynamic-Return-Type-and-HttpResponseMessage)
-  * [Mapping Models to Responses using JSON.Net](https://github.com/DalSoft/DalSoft.RestClient/wiki/The-Dynamic-Return-Type-and-HttpResponseMessage#mapping-models-to-responses-using-jsonnet)
-
 * [Get, Delete, Head](https://github.com/DalSoft/DalSoft.RestClient/wiki/Get,-Delete,-Head)
 
 * [Query Strings](https://github.com/DalSoft/DalSoft.RestClient/wiki/Query-Strings)
@@ -58,9 +55,14 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
     * [Breaking Change Since Version 3.1](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers#breaking-change-since-version-31)
   * [Per Request Headers](https://github.com/DalSoft/DalSoft.RestClient/wiki/Headers#per-request-headers)
 
-* [Casting](https://github.com/DalSoft/DalSoft.RestClient/wiki/Casting)
-
-* [Synchronous Usage](https://github.com/DalSoft/DalSoft.RestClient/wiki/Synchronous-Usage)
+* [Dynamic Binding](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding)
+  * [Requests](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#requests)
+  * [Responses](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#responses)
+  * [HttpResponseMessage](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#httpresponsemessage)
+  * [Casting](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#casting)
+    * [Implicit casting](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#implicit-casting)
+    * [Collections](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#collections)
+    * [Mapping your models using Json.NET](https://github.com/DalSoft/DalSoft.RestClient/wiki/Dynamic-Binding#mapping-your-models-using-jsonnet)
 
 **Advanced**
 * [Working with non JSON content](https://github.com/DalSoft/DalSoft.RestClient/wiki/Working-with-non-JSON-content)
@@ -78,6 +80,7 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
 
 * [Guidance](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance)
   * [Disposing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance#disposing)
+  * [Synchronous Usage](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance#synchronous-usage)
   
 ## Standing on the Shoulders of Giants
 
