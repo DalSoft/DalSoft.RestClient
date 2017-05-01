@@ -9,7 +9,6 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
     [TestFixture]
     public class UnitTestHandlerTests
     {
-
         [Test]
         public async Task Ctor_NullHttpResponseMessagePassed_ReturnsEmptyHttpResponseMessage()
         {

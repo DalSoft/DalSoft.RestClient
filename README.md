@@ -75,11 +75,13 @@ Since version 3.1 the DefaultRequestHeaders Dictionary is readonly the only way 
   * [UnitTestHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#unittesthandler)
   * [FormUrlEncodedHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#formurlencodedhandler)
   * [MultipartFormDataHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#multipartformdatahandler)
+  * [RetryHandler](https://github.com/DalSoft/DalSoft.RestClient/wiki/Available-Plugins#retryhandler)
 
 * [Unit Testing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Unit-Testing)
 
 * [Guidance](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance)
   * [Disposing](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance#disposing)
+  * [Retrying Transient Errors](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance/#retrying-transient-errors)  
   * [Synchronous Usage](https://github.com/DalSoft/DalSoft.RestClient/wiki/Guidance#synchronous-usage)
   
 ## Standing on the Shoulders of Giants

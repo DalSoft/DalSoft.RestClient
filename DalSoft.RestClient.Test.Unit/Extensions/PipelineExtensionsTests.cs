@@ -126,6 +126,46 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
         }
 
         [Test]
+        public void UseRetryHandler_ParameterLess_CorrectlyAddHandlers()
+        {
+            const int defaultMaxRetries = 3;
+            const double defaultWaitToRetryInSeconds = 1.44;
+            const int defaultMaxWaitToRetryInSeconds = 10;
+            const RetryHandler.BackOffStrategy defaultBackOffStrategy = RetryHandler.BackOffStrategy.Exponential;
+
+            var config = new Config()
+                .UseRetryHandler();
+            var retryHandler = config.Pipeline.ElementAt(1) as RetryHandler;
+
+            Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
+            Assert.That(config.Pipeline.ElementAt(1), Is.InstanceOf<RetryHandler>());
+            Assert.That(retryHandler?.MaxRetries, Is.EqualTo(defaultMaxRetries));
+            Assert.That(retryHandler?.WaitToRetryInSeconds, Is.EqualTo(defaultWaitToRetryInSeconds));
+            Assert.That(retryHandler?.MaxWaitToRetryInSeconds, Is.EqualTo(defaultMaxWaitToRetryInSeconds));
+            Assert.That(retryHandler?.CurrentBackOffStrategy, Is.EqualTo(defaultBackOffStrategy));
+        }
+
+        [Test]
+        public void UseRetryHandler_WithParameters_CorrectlyAddHandlers()
+        {
+            const int maxRetries = 6;
+            const int waitToRetryInSeconds = 5;
+            const int maxWaitToRetryInSeconds = 30;
+            const RetryHandler.BackOffStrategy backOffStrategy = RetryHandler.BackOffStrategy.Linear;
+
+            var config = new Config()
+                .UseRetryHandler(maxRetries:maxRetries, waitToRetryInSeconds:waitToRetryInSeconds, maxWaitToRetryInSeconds:maxWaitToRetryInSeconds, backOffStrategy:backOffStrategy);
+            var retryHandler = config.Pipeline.ElementAt(1) as RetryHandler;
+
+            Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
+            Assert.That(config.Pipeline.ElementAt(1), Is.InstanceOf<RetryHandler>());
+            Assert.That(retryHandler?.MaxRetries, Is.EqualTo(maxRetries));
+            Assert.That(retryHandler?.WaitToRetryInSeconds, Is.EqualTo(waitToRetryInSeconds));
+            Assert.That(retryHandler?.MaxWaitToRetryInSeconds, Is.EqualTo(maxWaitToRetryInSeconds));
+            Assert.That(retryHandler?.CurrentBackOffStrategy, Is.EqualTo(backOffStrategy));
+        }
+
+        [Test]
         public void ExpectJsonResponse_StateBagPropertyNull_ReturnsFalse()
         {
             Assert.False(new HttpRequestMessage().ExpectJsonResponse());

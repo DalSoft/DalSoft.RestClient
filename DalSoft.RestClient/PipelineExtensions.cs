@@ -94,6 +94,16 @@ namespace DalSoft.RestClient
             return UseHandler(config, new MultipartFormDataHandler());
         }
 
+        public static Config UseRetryHandler(this Config config)
+        {
+            return UseHandler(config, new RetryHandler());
+        }
+
+        public static Config UseRetryHandler(this Config config, int maxRetries, double waitToRetryInSeconds, double maxWaitToRetryInSeconds, RetryHandler.BackOffStrategy backOffStrategy)
+        {
+            return UseHandler(config, new RetryHandler(maxRetries, waitToRetryInSeconds, maxWaitToRetryInSeconds, backOffStrategy));
+        }
+
         internal static void ValidatePipeline(this IEnumerable<HttpMessageHandler> pipeline)
         {
             if (pipeline.OfType<HttpClientHandler>().Count() > 1)
