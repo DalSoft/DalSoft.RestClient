@@ -14,7 +14,7 @@ namespace DalSoft.RestClient.Extensions
             type = type ?? typeof(object);
             try
             {
-                result = ParseCamelcase(json);
+                result = ParsePascalCase(json);
                 return true;
             }
             catch (Exception ex)
@@ -54,18 +54,18 @@ namespace DalSoft.RestClient.Extensions
 
 
         // https://stackoverflow.com/questions/35777561/get-a-dynamic-object-for-jsonconvert-deserializeobject-making-properties-upperca
-        internal static JToken ParseCamelcase(string json)
+        internal static JToken ParsePascalCase(string json)
         {
             using (var textReader = new StringReader(json))
             using (var jsonReader = new JsonTextReader(textReader))
             {
-                return jsonReader.ParseCamelcase();
+                return jsonReader.ParsePascalCase();
             }
         }
 
-        internal static JToken ParseCamelcase(this JsonReader reader)
+        internal static JToken ParsePascalCase(this JsonReader reader)
         {
-            return reader.ParseCamelcase(n =>
+            return reader.ParsePascalCase(n =>
             {
                 char[] a = n.ToCharArray();
                 a[0] = char.ToUpper(a[0]);
@@ -73,7 +73,7 @@ namespace DalSoft.RestClient.Extensions
             });
         }
 
-        internal static JToken ParseCamelcase(this JsonReader reader, Func<string, string> nameMap)
+        internal static JToken ParsePascalCase(this JsonReader reader, Func<string, string> nameMap)
         {
             JToken token;
 
