@@ -2,6 +2,8 @@
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using System.IO;
 
 namespace DalSoft.RestClient.Extensions
 {
@@ -12,7 +14,7 @@ namespace DalSoft.RestClient.Extensions
             type = type ?? typeof(object);
             try
             {
-                result = JsonConvert.DeserializeObject(json, type);
+                result = ParsePascalCase(json);
                 return true;
             }
             catch (Exception ex)
@@ -48,6 +50,40 @@ namespace DalSoft.RestClient.Extensions
             }
 
             return result;
+        }
+
+
+        // https://stackoverflow.com/questions/35777561/get-a-dynamic-object-for-jsonconvert-deserializeobject-making-properties-upperca
+        internal static JToken ParsePascalCase(string json)
+        {
+            using (var textReader = new StringReader(json))
+            using (var jsonReader = new JsonTextReader(textReader))
+            {
+                return jsonReader.ParsePascalCase();
+            }
+        }
+
+        internal static JToken ParsePascalCase(this JsonReader reader)
+        {
+            return reader.ParsePascalCase(n =>
+            {
+                char[] a = n.ToCharArray();
+                a[0] = char.ToUpper(a[0]);
+                return new string(a);
+            });
+        }
+
+        internal static JToken ParsePascalCase(this JsonReader reader, Func<string, string> nameMap)
+        {
+            JToken token;
+
+            using (var writer = new RenamingJTokenWriter(nameMap))
+            {
+                writer.WriteToken(reader);
+                token = writer.Token;
+            }
+
+            return token;
         }
     }
 }
