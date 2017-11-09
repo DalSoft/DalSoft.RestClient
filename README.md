@@ -1,5 +1,7 @@
 # DalSoft.RestClient
 
+[![Help and chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DalSoft-RestClient)
+
 Inspired by Simple.Data and AngularJS's $http service, DalSoft.RestClient is a very lightweight wrapper around System.Net.HttpClient that uses the dynamic features of .NET 4 to provide a fluent way of accessing RESTFul API's. 
 
 Originally created to remove the boilerplate code involved in creating integration tests and SDK's for RESTFul API's. I know there are a couple of dynamic rest clients out there but I wanted the syntax to look a particular way, and I wanted it to be particularly useful for testing.
