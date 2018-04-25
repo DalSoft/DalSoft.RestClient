@@ -10,7 +10,7 @@ Originally created to remove the boilerplate code involved in creating integrati
 
 ## Supported Platforms
 
-DalSoft.RestClient targets .NET Standard 1.4 therefore supports Windows, Linux, Mac and Xamarin (iOS, Android and UWP).  
+DalSoft.RestClient targets .NET Standard 2.0 therefore supports Windows, Linux, Mac and Xamarin (iOS, Android and UWP).  
 
 ## Getting Started
 

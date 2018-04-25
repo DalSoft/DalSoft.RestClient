@@ -98,7 +98,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             );
 
             const string boundary = "MyBoundary";
-            Stream stream = new FileStream(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
+            Stream stream = new FileStream(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
 
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeaderWithBoundary(boundary), new
             {
@@ -125,7 +125,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
 
             const string boundary = "MyBoundary";
             
-            var bytes = File.ReadAllBytes(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg");
+            var bytes = File.ReadAllBytes(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg");
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeaderWithBoundary(boundary), new
             {
                 myBytes = bytes,
@@ -151,8 +151,8 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
 
             const string boundary = "MyBoundary";
 
-            Stream stream = new FileStream(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
-            var fileBytes = File.ReadAllBytes(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg");
+            Stream stream = new FileStream(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
+            var fileBytes = File.ReadAllBytes(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg");
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeaderWithBoundary(boundary), new
             {
                 myStream = stream,
@@ -178,7 +178,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                     .UseUnitTestHandler(request => actualRequest = request)
             );
 
-            Stream stream = new FileStream(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
+            Stream stream = new FileStream(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
             
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeader, new
             {
@@ -205,7 +205,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                     .UseUnitTestHandler(request => actualRequest = request)
             );
 
-            Stream stream = new FileStream(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
+            Stream stream = new FileStream(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
 
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeader, new
             {
@@ -231,7 +231,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                     .UseUnitTestHandler(request => actualRequest = request)
             );
 
-            Stream stream = new FileStream(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
+            Stream stream = new FileStream(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
 
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeader, new
             {
@@ -261,7 +261,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                     .UseUnitTestHandler(request => actualRequest = request)
             );
 
-            var fileByte = File.ReadAllBytes(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg");
+            var fileByte = File.ReadAllBytes(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg");
 
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeader, new
             {
@@ -289,9 +289,9 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                     .UseMultipartFormDataHandler()
                     .UseUnitTestHandler(request => actualRequest = request)
             );
-
-            var fileByte = File.ReadAllBytes(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg");
-            Stream stream = new FileStream(Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
+            
+            var fileByte = File.ReadAllBytes(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg");
+            Stream stream = new FileStream(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg", FileMode.Open, FileAccess.Read);
 
             await httpClientWrapper.Send(HttpMethod.Post, new Uri("http://test.test"), MultipartFormDataHeader, new
             {

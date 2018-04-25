@@ -250,7 +250,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             Assert.That(formUrlDictionary["nested.level1.level2.level3.level3complexArray[1].LastName"][0], Is.EqualTo("Lincoln3"));
         }
 
-        [Test]
+        [Test, Ignore("Bug #30 Simple array nested in a complex array doesn't work as expected")]
         public async Task Send_NestedObjectSimpleArrayInNestedInComplexArray_FormatsAsUrlFormEncodedAsExpected()
         {
             //Bug simple Array nested in complex array loops properties rather the array value

@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2000
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DalSoft.RestClient", "DalSoft.RestClient\DalSoft.RestClient.xproj", "{81A0E763-FB2E-4ED2-A153-71E5DEBB7087}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient", "DalSoft.RestClient\DalSoft.RestClient.csproj", "{81A0E763-FB2E-4ED2-A153-71E5DEBB7087}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DalSoft.RestClient.Test.Integration", "DalSoft.RestClient.Test.Integration\DalSoft.RestClient.Test.Integration.xproj", "{EFCBFB2D-8D64-4A83-8DD5-C362DC6642A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Test.Integration", "DalSoft.RestClient.Test.Integration\DalSoft.RestClient.Test.Integration.csproj", "{EFCBFB2D-8D64-4A83-8DD5-C362DC6642A6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DalSoft.RestClient.Test.Unit", "DalSoft.RestClient.Test.Unit\DalSoft.RestClient.Test.Unit.xproj", "{E3E55716-2618-4F4F-9F91-B480E5F989FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Test.Unit", "DalSoft.RestClient.Test.Unit\DalSoft.RestClient.Test.Unit.csproj", "{E3E55716-2618-4F4F-9F91-B480E5F989FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +30,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F3C3BB59-0D71-4211-A5F5-348024EC4A16}
 	EndGlobalSection
 EndGlobal

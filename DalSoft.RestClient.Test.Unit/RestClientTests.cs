@@ -432,7 +432,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public void MutableVerbs_ChainingMethodsPassingStringThrowsArgumentException()
+        public void MutableVerbs_ChainingMethodsPassingString_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
@@ -449,6 +449,27 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
+        [Test(Description = "Bug #47")]
+        public async Task MutableVerbs_ChainingMethodsPassingEmptyEnumerable_SetsEmptyEnumerableCorrectly()
+        {
+            HttpRequestMessage resultingRequest = null;
+            dynamic client = new RestClient(BaseUri + "/", new Config(new UnitTestHandler(request => resultingRequest = request)));
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>client.Users.Post(new { my_array = new string[]{} }),
+                ()=>client.Users(1).Put(new { my_array = new string[]{} }),
+                ()=>client.Users(1).Patch(new { my_array = new string[]{} })
+            };
+
+            foreach (var verb in verbs)
+            {
+                await verb();
+                var requestBody = await resultingRequest.Content.ReadAsStringAsync();
+                Assert.That(requestBody, Is.EqualTo("{\"my_array\":[]}"));
+            }
+        }
+        
         [Test]
         public void AllVerbs_SecondArgNotHeaderDictionary_ThrowsArgumentException()
         {

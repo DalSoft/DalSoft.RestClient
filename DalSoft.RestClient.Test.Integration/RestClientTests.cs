@@ -457,7 +457,7 @@ namespace DalSoft.RestClient.Test.Integration
             ));
 
             var multipartContentType = new Dictionary<string, string> { { "Content-Type", $"multipart/form-data;boundary=\"Upload----{Guid.NewGuid()}\"" } };
-            var filepath = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location) + "/DalSoft.jpg";
+            var filepath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg";
             var fileBytes = File.ReadAllBytes(filepath);
 
             var result = await restClient.Query(new { mode = "upload" })

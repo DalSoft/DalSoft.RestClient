@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>
+      Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP. 
+      Chain methods to create the uri and verb for example new RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get() 
+      Explicit and implicit casting from dynamic for example Post post = RestClient("http://jsonplaceholder.typicode.com").Posts(1).Get()
+    </Description>
+    <VersionPrefix>3.2.3</VersionPrefix>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <AssemblyName>DalSoft.RestClient</AssemblyName>
+    <PackageId>DalSoft.RestClient</PackageId>
+    <PackageTags>RestClient;REST;Client;JSON;Dynamic;WebApi;HttpClient;Core;iOS;Android;UWP</PackageTags>
+    <Owners>DalSoft</Owners>
+    <Authors>DalSoft, joakimjm</Authors>
+    <PackageReleaseNotes>Updated to netstandard2.0</PackageReleaseNotes>
+    <PackageIconUrl>http://dalsoft.co.uk/images/icon.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/DalSoft/DalSoft.RestClient</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</PackageLicenseUrl>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+  </ItemGroup>
+
+</Project>
