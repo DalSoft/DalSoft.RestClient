@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DalSoft.RestClient.Commands
@@ -42,12 +43,19 @@ namespace DalSoft.RestClient.Commands
                     requestHeaders.Add(header.Key, header.Value);
             }
 
-            var httpResponseMessage = await memberAccessWrapper.HttpClientWrapper.Send
-            (
-                new HttpMethod(httpMethodString.ToUpperInvariant()), uri, requestHeaders, httpContent
-            ).ConfigureAwait(false);
+            var httpResponseMessage = await memberAccessWrapper.HttpClientWrapper.Send(new HttpMethod(httpMethodString.ToUpperInvariant()), uri, requestHeaders, httpContent)
+                .ConfigureAwait(false);
 
-            return new RestClientResponseObject(httpResponseMessage);
+            using (var content = httpResponseMessage.Content)
+            {
+                string responseString;
+                if (content == null) 
+                    responseString = string.Empty;
+                else
+                    responseString = await content.ReadAsStringAsync();
+               
+                return new RestClientResponseObject(httpResponseMessage, responseString);   
+            }
         }
 
         private static Uri ParseUri(string httpMethod, string currentUri, object[] args)
@@ -61,8 +69,7 @@ namespace DalSoft.RestClient.Commands
             if (currentUri.EndsWith("/"))
                 currentUri = currentUri.TrimEnd("/".ToCharArray());
 
-            Uri uri;
-            if (!Uri.TryCreate(currentUri, UriKind.Absolute, out uri))
+            if (!Uri.TryCreate(currentUri, UriKind.Absolute, out var uri))
                 throw new ArgumentException($"{currentUri} is not a valid Absolute Uri");
 
             return uri;
@@ -86,6 +93,7 @@ namespace DalSoft.RestClient.Commands
             if (args[0] == null)
                 return null;
 
+            // ReSharper disable once ConvertIfStatementToReturnStatement
             if (httpMethod.IsImmutableVerb())
                 return null;
 

@@ -48,7 +48,7 @@ namespace DalSoft.RestClient.Handlers
                 return await Task.FromResult(httpRequestMessage).ConfigureAwait(false);
 
             var localStream = new MemoryStream();
-            await httpRequestMessage.Content.CopyToAsync(localStream);  //Allow content to be re-read in tests
+            await httpRequestMessage.Content.CopyToAsync(localStream).ConfigureAwait(false);  //Allow content to be re-read in tests
 
             localStream.Position = 0;
 
@@ -72,7 +72,7 @@ namespace DalSoft.RestClient.Handlers
             httpResponseMessage.Content = httpResponseMessage.Content ?? new StringContent(string.Empty);
 
             var localStream = new MemoryStream();
-            await httpResponseMessage.Content.CopyToAsync(localStream); //Allow content to be re-read in tests
+            await httpResponseMessage.Content.CopyToAsync(localStream).ConfigureAwait(false); //Allow content to be re-read in tests
 
             localStream.Position = 0;
 

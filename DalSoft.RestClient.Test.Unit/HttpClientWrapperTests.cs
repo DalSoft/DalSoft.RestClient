@@ -210,7 +210,7 @@ namespace DalSoft.RestClient.Test.Unit
             var timeout = TimeSpan.FromSeconds(3);
             var httpClientWrapper = new HttpClientWrapper(new Config { Timeout = timeout });
 
-            var httpClient = httpClientWrapper.GetHttpClient();
+            var httpClient = httpClientWrapper.HttpClient;
 
             Assert.That(httpClient.Timeout, Is.EqualTo(timeout));
         }
@@ -221,9 +221,34 @@ namespace DalSoft.RestClient.Test.Unit
             const long maxResponseContentBufferSize = 100;
             var httpClientWrapper = new HttpClientWrapper(new Config { MaxResponseContentBufferSize = maxResponseContentBufferSize });
 
-            var httpClient = httpClientWrapper.GetHttpClient();
+            var httpClient = httpClientWrapper.HttpClient;
 
             Assert.That(httpClient.MaxResponseContentBufferSize, Is.EqualTo(maxResponseContentBufferSize));
+        }
+
+        [Test] //RestClientFactory
+        public void Ctor_NullHttpClient_ThrowsArgumentNullException()
+        {
+            // ReSharper disable once ObjectCreationAsStatement
+            Assert.Throws<ArgumentNullException>(() => new HttpClientWrapper((HttpClient)null, null));
+        }
+
+        [Test] //RestClientFactory
+        public void Ctor_PassingHttpClient_SetsHttpClientProperty()
+        {
+            var httpClient = new HttpClient();
+            var httpClientWrapper = new HttpClientWrapper(httpClient, null);
+
+            Assert.That(httpClientWrapper.HttpClient, Is.EqualTo(httpClient));
+        }
+
+        [Test] //RestClientFactory
+        public void Ctor_PassingDefaultRequestHeaders_SetsDefaultRequestHeadersProperty()
+        {
+            var defaultRequestHeaders = new Headers(new { test = "test" });
+            var httpClientWrapper = new HttpClientWrapper(new HttpClient(), defaultRequestHeaders);
+
+            Assert.That(httpClientWrapper.DefaultRequestHeaders, Is.EqualTo(defaultRequestHeaders));
         }
 
         [Test]
@@ -340,7 +365,7 @@ namespace DalSoft.RestClient.Test.Unit
 
             httpClientWrapper.Dispose();
 
-            Assert.True((bool)TestHelper.GetPrivateField(httpClientWrapper.GetHttpClient(), "disposed"));
+            Assert.True((bool)TestHelper.GetPrivateField(httpClientWrapper.HttpClient, "disposed"));
         }
     }
 }

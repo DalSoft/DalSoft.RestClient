@@ -30,7 +30,7 @@ namespace DalSoft.RestClient.Handlers
                 request.ExpectJsonResponse(true);
             }
             
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
         private static HttpContent GetContent(HttpRequestMessage request)

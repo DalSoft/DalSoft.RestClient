@@ -87,14 +87,14 @@ namespace DalSoft.RestClient.Handlers
         private async Task BackOff(int retryCount)
         {
             if (CurrentBackOffStrategy == BackOffStrategy.Linear)
-                await BackOffFunc(WaitToRetryInSeconds);
+                await BackOffFunc(WaitToRetryInSeconds).ConfigureAwait(false);
 
             if (CurrentBackOffStrategy == BackOffStrategy.Exponential)
             {
                 var exponentiallyRetryInSeconds = Math.Pow(WaitToRetryInSeconds, retryCount);
                 exponentiallyRetryInSeconds = exponentiallyRetryInSeconds > MaxWaitToRetryInSeconds ? MaxWaitToRetryInSeconds : exponentiallyRetryInSeconds;
 
-                await BackOffFunc(exponentiallyRetryInSeconds);
+                await BackOffFunc(exponentiallyRetryInSeconds).ConfigureAwait(false);
             }
         }
 

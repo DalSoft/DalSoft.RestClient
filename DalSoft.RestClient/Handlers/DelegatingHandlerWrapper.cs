@@ -16,7 +16,7 @@ namespace DalSoft.RestClient.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return await _handler(request, cancellationToken, (message, token) => base.SendAsync(request, cancellationToken));
+            return await _handler(request, cancellationToken, (message, token) => base.SendAsync(request, cancellationToken)).ConfigureAwait(false);
         }
     }
 }

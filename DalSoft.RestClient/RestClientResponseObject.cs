@@ -11,27 +11,30 @@ namespace DalSoft.RestClient
 {
     internal class RestClientResponseObject : DynamicObject
     {
-        private string _responseString;
+        private readonly string _responseString;
         private readonly HttpResponseMessage _httpResponseMessage;
         private readonly bool _isRoot;
         private readonly bool _isJson;
         private readonly dynamic _currentObject;
 
-        public RestClientResponseObject(HttpResponseMessage httpResponseMessage) //Root
+        public RestClientResponseObject(HttpResponseMessage httpResponseMessage, string responseString) //Root
         {
             _isRoot = true;
 
             _httpResponseMessage = httpResponseMessage;
+            _responseString = responseString;
 
+            if (_httpResponseMessage.RequestMessage == null) return;
+
+            // ReSharper disable once InvertIf
             if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(Config.JsonMediaType)) ||
                 _httpResponseMessage.RequestMessage.ExpectJsonResponse())
             {
                 var isValidJson = ToString().TryParseJson(out _currentObject); //Just because we told the server we accpet JSON doesn't mean it will send us valid JSON back
 
                 if (isValidJson)
-                {
                     _isJson = true;
-                }
+                
             }
         }
 
@@ -67,9 +70,8 @@ namespace DalSoft.RestClient
             if (_isJson)
             {
                 var isValid = ToString().TryParseJson(out result, binder.Type);
-                var exception = result as Exception;
 
-                if (exception != null) throw exception; //Ok to throw the serilization error here to help the caller
+                if (result is Exception exception) throw exception; //Ok to throw the serilization error here to help the caller
 
                 return isValid;
             }
@@ -86,8 +88,7 @@ namespace DalSoft.RestClient
             }
 
             //JToken
-            var jToken = _currentObject as JToken;
-            if (jToken != null)
+            if (_currentObject is JToken jToken)
             {
                 result = jToken[binder.Name].WrapJToken();
                 if (result != null)
@@ -116,21 +117,7 @@ namespace DalSoft.RestClient
 
         public sealed override string ToString()
         {
-            if (!_isRoot)
-                return _currentObject.ToString();
-
-            if (_responseString != null)
-                return _responseString;
-
-            using (var content = _httpResponseMessage.Content)
-            {
-                if (content == null) return string.Empty;
-
-                var responseBytes = content.ReadAsByteArrayAsync().Result;
-                
-                _responseString = Encoding.UTF8.GetString(responseBytes, 0, responseBytes.Length);
-                return _responseString;
-            }
+            return !_isRoot ? (string) _currentObject.ToString() : _responseString;
         }
 
         private string OutputErrorString()

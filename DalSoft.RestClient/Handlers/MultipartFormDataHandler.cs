@@ -18,7 +18,7 @@ namespace DalSoft.RestClient.Handlers
                 request.Content = GetContent(request);
             }
 
-            return await base.SendAsync(request, cancellationToken); //next in the pipeline
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false); //next in the pipeline
         }
 
         private bool IsMultipartFormDataHandler(HttpRequestMessage request)

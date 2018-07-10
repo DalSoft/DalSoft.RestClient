@@ -9,7 +9,7 @@ namespace DalSoft.RestClient.Test.Unit
         /* Doing this with getting private fields because I don't own HttpClient and don't won't to make the wrapper more complex than it needs to be just for this test */
         internal static HttpMessageHandler GetHandler(this HttpClientWrapper httpClientWrapper)
         {
-            var httpClient = (HttpMessageInvoker)GetPrivateField(httpClientWrapper, "_httpClient");
+            var httpClient = (HttpMessageInvoker) httpClientWrapper.HttpClient;
             var actualHandler = (HttpMessageHandler)GetPrivateField(httpClient, "handler");
 
             return actualHandler;
@@ -19,14 +19,7 @@ namespace DalSoft.RestClient.Test.Unit
         {
             return (T)handler;
         }
-
-        internal static HttpClient GetHttpClient(this HttpClientWrapper httpClientWrapper)
-        {
-            var httpClient = (HttpClient)GetPrivateField(httpClientWrapper, "_httpClient");
-            
-            return httpClient;
-        }
-
+        
         internal static object GetPrivateField<T>(T instance, string fieldName)
         {   
             var field = typeof(T).GetField(fieldName) ?? typeof(T).GetRuntimeFields()

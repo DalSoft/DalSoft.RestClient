@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Test.Int
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Test.Unit", "DalSoft.RestClient.Test.Unit\DalSoft.RestClient.Test.Unit.csproj", "{E3E55716-2618-4F4F-9F91-B480E5F989FB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Examples", "DalSoft.RestClient.Examples\DalSoft.RestClient.Examples.csproj", "{41991191-F064-44CB-A8E8-27ED78A90707}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{E3E55716-2618-4F4F-9F91-B480E5F989FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3E55716-2618-4F4F-9F91-B480E5F989FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3E55716-2618-4F4F-9F91-B480E5F989FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41991191-F064-44CB-A8E8-27ED78A90707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41991191-F064-44CB-A8E8-27ED78A90707}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41991191-F064-44CB-A8E8-27ED78A90707}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41991191-F064-44CB-A8E8-27ED78A90707}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,11 +10,11 @@ namespace DalSoft.RestClient
 {
     internal sealed class HttpClientWrapper : IHttpClientWrapper
     {
-        private readonly HttpClient _httpClient;
+        internal readonly HttpClient HttpClient;
         
         public IReadOnlyDictionary<string, string> DefaultRequestHeaders { get; set; } //ToDo: really this should be IDictionary<string, IEnumerable<string>>
         
-        public HttpClientWrapper() : this(null, null) { }
+        public HttpClientWrapper() : this(null, (Config)null) { }
 
         public HttpClientWrapper(IDictionary<string, string> defaultRequestHeaders) : this(defaultRequestHeaders, null) { }
 
@@ -24,17 +24,24 @@ namespace DalSoft.RestClient
         {
             config = config ?? new Config();
 
-            _httpClient = new HttpClient(CreatePipeline(config.Pipeline.OfType<HttpClientHandler>().SingleOrDefault() ?? new HttpClientHandler(), 
-                                                        config.Pipeline.Except(config.Pipeline.OfType<HttpClientHandler>())))
+            HttpClient = new HttpClient(CreatePipeline(config.Pipeline.OfType<HttpClientHandler>().SingleOrDefault() ?? new HttpClientHandler(), config.Pipeline.Except(config.Pipeline.OfType<HttpClientHandler>())))
             {
+
                 Timeout = config.Timeout,
                 MaxResponseContentBufferSize = config.MaxResponseContentBufferSize
             };
 
-            defaultRequestHeaders = defaultRequestHeaders ?? new Dictionary<string, string>();
-            DefaultRequestHeaders = new ReadOnlyDictionary<string, string>(defaultRequestHeaders);
+            DefaultRequestHeaders = new ReadOnlyDictionary<string, string>(defaultRequestHeaders ?? new Dictionary<string, string>());
         }
 
+        //Called by RestClientFactory
+        public HttpClientWrapper(HttpClient httpClient, IDictionary<string, string> defaultRequestHeaders)
+        {  
+            HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+
+            DefaultRequestHeaders = new ReadOnlyDictionary<string, string>(defaultRequestHeaders ?? new Dictionary<string, string>());
+        }
+        
         public async Task<HttpResponseMessage> Send(HttpMethod method, Uri uri, IDictionary<string, string> requestHeaders, object content)
         {
             requestHeaders = requestHeaders ?? new Dictionary<string, string>();
@@ -63,7 +70,7 @@ namespace DalSoft.RestClient
 
             httpRequestMessage.SetContent(content);
 
-            return await _httpClient.SendAsync(httpRequestMessage);
+            return await HttpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
         }
         
         private static HttpMessageHandler CreatePipeline(HttpMessageHandler innerHandler, IEnumerable<HttpMessageHandler> handlers)
@@ -95,7 +102,7 @@ namespace DalSoft.RestClient
 
         public void Dispose()
         {
-            _httpClient.Dispose();
+            HttpClient.Dispose();
         }
     }
 }

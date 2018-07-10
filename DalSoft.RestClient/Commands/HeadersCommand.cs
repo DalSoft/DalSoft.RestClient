@@ -21,9 +21,7 @@ namespace DalSoft.RestClient.Commands
             if (headers != null)
                 AddHeaders(next, headers);
             else
-                AddHeaders(next, args[0].GetType().GetProperties()
-                    .Where(_ => _.GetValue(args[0]) != null)
-                    .ToDictionary(_=> FormatHeaderName(_.Name),  _=>_.GetValue(args[0]).ToString()));
+                AddHeaders(next, new Headers(args[0]));
 
             return new MemberAccessWrapper
             (
@@ -58,16 +56,7 @@ namespace DalSoft.RestClient.Commands
             if (args[0] is IDictionary<string, string>)
                 return;
 
-            var incorrectTypeException = new ArgumentException("Headers must be Dictionary<string, string> or a simple object representing the Headers new { ContentType = \"application/json\", Accept = \"application/json\" }"); ;
-
-            if (args[0] is IEnumerable)
-                throw incorrectTypeException;
-
-            if (!(args[0].GetType().GetTypeInfo().IsClass))
-                throw incorrectTypeException;
-
-            if (args[0].GetType().GetProperties().Any(_ => _.GetValue(args[0]).GetType() != typeof(string)))
-                throw incorrectTypeException;
+            Headers.VaildateAnonymousObjectRepresentingHeaders(args[0]);
         }
     }
 }

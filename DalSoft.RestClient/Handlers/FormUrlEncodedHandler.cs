@@ -18,7 +18,7 @@ namespace DalSoft.RestClient.Handlers
                 );
             }
 
-            return await base.SendAsync(request, cancellationToken); //next in the pipeline
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false); //next in the pipeline
         }
 
         private static bool IsFormUrlEncodedContentType(HttpRequestMessage request)
