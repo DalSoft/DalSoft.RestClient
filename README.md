@@ -86,7 +86,21 @@ public class GitHubController : Controller
 ```
 
 > **See [IHttpClientFactory](/docs/ihttpclientfactory/) for more examples and details on our IHttpClientFactory support.**
- 
+
+## New in Version 3.0 Pipeline Awesomeness!
+
+```cs
+var config = new Config() //Build a pipeline using extension methods
+                    .UseHttpClientHandler(new HttpClientHandler())
+                    .UseHandler((request, token, next) => next(request, token))
+                    .UseHandler(new UnitTestHandler())
+                    .UseUnitTestHandler(request => { })
+                    .UseUnitTestHandler(request => new HttpResponseMessage());
+
+dynamic restClient = new RestClient("http://headers.jsontest.com/", config);
+```
+
+See [Pipeline Docs](https://restclient.dalsoft.io/docs/about-the-handler-pipeline/)
 
 ## Standing on the Shoulders of Giants
 
