@@ -4,11 +4,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace DalSoft.RestClient.DependencyInjection
 {
     public static class RestClientFactoryRestClientFactoryConfigExtensions
     {
+        public static RestClientFactoryConfig SetJsonSerializerSettings(this RestClientFactoryConfig config, JsonSerializerSettings jsonSerializerSettings)
+        {
+            config.JsonSerializerSettings = jsonSerializerSettings;
+            return config;
+        }
+        
         public static RestClientFactoryConfig UseNoDefaultHandlers(this RestClientFactoryConfig config)
         {
             config.UseDefaultHandlers = false;
@@ -95,6 +102,15 @@ namespace DalSoft.RestClient.DependencyInjection
         public static RestClientFactoryConfig UseRetryHandler(this RestClientFactoryConfig config, int maxRetries, double waitToRetryInSeconds, double maxWaitToRetryInSeconds, RetryHandler.BackOffStrategy backOffStrategy)
         {
             DelegatingHandler HandlerFactory() => new RetryHandler(maxRetries, waitToRetryInSeconds, maxWaitToRetryInSeconds, backOffStrategy);
+
+            config.HttpClientBuilder.AddHttpMessageHandler(HandlerFactory);
+
+            return config;
+        }
+
+        public static RestClientFactoryConfig UseTwitterHandler(this RestClientFactoryConfig config, string consumerKey, string consumerKeySecret, string accessToken, string accessTokenSecret)
+        {
+            DelegatingHandler HandlerFactory() => new TwitterHandler(consumerKey, consumerKeySecret, accessToken, accessTokenSecret);
 
             config.HttpClientBuilder.AddHttpMessageHandler(HandlerFactory);
 

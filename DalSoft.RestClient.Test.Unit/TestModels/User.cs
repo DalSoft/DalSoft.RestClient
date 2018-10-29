@@ -14,4 +14,10 @@ namespace DalSoft.RestClient.Test.Unit.TestModels
 
         public string website { get; set; }
     }
+
+    public class UserCamelCase
+    {
+        public string UserName { get; set; }
+        public string PhoneNumber { get; set; }
+    }
 }

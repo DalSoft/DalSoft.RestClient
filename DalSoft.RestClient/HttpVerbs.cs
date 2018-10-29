@@ -34,7 +34,7 @@ namespace DalSoft.RestClient
             HttpMethodEnum.PATCH.ToString()
         };
 
-        private static bool IsMutableVerb(this string httpMethod)
+        internal static bool IsMutableVerb(this string httpMethod)
         {
             httpMethod = httpMethod.ToUpperInvariant();
             return MutableVerbs.Any(x => x == httpMethod);

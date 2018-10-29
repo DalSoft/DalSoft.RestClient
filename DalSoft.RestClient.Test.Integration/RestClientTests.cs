@@ -449,9 +449,9 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Post_MultipartForm_CorrectPostFile()
+        public async Task Post_MultipartForm_CorrectlyPostsFile()
         {
-                dynamic restClient = new RestClient("http://en.directupload.net/index.php", new Config
+            dynamic restClient = new RestClient("http://en.directupload.net/index.php", new Config
             (
                 new MultipartFormDataHandler()
             ));
@@ -501,5 +501,74 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(numberOfActualTries, Is.EqualTo(4)); //maxRetries + the first attempt
         }
+
+        [Test, Ignore("Secrets")]
+        public async Task Post_StatusUpdateUsingTwitterHandler_CorrectlyUpdateStatus()
+        {
+            dynamic restClient = new RestClient("https://api.twitter.com/1.1", new Config
+            (
+                new TwitterHandler
+                (
+                    consumerKey:"", consumerKeySecret:"", accessToken: "", accessTokenSecret:""
+                )));
+
+            var result = await restClient.Statuses.Update.Post( new { status = "Test" , trim_user = "1" } );
+            
+            Assert.AreEqual(HttpStatusCode.OK, result.HttpResponseMessage.StatusCode);
+        }
+
+        [Test, Ignore("Secrets")]
+        public async Task Get_SearchTweetsUsingTwitterHandler_ReturnsTwitterSearchResults()
+        {
+            dynamic restClient = new RestClient("https://api.twitter.com/1.1", new Config
+            (
+                new TwitterHandler
+                (
+                    consumerKey:"", consumerKeySecret:"", accessToken:"", accessTokenSecret:""
+                )));
+
+            var result = await restClient.Search.Tweets.Query(new { q = "Hello World" }).Get();
+            
+            Assert.AreEqual("Hello+World", result.search_metadata.query);
+            Assert.AreEqual(HttpStatusCode.OK, result.HttpResponseMessage.StatusCode);
+        }
+
+        [Test, Ignore("Secrets")]
+        public async Task Get_UserTimelineUsingTwitterHandler_ReturnsUsersTimeline()
+        {
+            dynamic restClient = new RestClient("https://api.twitter.com/1.1", new Config
+            (
+                new TwitterHandler
+                (
+                    consumerKey:"", consumerKeySecret:"", accessToken:"", accessTokenSecret:""
+                )));
+
+            var result = await restClient.Statuses.Home_Timeline.Get();
+            IEnumerable<dynamic> timeline = result;
+            
+            Assert.NotZero(timeline.Count());
+            Assert.AreEqual(HttpStatusCode.OK, result.HttpResponseMessage.StatusCode);
+        }
+
+        [Test, Ignore("Secrets")]
+        public async Task Post_ImageThenStatusUpdateUsingTwitterHandler_CorrectlyPostsImageAndUpdateStatus()
+        {
+            dynamic restClient = new RestClient("https://api.twitter.com/1.1", new Config
+            (
+                new TwitterHandler
+                (
+                    consumerKey:"", consumerKeySecret:"", accessToken:"", accessTokenSecret:""
+                )));
+
+            var filepath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath) + "/DalSoft.jpg";
+            var fileBytes = File.ReadAllBytes(filepath);
+            
+            var mediaUploadResult =  await restClient.Media.Upload.Post( new { media = fileBytes } );
+            var statusUpdateResult = await restClient.Statuses.Update.Post( new { status = "Upload" , trim_user = "1", media_ids = mediaUploadResult.media_id } );
+
+            Assert.AreEqual(HttpStatusCode.OK, mediaUploadResult.HttpResponseMessage.StatusCode);
+            Assert.AreEqual(HttpStatusCode.OK, statusUpdateResult.HttpResponseMessage.StatusCode);
+        }
+
     }
 }

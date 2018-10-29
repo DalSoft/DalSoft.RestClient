@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Unit.Extensions
@@ -11,6 +12,17 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
     [TestFixture]
     public class PipelineExtensionsTests
     {
+        [Test]
+        public void SetJsonSerializerSettings_WhenCalled_SetsJsonSerializerSettings()
+        {
+            var expected = new JsonSerializerSettings();
+            
+            var config = new Config()
+                .SetJsonSerializerSettings(expected);
+
+            Assert.AreSame(expected, config.JsonSerializerSettings);
+        }
+        
         [Test]
         public void UseNoDefaultHandlers_WhenCalled_SetsUseDefaultHandlersToFalse()
         {
@@ -166,6 +178,16 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
         }
 
         [Test]
+        public void UseTwitterHandler_AddHandlers_CorrectlyAddHandlers()
+        {
+            var config = new Config()
+                .UseTwitterHandler(consumerKey:"consumerKey", consumerKeySecret:"consumerKeySecret", accessToken:"accessToken", accessTokenSecret:"accessTokenSecret");
+            
+            Assert.That(config.Pipeline.Count(), Is.EqualTo(2));
+            Assert.That(config.Pipeline.ElementAt(1), Is.InstanceOf<TwitterHandler>());
+        }
+
+        [Test]
         public void ExpectJsonResponse_StateBagPropertyNull_ReturnsFalse()
         {
             Assert.False(new HttpRequestMessage().ExpectJsonResponse());
@@ -179,6 +201,27 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
             request.ExpectJsonResponse(true);
 
             Assert.True(request.ExpectJsonResponse());
+        }
+
+        [Test]
+        public void SetJsonSerializerSettings_NullConfig_ThrowsNullArgumentException()
+        {
+            var request = new HttpRequestMessage();
+            var expected = default(Config);
+
+            // ReSharper disable once ExpressionIsAlwaysNull
+            Assert.Throws<ArgumentNullException>(() => request.SetConfig(expected));
+        }
+
+        [Test]
+        public void SetJsonSerializerSettings_SetStateBagProperty_ReturnsSetJsonSerializerSettings()
+        {
+            var request = new HttpRequestMessage();
+            var expected = new Config();
+            
+            request.SetConfig(expected);
+
+            Assert.AreSame(expected, request.GetConfig());
         }
     }
 }

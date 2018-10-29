@@ -69,7 +69,7 @@ namespace DalSoft.RestClient
 
             if (_isJson)
             {
-                var isValid = ToString().TryParseJson(out result, binder.Type);
+                var isValid = ToString().TryParseJson(out result, binder.Type, _httpResponseMessage.RequestMessage.GetConfig().JsonSerializerSettings);
 
                 if (result is Exception exception) throw exception; //Ok to throw the serilization error here to help the caller
 

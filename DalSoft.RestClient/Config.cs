@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
+using Newtonsoft.Json;
 
 namespace DalSoft.RestClient
 {
@@ -14,12 +15,14 @@ namespace DalSoft.RestClient
         internal static readonly string RequestContentKey = "DalSoft.RestClient.RequestContentKey";
         internal static readonly string RequestContentType = "DalSoft.RestClient.RequestContentType";
         internal static readonly string ResponseIsJsonKey = "DalSoft.RestClient.ResponseIsJsonKey";
+        internal static readonly string ConfigKey = "DalSoft.RestClient.Config";
 
         internal IEnumerable<HttpMessageHandler> Pipeline { get; set; }
 
         public TimeSpan Timeout { get; set; }
         public long MaxResponseContentBufferSize { get; set; }
         public bool UseDefaultHandlers { get; set; }
+        public JsonSerializerSettings JsonSerializerSettings { get; set; }
         
         public Config() : this((HttpMessageHandler[])null) { }
 

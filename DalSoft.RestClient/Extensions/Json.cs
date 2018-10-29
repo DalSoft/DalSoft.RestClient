@@ -7,12 +7,12 @@ namespace DalSoft.RestClient.Extensions
 {
     internal static class Json
     {
-        internal static bool TryParseJson(this string json, out object result, Type type = null)
+        internal static bool TryParseJson(this string json, out object result, Type type = null, JsonSerializerSettings jsonSerializerSettings = null)
         {
             type = type ?? typeof(object);
             try
             {
-                result = JsonConvert.DeserializeObject(json, type);
+                result = JsonConvert.DeserializeObject(json, type, jsonSerializerSettings);
                 return true;
             }
             catch (Exception ex)

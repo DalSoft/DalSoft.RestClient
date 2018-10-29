@@ -1,6 +1,7 @@
 ﻿using System;
 using DalSoft.RestClient.Handlers;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace DalSoft.RestClient.DependencyInjection
 {
@@ -8,6 +9,7 @@ namespace DalSoft.RestClient.DependencyInjection
     {
         public IHttpClientBuilder HttpClientBuilder { get; }
         public bool UseDefaultHandlers { get; internal set; }
+        public JsonSerializerSettings JsonSerializerSettings { get; internal set; }
 
         public RestClientFactoryConfig(IHttpClientBuilder httpClientBuilder)
         {
@@ -16,7 +18,8 @@ namespace DalSoft.RestClient.DependencyInjection
 
             HttpClientBuilder.AddHttpMessageHandler(() => new DefaultJsonHandler(new Config
             {
-                UseDefaultHandlers = UseDefaultHandlers
+                UseDefaultHandlers = UseDefaultHandlers,
+                JsonSerializerSettings = JsonSerializerSettings
             }));
         }
     }

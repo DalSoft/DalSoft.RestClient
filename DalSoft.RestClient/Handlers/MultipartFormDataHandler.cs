@@ -26,7 +26,7 @@ namespace DalSoft.RestClient.Handlers
             return request.GetContentType() != null && request.GetContentType().StartsWith("multipart/form-data");
         }
 
-        private MultipartFormDataContent GetContent(HttpRequestMessage request)
+        internal static MultipartFormDataContent GetContent(HttpRequestMessage request)
         {
             var content = request.GetContent();
             if (content == null)

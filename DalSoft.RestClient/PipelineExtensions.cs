@@ -5,11 +5,22 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
+using Newtonsoft.Json;
 
 namespace DalSoft.RestClient
 {
     public static class PipelineExtensions
     {
+        internal static void SetConfig(this HttpRequestMessage request, Config config)
+        {
+            request.Properties[Config.ConfigKey] = config ?? throw new ArgumentNullException(nameof(config));
+        }
+
+        public static Config GetConfig(this HttpRequestMessage request)
+        {
+            return request.Properties.ContainsKey(Config.ConfigKey) ? request.Properties[Config.ConfigKey] as Config : null;
+        }
+        
         internal static void SetContent(this HttpRequestMessage request, object content)
         {
             request.Properties[Config.RequestContentKey] = content;
@@ -39,7 +50,13 @@ namespace DalSoft.RestClient
         {
             return request.Properties.ContainsKey(Config.ResponseIsJsonKey) && (request.Properties[Config.ResponseIsJsonKey] as bool? ?? false);
         }
-        
+
+        public static Config SetJsonSerializerSettings(this Config config, JsonSerializerSettings jsonSerializerSettings)
+        {
+            config.JsonSerializerSettings = jsonSerializerSettings;
+            return config;
+        }
+
         public static Config UseNoDefaultHandlers(this Config config)
         {
             config.UseDefaultHandlers = false;
@@ -102,6 +119,11 @@ namespace DalSoft.RestClient
         public static Config UseRetryHandler(this Config config, int maxRetries, double waitToRetryInSeconds, double maxWaitToRetryInSeconds, RetryHandler.BackOffStrategy backOffStrategy)
         {
             return UseHandler(config, new RetryHandler(maxRetries, waitToRetryInSeconds, maxWaitToRetryInSeconds, backOffStrategy));
+        }
+
+        public static Config UseTwitterHandler(this Config config, string consumerKey, string consumerKeySecret, string accessToken, string accessTokenSecret)
+        {
+            return UseHandler(config, new TwitterHandler(consumerKey, consumerKeySecret, accessToken, accessTokenSecret));
         }
 
         internal static void ValidatePipeline(this IEnumerable<HttpMessageHandler> pipeline)

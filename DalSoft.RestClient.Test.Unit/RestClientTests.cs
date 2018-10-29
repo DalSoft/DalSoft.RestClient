@@ -9,6 +9,7 @@ using DalSoft.RestClient.Handlers;
 using DalSoft.RestClient.Test.Unit.TestModels;
 using Moq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace DalSoft.RestClient.Test.Unit
 {
@@ -1163,6 +1164,25 @@ namespace DalSoft.RestClient.Test.Unit
             //PhoneNumber has JsonProperty attribute
             Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
 
+        }
+
+        [Test]
+        public async Task Deserialize_WhenSettingJsonSerializerSettings_CorrectlyDeserializes()
+        {
+            var user = new { phone_number = "+44 12345", user_name = "dalsoft" };
+            var config = new Config()
+                .SetJsonSerializerSettings(new JsonSerializerSettings { ContractResolver =  new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() } })
+                .UseUnitTestHandler(request => new HttpResponseMessage
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(user))
+                });
+
+            dynamic restClient = new RestClient(BaseUri, config);
+
+            UserCamelCase response = await restClient.Get();
+            //Should map SnakeCase to CamelCase using JsonSerializerSettings
+            Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
+            Assert.That(response.UserName, Is.EqualTo(user.user_name));
         }
 
         private static HttpResponseMessage GetMockUserResponse()

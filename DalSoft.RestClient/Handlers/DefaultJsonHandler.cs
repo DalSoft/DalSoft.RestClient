@@ -20,6 +20,8 @@ namespace DalSoft.RestClient.Handlers
         
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            request.SetConfig(_config);
+            
             if (_config.UseDefaultHandlers)
             {
                 request.Content = GetContent(request);

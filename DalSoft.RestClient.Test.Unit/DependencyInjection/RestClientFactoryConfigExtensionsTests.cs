@@ -9,6 +9,7 @@ using DalSoft.RestClient.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Unit.DependencyInjection
@@ -17,6 +18,18 @@ namespace DalSoft.RestClient.Test.Unit.DependencyInjection
     public class RestClientFactoryConfigExtensionsTests
     {
         private const string Name = "MyClient1";
+
+        [Test]
+        public void SetJsonSerializerSettings_WhenCalled_SetsJsonSerializerSettings()
+        {
+            var services = new ServiceCollection();
+            var expected = new JsonSerializerSettings();
+
+            var config = services.AddRestClient(Name, "http://dalsoft.co.uk")
+                .SetJsonSerializerSettings(expected);
+
+            Assert.AreSame(expected, config.JsonSerializerSettings);
+        }
 
         [Test]
         public void UseNoDefaultHandlers_WhenCalled_SetsUseDefaultHandlersToFalse()
@@ -182,5 +195,19 @@ namespace DalSoft.RestClient.Test.Unit.DependencyInjection
             //Assert.That(retryHandler?.MaxWaitToRetryInSeconds, Is.EqualTo(defaultMaxWaitToRetryInSeconds));
             //Assert.That(retryHandler?.CurrentBackOffStrategy, Is.EqualTo(defaultBackOffStrategy));
         }
+
+        [Test]
+        public void UseTwitterHandler_AddHandlers_CorrectlyAddHandlers()
+        {
+           var services = new ServiceCollection();
+
+            services.AddRestClient(Name, "http://dalsoft.co.uk")
+                .UseTwitterHandler(consumerKey:"consumerKey", consumerKeySecret:"consumerKeySecret", accessToken:"accessToken", accessTokenSecret:"accessTokenSecret");
+            
+            var httpClientFactoryOptions = services.Where(_ => _.ServiceType == typeof(IConfigureOptions<HttpClientFactoryOptions>))
+                .Select(_=>_.ImplementationInstance).Cast<ConfigureNamedOptions<HttpClientFactoryOptions>>().ToList();
+
+            Assert.That(httpClientFactoryOptions.Count, Is.EqualTo(2)); //DefaultJsonHandler & UseTwitterHandler
+         }
     }
 }
