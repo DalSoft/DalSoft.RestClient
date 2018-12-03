@@ -310,6 +310,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             Assert.That(retryCount, Is.EqualTo(numberTimesToRetry));
         }
 
+#if (NETCOREAPP1_0 || NETCOREAPP1_1 || NETCOREAPP2_0 || NET461) //.NET CORE < 2.1 & .NET Standard 2.0 on WINDOWS 
         [TestCase((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_CONNECTION_ERROR)]
         [TestCase((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_AUTO_PROXY_SERVICE_ERROR)]
         [TestCase((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_CANNOT_CALL_AFTER_OPEN)]
@@ -321,6 +322,24 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
         [TestCase((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_OPERATION_CANCELLED)]
         [TestCase((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_RESEND_REQUEST)]
         [TestCase((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_SHUTDOWN)]
+#endif
+#if (NETCOREAPP2_1 || NETCOREAPP2_2) // .NET CORE > 2.1 on WINDOWS 
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSA_OPERATION_ABORTED)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAEWOULDBLOCK)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAENETDOWN)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAENETUNREACH)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAENETRESET)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAECONNABORTED)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAECONNRESET)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAENOBUFS)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAETIMEDOUT)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAECONNREFUSED)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAEHOSTDOWN)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAEHOSTUNREACH)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSAHOST_NOT_FOUND)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSATRY_AGAIN)]
+        [TestCase((int)RetryHandler.WinWSANativeErrorCode.WSANO_DATA)]
+#endif
         public void Send_TransientExceptionEncounteredWindowsOnly_ShouldBeRetried(int winHttpNativeErrorCode)
         {
             const int numberTimesToRetry = 5;
@@ -336,10 +355,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             };
 
             dynamic restClient = new RestClient("http://test.test", new Config(retryHandler)
-                .UseUnitTestHandler(request =>
-                {
-                    throw new HttpRequestException(winHttpNativeErrorCode.ToString(), new Win32Exception(winHttpNativeErrorCode));
-                }));
+                .UseUnitTestHandler(request => throw new HttpRequestException(winHttpNativeErrorCode.ToString(), new Win32Exception(winHttpNativeErrorCode))));
 
             var exception = Assert.ThrowsAsync<HttpRequestException>(async () => await restClient.Get());
             var win32Exception = exception.InnerException as Win32Exception;

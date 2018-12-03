@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace DalSoft.RestClient.Commands
 {
@@ -16,9 +15,7 @@ namespace DalSoft.RestClient.Commands
 
         protected override object Handle(object[] args, MemberAccessWrapper next)
         {
-            var headers = args[0] as IDictionary<string, string>;
-
-            if (headers != null)
+            if (args[0] is IDictionary<string, string> headers)
                 AddHeaders(next, headers);
             else
                 AddHeaders(next, new Headers(args[0]));
@@ -30,11 +27,6 @@ namespace DalSoft.RestClient.Commands
                 next.GetRelativeUri(),
                 next.Headers
             );
-        }
-
-        private static string FormatHeaderName(string propertyName)
-        {
-            return Regex.Replace(propertyName, @"(\p{Ll})(\p{Lu})", "$1-$2");
         }
 
         private static void AddHeaders(MemberAccessWrapper next, IDictionary<string, string> headers)
@@ -56,7 +48,7 @@ namespace DalSoft.RestClient.Commands
             if (args[0] is IDictionary<string, string>)
                 return;
 
-            Headers.VaildateAnonymousObjectRepresentingHeaders(args[0]);
+            Headers.ValidateAnonymousObjectRepresentingHeaders(args[0]);
         }
     }
 }

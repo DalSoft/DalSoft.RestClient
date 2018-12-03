@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Unit.Handlers
@@ -51,9 +52,9 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                 }))
             );
 
-            var response = await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, content:null); //null content
+            var response = await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, content:null); //null body
 
-            Assert.That(response.Content.ReadAsStringAsync().Result, Does.Contain("world"));
+            Assert.That(await response.Content.ReadAsStringAsync(), Does.Contain("world"));
         }
 
         [Test]
@@ -192,7 +193,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
                 await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), 
                     new Dictionary<string, string> { { "Content-Type", supportedJsonContentType } }, new { hello = "world" });
 
-                dynamic deserializedContent = JsonConvert.DeserializeObject<dynamic>(actualRequest.Content.ReadAsStringAsync().Result);
+                dynamic deserializedContent = JsonConvert.DeserializeObject<dynamic>(await actualRequest.Content.ReadAsStringAsync());
                 Assert.That(deserializedContent.hello.Value, Is.EqualTo("world"));
             }
         }
@@ -209,6 +210,25 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, null);
 
             Assert.That(actualRequest.ExpectJsonResponse(), Is.True);
+        }
+
+        [Test]
+        public async Task Send_SettingJsonSerializerSettings_CorrectSerializesContent()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Config(new UnitTestHandler(request => actualRequest = request))
+                {
+                    JsonSerializerSettings =  new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() } }
+                }
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Headers(), new { HelloWorld = "world" });
+
+            dynamic deserializedContent = JsonConvert.DeserializeObject<dynamic>(await actualRequest.Content.ReadAsStringAsync());
+            Assert.That(deserializedContent.hello_world.Value, Is.EqualTo("world"));
+            
         }
     }
 }

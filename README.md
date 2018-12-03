@@ -1,14 +1,24 @@
-# RestClient
+# DalSoft C# RestClient 
 
 [![Help and chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DalSoft-RestClient)
 
 > ## **For everything you need to know, please head over to [https://restclient.dalsoft.io](https://restclient.dalsoft.io)**
+> ## **👉 [New Static Typing and Resource Expressions in 4.0](http://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing)**
 
-RestClient is a very lightweight wrapper around System.Net.HttpClient that uses the dynamic features of .NET 4 to provide a fluent way of accessing RESTFul API's, making it trivial to create REST requests using a lot less code . 
 
-Originally created to remove the boilerplate code involved in making REST requests using code that is testable. I know there are a couple of  REST clients out there but I wanted the syntax to look a particular way with minimal fuss.
+## Just some of the things you can do with DalSoft.RestClient
 
-RestClient is biased towards posting and returning JSON - if you don't provide Accept and Content-Type headers then they are set to application/json by default [See Working with non JSON content](https://restclient.dalsoft.io/docs/content-other-than-json/).
+* [Easliy Create Fluent SDK's](https://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing/#Extending_Using_Resource_Classes)
+* [Unit Testing](https://restclient.dalsoft.io/docs/unit-testing/)
+* [Post Json](https://restclient.dalsoft.io/docs/put-post-patch/)
+* [Post Forms](https://restclient.dalsoft.io/docs/formurlencodedhandler/)
+* [Post Files](https://restclient.dalsoft.io/docs/multipartformdatahandler/)
+* [Retry Requests](https://restclient.dalsoft.io/docs/retrying-transient-errors/)
+* [Twitter SDK](https://restclient.dalsoft.io/docs/twitterandler/)
+* [Raw HTTP](https://restclient.dalsoft.io/docs/content-other-than-json/)
+* [Passthrough HttpClient](https://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing/#HttpClient)
+* [Authorization](https://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing/#Authorization_method)
+
 
 ## Supported Platforms
 
@@ -30,14 +40,26 @@ If you need to target .NET Standard 1.4 use version 3.2.2.
 PM> Install-Package DalSoft.RestClient
 ```
 
-## Example call a REST API in two lines of code
+## Example calling a REST API 
 
 You start by new'ing up the RestClient and passing in the base uri for your RESTful API. 
 
-Then simply chain members that would make up the resource you want to access - ending with the HTTP method you want to use. 
-
 For example if your wanted to perform a GET on [https://jsonplaceholder.typicode.com/users/1](https://jsonplaceholder.typicode.com/users/1) you would do the following:
 
+**Static Typed Rest Client**
+
+For the Static typed Rest Client just pass a string representing the resource you want access to the Resource method, and then call the HTTP method you want to use. 
+```cs
+var client = new RestClient("https://jsonplaceholder.typicode.com");
+
+User user = await client.Resource("users/1").Get();
+   
+Console.WriteLine(user.Name);
+```
+
+**Dynamicaly Typed Rest Client**
+
+For the Dynamicaly typed Rest Client chain members that would make up the resource you want to access - ending with the HTTP method you want to use. 
 ```cs
 dynamic client = new RestClient("https://jsonplaceholder.typicode.com");
 
@@ -47,60 +69,19 @@ Console.WriteLine(user.name);
 ```
 > Note all HTTP methods are async
  
-## New in Version 3.3.0 IHttpClientFactory Goodness!
+## Recent Releases 
+ 
+* [Version 4.0 Static Typing and Resource Expressions](http://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing)
+* [Version 3.3.0 IHttpClientFactory Goodness](https://restclient.dalsoft.io/docs/ihttpclientfactory/)
+* [Version 3.0 Pipeline Awesomeness](https://restclient.dalsoft.io/docs/about-the-handler-pipeline/)
 
-In version 3.3.0 we added support for .NET Core's 2.1 [IHttpClientFactory](https://www.stevejgordon.co.uk/introduction-to-httpclientfactory-aspnetcore). 
+## About
+RestClient is a very lightweight wrapper around System.Net.HttpClient that uses the dynamic features of .NET 4 to provide a fluent way of accessing RESTFul API's, making it trivial to create REST requests using a lot less code. 
 
-First register your RestClient as a service in Startup.cs.
-```cs
-public class Startup
-{
-   public void ConfigureServices(IServiceCollection services)
-   {
-      services.AddRestClient("https://api.github.com", new Headers(new { UserAgent = "MyClient" }));
-   }
-}
-```
+Originally created to remove the boilerplate code involved in making REST requests using code that is testable. I know there are a couple of  REST clients out there but I wanted the syntax to look a particular way with minimal fuss.
 
-Then inject `IRestClientFactory` into your controller, which is how we support IHttpClientFactory.
-```cs
-public class GitHubController : Controller
-{
-   private readonly IRestClientFactory _restClientFactory;
-        
-   public GitHubController(IRestClientFactory restClientFactory)
-   {
-      _restClientFactory = restClientFactory;
-   }
+RestClient is biased towards posting and returning JSON - if you don't provide Accept and Content-Type headers then they are set to application/json by default [See Working with non JSON content](https://restclient.dalsoft.io/docs/content-other-than-json/).
 
-   [Route("github/users/dalsoft"), HttpGet]
-   public async Task<List<Repository>> CreateClient()
-   {
-      dynamic restClient = _restClientFactory.CreateClient();
-            
-      var repositories = await restClient.users.dalsoft.repos.Get();
-            
-      return repositories;
-   }
-}
-```
-
-> **See [IHttpClientFactory](/docs/ihttpclientfactory/) for more examples and details on our IHttpClientFactory support.**
-
-## New in Version 3.0 Pipeline Awesomeness!
-
-```cs
-var config = new Config() //Build a pipeline using extension methods
-                    .UseHttpClientHandler(new HttpClientHandler())
-                    .UseHandler((request, token, next) => next(request, token))
-                    .UseHandler(new UnitTestHandler())
-                    .UseUnitTestHandler(request => { })
-                    .UseUnitTestHandler(request => new HttpResponseMessage());
-
-dynamic restClient = new RestClient("http://headers.jsontest.com/", config);
-```
-
-See [Pipeline Docs](https://restclient.dalsoft.io/docs/about-the-handler-pipeline/)
 
 ## Standing on the Shoulders of Giants
 

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace DalSoft.RestClient.Test.Unit.TestModels
+namespace DalSoft.RestClient.Test.Unit.TestData.Models
 {
     public class User
     {

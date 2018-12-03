@@ -48,7 +48,7 @@ namespace DalSoft.RestClient.Handlers
             if (!content.GetType().GetTypeInfo().IsClass || content is string)
                 throw new ArgumentException("Please provide a class to be serialized to the request body for example new { hello = \"world\" }");
 
-            var httpContent = new StringContent(JsonConvert.SerializeObject(content));
+            var httpContent = new StringContent(JsonConvert.SerializeObject(content, request.GetConfig().JsonSerializerSettings));
 
             httpContent.Headers.Clear(); //Clear the defaults we want to control all the headers
 

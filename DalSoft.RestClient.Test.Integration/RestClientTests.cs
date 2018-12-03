@@ -470,7 +470,7 @@ namespace DalSoft.RestClient.Test.Integration
             );
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.ToString(), Does.Contain("http://www.directupload.net/file/d/"));
+            Assert.That(result.ToString(), Does.Contain("Your picture was uploaded successfully!"));
         }
         
         [Test]
@@ -478,6 +478,7 @@ namespace DalSoft.RestClient.Test.Integration
         {
             // ReSharper disable once InconsistentNaming
             const int ERROR_WINHTTP_NAME_NOT_RESOLVED = 12007;
+            const int WSAHOST_NOT_FOUND = 11001;
 
             var numberOfActualTries = 0;
 
@@ -496,8 +497,13 @@ namespace DalSoft.RestClient.Test.Integration
             if (webException!=null) //.NET 4.5, .NET Standard all platforms except Windows
                 Assert.That(webException.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
 
-            if (win32Exception != null) //.NET Standard Windows only https://github.com/dotnet/corefx/issues/19185
-                Assert.That(win32Exception.NativeErrorCode, Is.EqualTo(ERROR_WINHTTP_NAME_NOT_RESOLVED));
+            #if NETCOREAPP2_2
+                if (win32Exception != null) //.NET Core > 2.1 windows uses sockets https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socketexception?view=netframework-4.7.2
+                    Assert.That(win32Exception.NativeErrorCode, Is.EqualTo(WSAHOST_NOT_FOUND));
+            #else
+                if (win32Exception != null) //.NET Core < 2.1 Windows only https://github.com/dotnet/corefx/issues/19185
+                        Assert.That(win32Exception.NativeErrorCode, Is.EqualTo(ERROR_WINHTTP_NAME_NOT_RESOLVED));
+            #endif
 
             Assert.That(numberOfActualTries, Is.EqualTo(4)); //maxRetries + the first attempt
         }
@@ -570,5 +576,117 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.AreEqual(HttpStatusCode.OK, statusUpdateResult.HttpResponseMessage.StatusCode);
         }
 
+        //ToD: Refactor These Test
+
+        [Test]
+        public async Task Get_UsingRestClientStrongType_CorrectlyReturnsDynamicResponse()
+        {
+            var client = new RestClient(BaseUri);
+
+            User user = await client // Strongly typed RestClient
+                .Resource("users")
+                .Resource("1")
+                .Get();
+
+            Assert.AreEqual(1, user.id);
+        }
+
+        [Test]
+        public async Task Get_UsingRestClientStrongType_CanBeCastToHttpResponseMessage()
+        {
+            var client = new RestClient(BaseUri);
+
+            HttpResponseMessage httpResponseMessage = await client //Strongly typed RestClient then cast to HttpResponseMessage
+                .Resource("users")
+                .Resource("1")
+                .Get();
+
+            Assert.AreEqual(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+        }
+
+        [Test]
+        public async Task Get_UsingRestClientStrongType_HttpMethodExtension()
+        {
+            var client = new RestClient(BaseUri);
+
+            User user = await client // Strongly typed RestClient extension method on resource
+                .Users(1) // extension method
+                .Get();
+
+            Assert.AreEqual(1, user.id);
+        }
+
+        [Test]
+        public async Task Get_UsingRestClientStrongType_HttpMethodAndResponseExtension()
+        {
+            var client = new RestClient(BaseUri);
+            
+            var user = await client.GetUserById(1); // Strongly typed RestClient extension method full verb
+
+            Assert.AreEqual(1, user.id);
+        }
+
+
+        [Test]
+        public async Task Get_UsingRestClientDynamicTye_HttpMethodAndResponseExtension()
+        {
+            var client = new RestClient(BaseUri);
+            
+            var user = await client.GetUserByIdDynamic(1); // dynamic extension method full verb
+
+            Assert.AreEqual(1, user.id);
+        }
+
+        [Test]
+        public async Task Get_UsingRestClientStrongType_CanBeCastBackToDynamic()
+        {
+            var client = new RestClient(BaseUri);
+
+            dynamic testBackAsDynamic = client; // Strongly typed RestClient cast back to dynamic
+            var user = await testBackAsDynamic.Users(1).Get();
+
+            Assert.AreEqual(1, user.id);
+        }
+
+        
+        [Test]
+        public async Task UsingRestClientStrongType_CanBeCastToUsableHttpClient()
+        {
+            var client = new RestClient(BaseUri);
+
+            //  Get underline httpclient
+            HttpClient httpClient = (dynamic)client;
+
+            var httpClientResponseString = await httpClient.GetStringAsync(client.BaseUri + "/users/1");
+
+            Assert.True(httpClientResponseString.Contains("Leanne Graham"));
+
+        }
+
+
+        [Test]
+        public async Task Delete_UsingRestClientStrongType_CorrectlyReturnsDynamicResponse()
+        {
+            var client = new RestClient(BaseUri);
+            
+            HttpResponseMessage httpResponseMessage = await client
+                .Resource("users")
+                .Resource("1")
+                .Delete();
+
+            Assert.AreEqual(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+        }
+
+        [Test]
+        public async Task Post_UsingRestClientStrongType_CorrectlyReturnsDynamicResponse()
+        {
+            var client = new RestClient(BaseUri);
+
+            User user = await client
+                .Resource("users")
+                .Post(new User { name = "DalSoft" });
+
+            Assert.AreEqual("DalSoft", user.name);
+        }
     }
 }

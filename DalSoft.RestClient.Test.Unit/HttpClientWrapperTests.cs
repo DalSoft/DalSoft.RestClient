@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
-using DalSoft.RestClient.Test.Unit.TestModels;
+using DalSoft.RestClient.Test.Unit.TestData.Models;
 using NUnit.Framework;
 
 namespace DalSoft.RestClient.Test.Unit

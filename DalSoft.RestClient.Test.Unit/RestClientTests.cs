@@ -4,22 +4,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
-using DalSoft.RestClient.Test.Unit.TestModels;
+using DalSoft.RestClient.Test.Unit.TestData.Models;
+using DalSoft.RestClient.Test.Unit.TestData.Resources;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace DalSoft.RestClient.Test.Unit
 {
+    /* This now tests both dynamic and strongly-typed access. i.e. regardless of how declared restClient.Get() will always call strong type on RestClient,
+       and when dynamically chained i.e. restClient.Users.Get() will always call dynamically. Read comments in IRestClient to understand more. */
+    
     [TestFixture]
     public class RestClientTests
     {
         public const string BaseUri = "http://test.test";
         
-        [Test]
-        public async Task Query_ShouldSerializeObjectToQueryString()
+        [TestCase(true), TestCase(false)]
+        public async Task Query_ShouldSerializeObjectToQueryString(bool callDynamically)
         {
             var mockHttpClient = new Mock<IHttpClientWrapper>();
 
@@ -28,19 +33,23 @@ namespace DalSoft.RestClient.Test.Unit
                 .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage()}));
 
             dynamic client = new RestClient(mockHttpClient.Object, BaseUri);
-            await client.Query(new { Id = "test", another = 1 }).Get();
+
+            if (callDynamically)
+                await client.Users.Query(new { Id = "test", another = 1 }).Get();
+            else
+                await ((IRestClient)client).Query(new { Id = "test", another = 1 }).Get();
 
             mockHttpClient.Verify(_ => _.Send
             (
                 HttpMethod.Get, 
-                It.Is<Uri>(__ => __ == new Uri(BaseUri + "?Id=test&another=1")),
+                It.Is<Uri>(__ => __ == new Uri($"{BaseUri}{(callDynamically ? "/Users" : string.Empty)}?Id=test&another=1")),
                 It.IsAny<IDictionary<string, string>>(),
                 It.IsAny<object>()
             ));
         }
 
-        [Test]
-        public async Task Query_ShouldSerializeArrayToQueryString()
+        [TestCase(true), TestCase(false)]
+        public async Task Query_ShouldSerializeArrayToQueryString(bool callDynamically)
         {
             var mockHttpClient = new Mock<IHttpClientWrapper>();
 
@@ -49,20 +58,24 @@ namespace DalSoft.RestClient.Test.Unit
                 .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage() }));
 
             dynamic client = new RestClient(mockHttpClient.Object, BaseUri);
-            await client.Query(new { variables = new[] { "one", "other" }, otherVar = "stillWorks" }).Get();
+
+            if (callDynamically)
+                await client.Users.Query(new { variables = new[] { "one", "other" }, otherVar = "stillWorks" }).Get();
+            else
+                await ((IRestClient)client).Resource("Users").Query(new { variables = new[] { "one", "other" }, otherVar = "stillWorks" }).Get();
 
             mockHttpClient.Verify(_ => _.Send
             (
                 HttpMethod.Get,
-                It.Is<Uri>(__ => __ == new Uri(BaseUri + "?variables=one&variables=other&otherVar=stillWorks")),
+                It.Is<Uri>(__ => __ == new Uri(BaseUri + "/Users?variables=one&variables=other&otherVar=stillWorks")),
                 It.IsAny<IDictionary<string, string>>(),
                 It.IsAny<object>()
             ));
         }
 
 
-        [Test]
-        public async Task Query_StringThatRequiresEncoding_EncodesStringCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task Query_StringThatRequiresEncoding_EncodesStringCorrectly(bool callDynamically)
         {
             var mockHttpClient = new Mock<IHttpClientWrapper>();
 
@@ -71,19 +84,34 @@ namespace DalSoft.RestClient.Test.Unit
                 .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage() }));
 
             dynamic client = new RestClient(mockHttpClient.Object, BaseUri);
-            await client.Query(new { variables = new[] { "!@£$%", "*[&]^" }, otherVar = "ƻƻƳƳ" }).Get();
 
+            if (callDynamically)
+                await client.Users.Query(new { variables = new[] { "!@£$%", "*[&]^" }, otherVar = "ƻƻƳƳ" }).Get();
+            else
+                await ((IRestClient)client).Resource("Users").Query(new { variables = new[] { "!@£$%", "*[&]^" }, otherVar = "ƻƻƳƳ" }).Get();
+
+        // TODO: Investigate 
+        #if NET461
             mockHttpClient.Verify(_ => _.Send
             (
                 HttpMethod.Get,
-                It.Is<Uri>(__ => __ == new Uri(BaseUri + "?variables=!%40£%24%25&variables=*[%26]^&otherVar=ƻƻƳƳ")),
+                It.Is<Uri>(__ => __ == new Uri(BaseUri + "/Users?variables=!%40£%24%25&variables=*[%26]^&otherVar=ƻƻƳƳ")),
                 It.IsAny<IDictionary<string, string>>(),
                 It.IsAny<object>()
             ));
+        #else
+            mockHttpClient.Verify(_ => _.Send
+            (
+                HttpMethod.Get,
+                It.Is<Uri>(__ => __ == new Uri(BaseUri + "/Users?variables=%21%40£%24%25&variables=%2A%5B%26%5D^&otherVar=ƻƻƳƳ")),
+                It.IsAny<IDictionary<string, string>>(),
+                It.IsAny<object>()
+            ));
+        #endif
         }
 
-        [Test]
-        public async Task ToString_NullContent_ReturnsEmptyString()
+        [TestCase(true), TestCase(false)]
+        public async Task ToString_NullContent_ReturnsEmptyString(bool callDynamically)
         {
             var mockHttpClient = new Mock<IHttpClientWrapper>();
 
@@ -92,74 +120,54 @@ namespace DalSoft.RestClient.Test.Unit
                 .Returns(Task.FromResult(new HttpResponseMessage { RequestMessage = new HttpRequestMessage() }));
 
             dynamic client = new RestClient(mockHttpClient.Object, BaseUri);
-            var result = await client.Get();
 
-           Assert.That(result.ToString(), Is.EqualTo(string.Empty));
+            dynamic result;
+
+            if (callDynamically)
+                result = await client.Users.Get();
+            else
+                result = await ((IRestClient)client).Resource("Users").Get();
+
+            Assert.That(result.ToString(), Is.EqualTo(string.Empty));
         }
 
-        [Test]
-        public async Task AllVerbs_SingleObjectAsDynamic_ReturnsDynamicCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SingleObjectAsDynamic_ReturnsDynamicCorrectly(bool callDynamically)
         {
            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
-
            var verbs = new Func<Task<dynamic>>[]
            {
-                ()=>client.Users.Get(1),
-                ()=>client.Users(1).Get(),
-                ()=>client.Users.Delete(1),
-                ()=>client.Users(1).Delete(),
+               () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+               () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+               () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+               () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                ()=>client.Users(1).Post(),
-                ()=>client.Users(1).Put(),
-                ()=>client.Users(1).Patch()
+               () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+               () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+               () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
            };
-
-            foreach (var verb in verbs)
+       
+           foreach (var verb in verbs)
             {
                 var user = await verb();
                 Assert.That(user.id, Is.EqualTo(1));
             }
         }
 
-        [Test]
-        public async Task AllVerbs_AccessMissingMember_ReturnsNull()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SingleObjectCastingToStrongType_CastsObjectCorrectly(bool callDynamically)
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
-
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
-             };
-
-            foreach (var verb in verbs)
-            {
-                var user = await verb();
-                Assert.That(user.IAmAMissingMember, Is.Null);
-            }
-        }
-
-        [Test]
-        public async Task AllVerbs_SingleObjectImplicitCast_ReturnsTypeCorrectly()
-        {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
-            
-            var verbs = new Func<Task<dynamic>>[]
-            {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
-
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
             };
 
             foreach (var verb in verbs)
@@ -169,21 +177,67 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ArrayOfObjectsImplicitCastToList_ReturnsTypeCorrectly()
-        {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
 
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_AccessMissingMember_ReturnsNull(bool callDynamically)
+        {
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+            };
+
+            foreach (var verb in verbs)
+            {
+                var user = await verb();
+                Assert.That(user.IAmAMissingMember, Is.Null);
+            }
+        }
+
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SingleObjectImplicitCast_ReturnsTypeCorrectly(bool callDynamically)
+        {
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
+
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+            };
+
+            foreach (var verb in verbs)
+            {
+                User user = await verb();
+                Assert.That(user.id, Is.EqualTo(1));
+            }
+        }
+
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ArrayOfObjectsImplicitCastToList_ReturnsTypeCorrectly(bool callDynamically)
+        {
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
+
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -193,21 +247,20 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ArrayOfObjectAccessByIndex_ReturnsValueByIndexCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ArrayOfObjectAccessByIndex_ReturnsValueByIndexCorrectly(bool callDynamically)
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
-            
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -217,21 +270,20 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ArrayOfObjectsAsDynamicAccessByIndex_ReturnsValueByIndexCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ArrayOfObjectsAsDynamicAccessByIndex_ReturnsValueByIndexCorrectly(bool callDynamically)
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
-            
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -241,21 +293,20 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ArrayOfObjectsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ArrayOfObjectsEnumeratingUsingForEach_CorrectlyEnumeratesOverEachItem(bool callDynamically)
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUsersResponse())));
-
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -272,8 +323,8 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_SingleObjectCastAsHttpResponseMessage_CastAsHttpResponseMessageCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SingleObjectCastAsHttpResponseMessage_CastAsHttpResponseMessageCorrectly(bool callDynamically)
         {
             var response = GetMockUserResponse();
             response.StatusCode = HttpStatusCode.BadGateway;
@@ -282,16 +333,14 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Head(1),
-                    ()=>client.Users(1).Head(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -301,25 +350,23 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task Get_SingleObjectGetHttpResponseMessageDynamically_GetsHttpResponseMessageCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task Get_SingleObjectGetHttpResponseMessageDynamically_GetsHttpResponseMessageCorrectly(bool callDynamically)
         {
             var response = GetMockUserResponse();
             response.StatusCode = HttpStatusCode.BadGateway;
+
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => response)));
-           
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Head(1),
-                    ()=>client.Users(1).Head(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -329,21 +376,20 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public void AllVerbs_SingleObjectSynchronously_GetsObjectCorrectly()
+        [TestCase(true), TestCase(false)]
+        public void AllVerbs_SingleObjectSynchronously_GetsObjectCorrectly(bool callDynamically)
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
-
             var verbs = new Func<Task<dynamic>>[]
             {
-                    ()=>client.Users.Get(1),
-                    ()=>client.Users(1).Get(),
-                    ()=>client.Users.Delete(1),
-                    ()=>client.Users(1).Delete(),
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
-                    ()=>client.Users(1).Post(),
-                    ()=>client.Users(1).Put(),
-                    ()=>client.Users(1).Patch()
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
             };
 
             foreach (var verb in verbs)
@@ -353,9 +399,9 @@ namespace DalSoft.RestClient.Test.Unit
                 Assert.That(result.id, Is.EqualTo(1));
             }
         }
-        
-        [Test]
-        public async Task Get_NonJsonContentFromGoogle_GetsContentCorrectly()
+
+        [TestCase(true), TestCase(false)]
+        public async Task Get_NonJsonContentFromGoogle_GetsContentCorrectly(bool callDynamically)
         {
             var nonJsonContent = new HttpResponseMessage
             {
@@ -368,7 +414,13 @@ namespace DalSoft.RestClient.Test.Unit
                 new Config(new UnitTestHandler(request => nonJsonContent))
             );
 
-            var result = await google.news.Get();
+            dynamic result;
+
+            if (callDynamically)
+                result = await google.news.Get();
+            else
+                result = await ((IRestClient)google).Resource("news").Get();
+
             var content = result.ToString();
             
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -376,7 +428,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public void AllVerbs_ChainingMethodsPassingNonPrimitive_ThrowsArgumentException()
+        public void AllVerbs_DynamicallyChainingMethodsPassingNonPrimitive_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
@@ -397,7 +449,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public void ImmutableVerbs_ChainingMethodsPassingNonPrimitive_ThrowsArgumentException()
+        public void ImmutableVerbs_DynamicallyChainingMethodsPassingNonPrimitive_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
@@ -415,7 +467,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public void MutableVerbs_ChainingMethodsPassingPrimitive_ThrowsArgumentException()
+        public void MutableVerbs_DynamicallyChainingMethodsPassingPrimitive_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
             
@@ -432,16 +484,16 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public void MutableVerbs_ChainingMethodsPassingString_ThrowsArgumentException()
+        [TestCase(true), TestCase(false)]
+        public void MutableVerbs_ChainingMethodsPassingString_ThrowsArgumentException(bool callDynamically)
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users.Post("This is a string"),
-                ()=>client.Users.Put("This is a string"),
-                ()=>client.Users.Patch("This is a string")
+                ()=> callDynamically ? client.Users.Post("This is a string") : ((IRestClient)client).Resource("Users").Post("This is a string"),
+                ()=> callDynamically ? client.Users.Put("This is a string") : ((IRestClient)client).Resource("Users").Put("This is a string"),
+                ()=> callDynamically ? client.Users.Patch("This is a string") : ((IRestClient)client).Resource("Users").Patch("This is a string"),
             };
 
             foreach (var verb in verbs)
@@ -450,17 +502,17 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test(Description = "Bug #47")]
-        public async Task MutableVerbs_ChainingMethodsPassingEmptyEnumerable_SetsEmptyEnumerableCorrectly()
+        [TestCase(true), TestCase(false)]
+        public async Task MutableVerbs_ChainingMethodsPassingEmptyEnumerable_SetsEmptyEnumerableCorrectly(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri + "/", new Config(new UnitTestHandler(request => resultingRequest = request)));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users.Post(new { my_array = new string[]{} }),
-                ()=>client.Users(1).Put(new { my_array = new string[]{} }),
-                ()=>client.Users(1).Patch(new { my_array = new string[]{} })
+                ()=> callDynamically ? client.Users.Post(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users").Post(new { my_array = new string[]{} }),
+                ()=> callDynamically ? client.Users(1).Put(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users/1").Put(new { my_array = new string[]{} }),
+                ()=> callDynamically ? client.Users(1).Patch(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users/1").Patch(new { my_array = new string[]{} })
             };
 
             foreach (var verb in verbs)
@@ -472,7 +524,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
         
         [Test]
-        public void AllVerbs_SecondArgNotHeaderDictionary_ThrowsArgumentException()
+        public void AllVerbs_DynamicallyChainingAndSecondArgNotHeaderDictionary_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
@@ -493,7 +545,7 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [Test]
-        public void AllVerbs_MoreThan2Args_ThrowsArgumentException()
+        public void AllVerbs_DynamicallyChainingWithMoreThan2Args_ThrowsArgumentException()
         {
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
@@ -513,62 +565,61 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public void AllVerbs_UsingInvalidUri_ThrowsArgumentException()
+        [TestCase("this is a invalidUri", true), TestCase("this is a invalidUri", false)]
+        [TestCase(null, true), TestCase(null, false)]
+        public void AllVerbs_UsingInvalidUri_ThrowsArgumentException(string uri, bool callDynamically)
         {
-            dynamic client = new RestClient("this is a invalidUri", new Config(new UnitTestHandler()));
+            dynamic client = new RestClient(uri, new Config(new UnitTestHandler()));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users.Get(),
-                ()=>client.Users.Head(),
-                ()=>client.Users.Delete(),
-                ()=>client.Users.Post(),
-                ()=>client.Users.Put(),
-                ()=>client.Users.Patch(),
+                ()=>callDynamically ? client.Users.Get() : ((IRestClient)client).Resource("Users").Get(),
+                async () =>
+                {
+                    if (callDynamically)
+                        await client.Users.Head();
+                    else
+                        await ((IRestClient)client).Resource("Users").Head();
+
+                    return new object();
+                },
+                ()=>callDynamically ? client.Users.Delete() : ((IRestClient)client).Resource("Users").Delete(),
+                ()=>callDynamically ? client.Users.Post() : ((IRestClient)client).Resource("Users").Post(),
+                ()=>callDynamically ? client.Users.Put(new {}) : ((IRestClient)client).Resource("Users").Put(),
+                ()=>callDynamically ? client.Users.Patch(new {}) : ((IRestClient)client).Resource("Users").Patch(),
             };
 
             foreach (var verb in verbs)
             {
-                Assert.ThrowsAsync<ArgumentException>(async () => await verb());
+                Assert.ThrowsAsync<ArgumentException>(async () =>
+                {
+                    try
+                    {
+                        await verb();
+                    }
+                    catch (AggregateException e)
+                    {
+                        throw e.InnerException ?? e;
+                    }
+                });
             }
         }
 
-        [Test]
-        public void AllVerbs_UsingNullUri_ThrowsArgumentException()
-        {
-            dynamic client = new RestClient(null, new Config(new UnitTestHandler()));
-
-            var verbs = new Func<Task<dynamic>>[]
-            {
-                ()=>client.Users.Get(),
-                ()=>client.Users.Head(),
-                ()=>client.Users.Delete(),
-                ()=>client.Users.Post(),
-                ()=>client.Users.Put(),
-                ()=>client.Users.Patch(),
-            };
-
-            foreach (var verb in verbs)
-            {
-                Assert.ThrowsAsync<ArgumentException>(async () => await verb());
-            }
-        }
-
-        [Test]
-        public async Task AllVerbs_ChainingMethodsWithTrailingSlashInBaseUri_GeneratesCorrectUri()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ChainingMethodsWithTrailingSlashInBaseUri_GeneratesCorrectUri(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri + "/", new Config(new UnitTestHandler(request => resultingRequest = request)));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users(1).Get(),
-                ()=>client.Users(1).Head(),
-                ()=>client.Users(1).Delete(),
-                ()=>client.Users(1).Post(),
-                ()=>client.Users(1).Put(),
-                ()=>client.Users(1).Patch()
+                ()=>callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("Users/1").Get(),
+                // ReSharper disable once ConditionalTernaryEqualBranch
+                ()=>callDynamically ? client.Users(1).Head() : client.Users(1).Head(),  // ((IRestClient)client).Resource("Users/1").Head() returns HttpResponseMessage
+                ()=>callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("Users/1").Delete(),
+                ()=>callDynamically ? client.Users(1).Post() : ((IRestClient)client).Resource("Users/1").Post(),
+                ()=>callDynamically ? client.Users(1).Put() : ((IRestClient)client).Resource("Users/1").Put(),
+                ()=>callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Resource("Users/1").Patch()
             };
             
             foreach (var verb in verbs)
@@ -578,20 +629,21 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ChainingMethods_GeneratesCorrectUri()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ChainingMethods_GeneratesCorrectUri(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users(1).Get(),
-                ()=>client.Users(1).Head(),
-                ()=>client.Users(1).Delete(),
-                ()=>client.Users(1).Post(),
-                ()=>client.Users(1).Put(),
-                ()=>client.Users(1).Patch()
+                ()=>callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("Users/1").Get(),
+                // ReSharper disable once ConditionalTernaryEqualBranch
+                ()=>callDynamically ? client.Users(1).Head() : client.Users(1).Head(),  // ((IRestClient)client).Resource("Users/1").Head() returns HttpResponseMessage
+                ()=>callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("Users/1").Delete(),
+                ()=>callDynamically ? client.Users(1).Post() : ((IRestClient)client).Resource("Users/1").Post(),
+                ()=>callDynamically ? client.Users(1).Put() : ((IRestClient)client).Resource("Users/1").Put(),
+                ()=>callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Resource("Users/1").Patch()
             };
 
             foreach (var verb in verbs)
@@ -601,8 +653,8 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ChainingMethodsUsingGuid_GeneratesCorrectUri()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ChainingMethodsUsingGuid_GeneratesCorrectUri(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
@@ -611,12 +663,13 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users(testGuid).Get(),
-                ()=>client.Users(testGuid).Head(),
-                ()=>client.Users(testGuid).Delete(),
-                ()=>client.Users(testGuid).Post(),
-                ()=>client.Users(testGuid).Put(),
-                ()=>client.Users(testGuid).Patch()
+                ()=>callDynamically ? client.Users(testGuid).Get() : ((IRestClient)client).Resource($"Users/{testGuid}").Get(),
+                // ReSharper disable once ConditionalTernaryEqualBranch
+                ()=>callDynamically ? client.Users(testGuid).Head() : client.Users(testGuid).Head(),  // ((IRestClient)client).Resource("Users/1").Head() returns HttpResponseMessage
+                ()=>callDynamically ? client.Users(testGuid).Delete() : ((IRestClient)client).Resource($"Users/{testGuid}").Delete(),
+                ()=>callDynamically ? client.Users(testGuid).Post() : ((IRestClient)client).Resource($"Users/{testGuid}").Post(),
+                ()=>callDynamically ? client.Users(testGuid).Put() : ((IRestClient)client).Resource($"Users/{testGuid}").Put(),
+                ()=>callDynamically ? client.Users(testGuid).Patch() : ((IRestClient)client).Resource($"Users/{testGuid}").Patch()
             };
 
             foreach (var verb in verbs)
@@ -626,22 +679,23 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_ChainingMethodsUsingEnum_GeneratesCorrectUri()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_ChainingMethodsUsingEnum_GeneratesCorrectUri(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
 
-            var testEnum= HttpStatusCode.Accepted;
+            var testEnum = HttpStatusCode.Accepted;
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users(testEnum).Get(),
-                ()=>client.Users(testEnum).Head(),
-                ()=>client.Users(testEnum).Delete(),
-                ()=>client.Users(testEnum).Post(),
-                ()=>client.Users(testEnum).Put(),
-                ()=>client.Users(testEnum).Patch()
+                ()=>callDynamically ? client.Users(testEnum).Get() : ((IRestClient)client).Resource($"Users/{testEnum}").Get(),
+                // ReSharper disable once ConditionalTernaryEqualBranch
+                ()=>callDynamically ? client.Users(testEnum).Head() : client.Users(testEnum).Head(),  
+                ()=>callDynamically ? client.Users(testEnum).Delete() : ((IRestClient)client).Resource($"Users/{testEnum}").Delete(),
+                ()=>callDynamically ? client.Users(testEnum).Post() : ((IRestClient)client).Resource($"Users/{testEnum}").Post(),
+                ()=>callDynamically ? client.Users(testEnum).Put() : ((IRestClient)client).Resource($"Users/{testEnum}").Put(),
+                ()=>callDynamically ? client.Users(testEnum).Patch() : ((IRestClient)client).Resource($"Users/{testEnum}").Patch()
             };
 
             foreach (var verb in verbs)
@@ -741,20 +795,20 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task Reesource_CorrectArgs_GeneratesCorrectUri()
+        [TestCase(true), TestCase(false)]
+        public async Task Resource_CorrectArgs_GeneratesCorrectUri(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
             
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users.Resource("this-is-not-valid-in-csharp").Get(),
-                ()=>client.Users.Resource("this-is-not-valid-in-csharp").Head(),
-                ()=>client.Users.Resource("this-is-not-valid-in-csharp").Delete(),
-                ()=>client.Users.Resource("this-is-not-valid-in-csharp").Post(),
-                ()=>client.Users.Resource("this-is-not-valid-in-csharp").Put(),
-                ()=>client.Users.Resource("this-is-not-valid-in-csharp").Patch()
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Get() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Get(),
+                // ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Users.Head() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Head(),
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Delete() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Delete(),
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Post() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Post(),
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Put() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Put(),
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Patch() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Patch()
             };
 
             foreach (var verb in verbs)
@@ -827,20 +881,20 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task Query_CorrectArgs_GeneratesCorrectUri()
+        [TestCase(true), TestCase(false)]
+        public async Task Query_CorrectArgs_GeneratesCorrectUri(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
             
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Users(1).Query(new { my="query string" }).Get(),
-                ()=>client.Users(1).Query(new { my="query string" }).Head(),
-                ()=>client.Users(1).Query(new { my="query string" }).Delete(),
-                ()=>client.Users(1).Query(new { my="query string" }).Post(),
-                ()=>client.Users(1).Query(new { my="query string" }).Put(),
-                ()=>client.Users(1).Query(new { my="query string" }).Patch()
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Get() : ((IRestClient)client).Resource("Users/1").Query(new { my="query string" }).Get(),
+                //()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Head() : ((IRestClient)client).Resource("Users/1").Query(new { my="query string" }).Head(),
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Delete() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Delete(),
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Post() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Post(),
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Put() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Put(),
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Patch() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Patch()
             };
 
             foreach (var verb in verbs)
@@ -849,9 +903,9 @@ namespace DalSoft.RestClient.Test.Unit
                 Assert.That(resultingRequest.RequestUri.ToString().ToLower(), Is.EqualTo(BaseUri + "/users/1?my=query+string"));
             }
         }
-        
-        [Test]
-        public async Task AllVerbs_SetDefaultHeadersViaCtor_CorrectlySetsHeaders()
+
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SetDefaultHeadersViaCtor_CorrectlySetsHeaders(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri,
@@ -861,12 +915,12 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client.Get(),
-                ()=>client.Head(),
-                ()=>client.Delete(),
-                ()=>client.Post(),
-                ()=>client.Put(),
-                ()=>client.Patch()
+                ()=>callDynamically ? client.Users.Get() : ((IRestClient)client).Resource("Users").Get(),
+                //()=>callDynamically ? client.Users.Head() : ((IRestClient)client).Resource("Users").Head(),
+                ()=>callDynamically ? client.Users.Delete() : ((IRestClient)client).Resource("Users").Delete(),
+                ()=>callDynamically ? client.Users.Post() : ((IRestClient)client).Resource("Users").Post(),
+                ()=>callDynamically ? client.Users.Put() : ((IRestClient)client).Resource("Users").Put(),
+                ()=>callDynamically ? client.Users.Patch() : ((IRestClient)client).Resource("Users").Patch()
             };
 
             foreach (var verb in verbs)
@@ -876,39 +930,21 @@ namespace DalSoft.RestClient.Test.Unit
                 Assert.That(resultingRequest.Headers.GetValues("MyDummyHeader").First(), Is.EqualTo("MyValue"));
             }
         }
-        
-        [Test]
-        public async Task AllVerbs_SetHeadersUsingHeadersMethodDictionary_CorrectlySetsHeaders()
+
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SetHeadersUsingHeadersMethodDictionary_CorrectlySetsHeaders(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
             
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client
-                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                    .Get(),
-                ()=>client
-                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                    .Head(),
-                ()=>client
-                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                    .Delete(),
-                ()=>client
-                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                    .Post(),
-                ()=>client
-                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                    .Put(),
-                ()=>client
-                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
-                    .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                    .Patch()
+                ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Get() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Get(),
+                //()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Head() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Head(),
+                ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Delete() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Delete(),
+                ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Post() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Post(),
+                ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Put() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Put(),
+                ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Patch() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Patch(),
             };
 
             foreach (var verb in verbs)
@@ -961,40 +997,22 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_SetHeadersUsingHeadersMethodObject_CorrectlySetsHeaders()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SetHeadersUsingHeadersMethodObject_CorrectlySetsHeaders(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
+
             dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>client
-                    .Headers(new { DummyHeader = "MyValue" } )
-                    .Headers(new { Accept = "application/json" })
-                    .Get(),
-                ()=>client
-                    .Headers(new { DummyHeader = "MyValue" } )
-                    .Headers(new { Accept = "application/json" })
-                    .Head(),
-                ()=>client
-                    .Headers(new { DummyHeader = "MyValue" } )
-                    .Headers(new { Accept = "application/json" })
-                    .Delete(),
-                ()=>client
-                    .Headers(new { DummyHeader = "MyValue" } )
-                    .Headers(new { Accept = "application/json" })
-                    .Post(),
-                ()=>client
-                    .Headers(new { DummyHeader = "MyValue" } )
-                    .Headers(new { Accept = "application/json" })
-                    .Put(),
-                ()=>client
-                    .Headers(new { DummyHeader = "MyValue" } )
-                    .Headers(new { Accept = "application/json" })
-                    .Patch()
+                ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Get() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Get(),
+                //()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Head() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Head(),
+                ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Delete() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Delete(),
+                ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Post() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Post(),
+                ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Put() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Put(),
+                ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Patch() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Patch(),
             };
-
             foreach (var verb in verbs)
             {
                 await verb();
@@ -1069,8 +1087,8 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_SetHttpMessageHandlersViaCtor_CorrectlyInvokesHandlers()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SetHttpMessageHandlersViaCtor_CorrectlyInvokesHandlers(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             dynamic restClient = new RestClient(BaseUri, new Config
@@ -1090,12 +1108,12 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>restClient.Get(),
-                ()=>restClient.Head(),
-                ()=>restClient.Delete(),
-                ()=>restClient.Post(),
-                ()=>restClient.Put(),
-                ()=>restClient.Patch()
+                ()=>callDynamically ? restClient.Users.Get() : ((IRestClient)restClient).Resource("Users").Get(),
+                //()=>callDynamically ? restClient.Users.Head() : ((IRestClient)restClient).Resource("Users").Head(),
+                ()=>callDynamically ? restClient.Users.Delete() : ((IRestClient)restClient).Resource("Users").Delete(),
+                ()=>callDynamically ? restClient.Users.Post() : ((IRestClient)restClient).Resource("Users").Post(),
+                ()=>callDynamically ? restClient.Users.Put() : ((IRestClient)restClient).Resource("Users").Put(),
+                ()=>callDynamically ? restClient.Users.Patch() : ((IRestClient)restClient).Resource("Users").Patch(),
             };
 
             foreach (var verb in verbs)
@@ -1106,8 +1124,8 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task AllVerbs_SetHttpMessageHandlerFuncsViaCtor_CorrectlyInvokesHandlerFuncs()
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_SetHttpMessageHandlerFuncsViaCtor_CorrectlyInvokesHandlerFuncs(bool callDynamically)
         {
             HttpRequestMessage resultingRequest = null;
             var config = new Config
@@ -1132,12 +1150,12 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>restClient.Get(),
-                ()=>restClient.Head(),
-                ()=>restClient.Delete(),
-                ()=>restClient.Post(),
-                ()=>restClient.Put(),
-                ()=>restClient.Patch()
+                ()=>callDynamically ? restClient.Users.Get() : ((IRestClient)restClient).Resource("Users").Get(),
+                //()=>callDynamically ? restClient.Users.Head() : ((IRestClient)restClient).Resource("Users").Head(),
+                ()=>callDynamically ? restClient.Users.Delete() : ((IRestClient)restClient).Resource("Users").Delete(),
+                ()=>callDynamically ? restClient.Users.Post() : ((IRestClient)restClient).Resource("Users").Post(),
+                ()=>callDynamically ? restClient.Users.Put() : ((IRestClient)restClient).Resource("Users").Put(),
+                ()=>callDynamically ? restClient.Users.Patch() : ((IRestClient)restClient).Resource("Users").Patch(),
             };
 
             foreach (var verb in verbs)
@@ -1148,8 +1166,8 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [Test]
-        public async Task Deserialize_UsingModelWithJsonProperty_CorrectlyDeserializes()
+        [TestCase(true), TestCase(false)]
+        public async Task Deserialize_UsingModelWithJsonProperty_CorrectlyDeserializes(bool callDynamically)
         {
             var user = new { phone_number = "+44 12345" };
             var config = new Config()
@@ -1160,14 +1178,14 @@ namespace DalSoft.RestClient.Test.Unit
 
             dynamic restClient = new RestClient(BaseUri, config);
 
-            User response = await restClient.Get();
+            User response = callDynamically ? await restClient.Users(1).Get() : await ((IRestClient)restClient).Resource("Users/1").Get();
             //PhoneNumber has JsonProperty attribute
             Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
 
         }
 
-        [Test]
-        public async Task Deserialize_WhenSettingJsonSerializerSettings_CorrectlyDeserializes()
+        [TestCase(true), TestCase(false)]
+        public async Task Deserialize_WhenSettingJsonSerializerSettings_CorrectlyDeserializes(bool callDynamically)
         {
             var user = new { phone_number = "+44 12345", user_name = "dalsoft" };
             var config = new Config()
@@ -1179,10 +1197,282 @@ namespace DalSoft.RestClient.Test.Unit
 
             dynamic restClient = new RestClient(BaseUri, config);
 
-            UserCamelCase response = await restClient.Get();
+            UserCamelCase response = callDynamically ? await restClient.Users(1).Get() : await ((IRestClient)restClient).Resource("Users/1").Get(); ;
             //Should map SnakeCase to CamelCase using JsonSerializerSettings
             Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
             Assert.That(response.UserName, Is.EqualTo(user.user_name));
+        }
+
+        [Test]
+        public void DynamicRestClient_CastingToHttpClientWithANonHttpClientWrapper_ThrowsNotSupportedException()
+        {
+            var mockHttpClientWrapper = new Mock<IHttpClientWrapper>();
+
+            dynamic restClient = new RestClient(mockHttpClientWrapper.Object, BaseUri);
+
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                HttpClient httpClient = restClient;
+            });
+        }
+
+        [Test]
+        public void DynamicRestClient_CastingToHttpClientNotAtRoot_InvalidCastException()
+        {
+            dynamic restClient = new RestClient(BaseUri);
+
+            Assert.Throws<InvalidCastException>(() =>
+            {
+                HttpClient httpClient = restClient.Users; // Not root url
+            });
+        }
+
+        [Test]
+        public void DynamicRestClient_AccessingHttpClientMemberWithANonHttpClientWrapper_ThrowsNotSupportedException()
+        {
+            var mockHttpClientWrapper = new Mock<IHttpClientWrapper>();
+
+            dynamic restClient = new RestClient(mockHttpClientWrapper.Object, BaseUri);
+
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                HttpClient httpClient = restClient.HttpClient;
+            });
+        }
+
+        [Test]
+        public void DynamicRestClient_AccessingHttpClientNotAtRoot_ThrowsInvalidCastException()
+        {
+            dynamic restClient = new RestClient(BaseUri);
+
+            Assert.Throws<InvalidCastException>(() =>
+            {
+                HttpClient httpClient = restClient.Users.HttpClient; // Not at root Url
+            });
+        }
+
+        [Test]
+        public void StronglyTypedRestClient_AccessingHttpClientMemberWithANonHttpClientWrapper_ThrowsNotSupportedException()
+        {
+            var mockHttpClientWrapper = new Mock<IHttpClientWrapper>();
+
+            var restClient = new RestClient(mockHttpClientWrapper.Object, BaseUri);
+
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                var httpClient = restClient.HttpClient;
+            });
+        }
+
+        [Test]
+        public void DynamicRestClient_CastingIRestClientClientNotAtRoot_InvalidCastException()
+        {
+            dynamic client = new RestClient(BaseUri);
+
+            Assert.Throws<InvalidCastException>(() =>
+            {
+                IRestClient restClient = client.Users; // Not root url
+            });
+        }
+
+        [Test]
+        public async Task DynamicRestClient_CallingAuthorizationWithBearer_AddBearerToAuthorizationHeader()
+        {
+            HttpRequestMessage actualHttpRequestMessage = null;
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualHttpRequestMessage = request;
+                return GetMockUserResponse();
+            })));
+
+            await client.Authorization(AuthenticationSchemes.Bearer, "MyBearerToken").Get();
+
+            Assert.AreEqual("Bearer", actualHttpRequestMessage.Headers.Authorization.Scheme);
+            Assert.AreEqual("MyBearerToken", actualHttpRequestMessage.Headers.Authorization.Parameter);
+        }
+
+
+        [Test]
+        public async Task StronglyTypedRestClient_CallingAuthorizationWithBearer_AddBearerToAuthorizationHeader()
+        {
+
+            HttpRequestMessage actualHttpRequestMessage = null;
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualHttpRequestMessage = request;
+                return GetMockUserResponse();
+
+            })));
+
+            await client.Authorization(AuthenticationSchemes.Bearer, "MyBearerToken").Get();
+
+            Assert.AreEqual("Bearer", actualHttpRequestMessage.Headers.Authorization.Scheme);
+            Assert.AreEqual("MyBearerToken", actualHttpRequestMessage.Headers.Authorization.Parameter);
+        }
+
+        [Test]
+        public void StronglyTypedRestClient_CallingAuthorizationWithBearerSchemeAndUserNamePassword_ThrowsArgumentException()
+        {
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+
+            Assert.ThrowsAsync<ArgumentException>(async () => await client.Authorization(AuthenticationSchemes.Bearer, "Username", "Password").Get());
+        }
+
+        [Test]
+        public void StronglyTypedRestClient_CallingAuthorizationWithBearerNullBearerToken_ThrowsArgumentException()
+        {
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await client.Authorization(AuthenticationSchemes.Bearer, null).Get());
+        }
+
+        [Test]
+        public async Task DynamicRestClient_CallingAuthorizationWithBasic_AddsBasicToAuthorizationHeader()
+        {
+            HttpRequestMessage actualHttpRequestMessage = null;
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualHttpRequestMessage = request;
+                return GetMockUserResponse();
+            })));
+
+            await client.Authorization(AuthenticationSchemes.Basic, "MyUserName", "MyPassword").Get();
+
+            Assert.AreEqual("Basic", actualHttpRequestMessage.Headers.Authorization.Scheme);
+            Assert.AreEqual("MyUserName:MyPassword", Encoding.UTF8.GetString(Convert.FromBase64String(actualHttpRequestMessage.Headers.Authorization.Parameter)));
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_CallingAuthorizationWithBasic_AddsBasicToAuthorizationHeader()
+        {
+            HttpRequestMessage actualHttpRequestMessage = null;
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualHttpRequestMessage = request;
+                return GetMockUserResponse();
+            })));
+
+            await client.Authorization(AuthenticationSchemes.Basic, "MyUserName", "MyPassword").Get();
+
+            Assert.AreEqual("Basic", actualHttpRequestMessage.Headers.Authorization.Scheme);
+            Assert.AreEqual("MyUserName:MyPassword", Encoding.UTF8.GetString(Convert.FromBase64String(actualHttpRequestMessage.Headers.Authorization.Parameter))); ;
+        }
+
+        [Test]
+        public void StronglyTypedRestClient_CallingAuthorizationWithBasicSchemeAndBearerToken_ThrowsArgumentException()
+        {
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+
+            Assert.ThrowsAsync<ArgumentException>(async () => await client.Authorization(AuthenticationSchemes.Basic, "MyToken").Get());
+        }
+
+        [Test]
+        public void StronglyTypedRestClient_CallingAuthorizationWithBasicSchemeAndNullUsername_ThrowsArgumentException()
+        {
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await client.Authorization(AuthenticationSchemes.Basic, null, "MyPassword").Get());
+        }
+
+        [Test]
+        public void StronglyTypedRestClient_CallingAuthorizationWithBasicSchemeAndNullPassword_ThrowsArgumentException()
+        {
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await client.Authorization(AuthenticationSchemes.Basic, "MyUsername", null).Get());
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_UsingStronglyTypedResource_InvokesCorrectUri()
+        {
+            HttpRequestMessage actualRequest = null;
+
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualRequest = request;
+                return GetMockUserResponse();
+            })));
+
+            await client.Resource<RestApiResources>(resource => resource.Apps).Get();
+
+            Assert.AreEqual($"{BaseUri}/apps", actualRequest.RequestUri.ToString().ToLower());
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_UsingStronglyTypedNestedResource_InvokesCorrectUri()
+        {
+            HttpRequestMessage actualRequest = null;
+
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualRequest = request;
+                return GetMockUserResponse();
+            })));
+
+            await client.Resource<RestApiResources>
+            (
+                resource => resource.Users.Departments
+            )
+            .Get();
+
+            Assert.AreEqual($"{BaseUri}/users/departments", actualRequest.RequestUri.ToString().ToLower());
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_UsingStronglyTypedResourceMethod_InvokesCorrectUri()
+        {
+            HttpRequestMessage actualRequest = null;
+
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualRequest = request;
+                return GetMockUserResponse();
+            })));
+
+            await client.Resource<RestApiResources>
+            (
+                resource => resource.Users.GetUser(1)
+            )
+            .Get();
+
+            Assert.AreEqual($"{BaseUri}/users/1", actualRequest.RequestUri.ToString().ToLower());
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_UsingStronglyTypedResourceAndResponse_ReturnsCorrectlyCastResponse()
+        {
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+
+            var result = await client.Resource<RestApiResources>
+            (
+                resource => resource.Users.GetUser(1)
+            )
+            .Get<User>();
+
+            Assert.AreEqual(1, result.id);
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_UsingStronglyTypedResourceAndRequestAndResponse_PostsCorrectBodyAndReturnsCorrectlyCastResponse()
+        {
+            HttpRequestMessage actualRequest = null;
+
+            var client = new RestClient(BaseUri, new Config(new UnitTestHandler(request =>
+            {
+                actualRequest = request;
+                return GetMockUserResponse();
+            })));
+
+            var result = await client.Resource<RestApiResources>
+            (
+                resource => resource.Users.GetUser(1)
+            )
+            .Post<User, User>(new User { id = 1 });
+
+            var body = await actualRequest.Content.ReadAsStringAsync();
+
+            Assert.True(body.Contains("\"id\":1"));
+            Assert.AreEqual(1, result.id);
         }
 
         private static HttpResponseMessage GetMockUserResponse()

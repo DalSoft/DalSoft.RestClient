@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace DalSoft.RestClient.Commands
 {
-    internal class HttpVerbCommand : Command
+    internal class HttpMethodCommand : Command
     {
         internal override bool IsCommandFor(string method, object[] args)
         {
-            return method.IsHttpVerb();
+            return method.IsHttpMethod();
         }
 
         internal override bool IsAsync()
@@ -60,7 +60,7 @@ namespace DalSoft.RestClient.Commands
 
         private static Uri ParseUri(string httpMethod, string currentUri, object[] args)
         {
-            if (args.Length > 0 && httpMethod.IsImmutableVerb())
+            if (args.Length > 0 && httpMethod.IsImmutableHttpMethod())
             {
                 ResourceCommand.ValidateResourceArgs(args);
                 currentUri += "/" + args[0];
@@ -94,7 +94,7 @@ namespace DalSoft.RestClient.Commands
                 return null;
 
             // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (httpMethod.IsImmutableVerb())
+            if (httpMethod.IsImmutableHttpMethod())
                 return null;
 
             return args[0];

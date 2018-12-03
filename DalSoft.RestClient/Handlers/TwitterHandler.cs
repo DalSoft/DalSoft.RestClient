@@ -77,7 +77,7 @@ namespace DalSoft.RestClient.Handlers
                     request.SetContentType("multipart/form-data");
                     request.Content = MultipartFormDataHandler.GetContent(request);
                 }
-                else if (request.Method.ToString().IsMutableVerb())
+                else if (request.Method.ToString().IsMutableHttpMethod())
                     request.Content = new FormUrlEncodedContent(formData);
             }
 
@@ -105,14 +105,14 @@ namespace DalSoft.RestClient.Handlers
         }
 
         // ReSharper disable once InconsistentNaming
-        private KeyValuePair<string, string> GenerateHMACSHA1Signature(string httpVerb, string url, ICollection<KeyValuePair<string, string>> dataToSign)
+        private KeyValuePair<string, string> GenerateHMACSHA1Signature(string httpMethod, string url, ICollection<KeyValuePair<string, string>> dataToSign)
         {
             var sigString = string.Join("&", dataToSign
                                                 .Union(dataToSign)
                                                 .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}")
                                                 .OrderBy(s => s));
 
-            var fullSigData = $"{httpVerb}&{Uri.EscapeDataString(url)}&{Uri.EscapeDataString(sigString)}";
+            var fullSigData = $"{httpMethod}&{Uri.EscapeDataString(url)}&{Uri.EscapeDataString(sigString)}";
 
             var signature = Convert.ToBase64String(_sigHasher.ComputeHash(Encoding.UTF8.GetBytes(fullSigData)));
 

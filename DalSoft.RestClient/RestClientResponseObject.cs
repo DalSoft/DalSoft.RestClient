@@ -76,7 +76,7 @@ namespace DalSoft.RestClient
                 return isValid;
             }
 
-            throw new InvalidOperationException("Can not cast to " + binder.Type.FullName + OutputErrorString());
+            throw new InvalidCastException("Can not cast to " + binder.Type.FullName + OutputErrorString());
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)

@@ -11,7 +11,7 @@ namespace DalSoft.RestClient.Commands
             new HeadersCommand(),
             new EscapedResourceCommand(),
             new QueryCommand(),
-            new HttpVerbCommand()
+            new HttpMethodCommand()
         });
 
         private static readonly Command DefaultCommand = new ResourceCommand();

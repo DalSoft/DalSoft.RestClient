@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,8 +68,16 @@ namespace DalSoft.RestClient.Handlers
                 }
                 catch (HttpRequestException httpRequestException)
                 {
-                    HandleTransientExceptionDotNetStandardWindowsOnly(httpRequestException);
-                    HandleTransientExceptionEveryThingElse(httpRequestException);
+                    var handled = HandleTransientExceptionDotNetCore21AndAboveWindowsOnly(httpRequestException);
+
+                    if (!handled)
+                        handled = HandleTransientExceptionDotNetStandardPreCore21WindowsOnly(httpRequestException);
+
+                    if (!handled)
+                        handled = HandleTransientExceptionEveryThingElse(httpRequestException);
+
+                    if (!handled)
+                        throw;    
                 }
 
                 if (!IsServerErrorStatusCode(response?.StatusCode) && _lastException == null)
@@ -98,15 +107,50 @@ namespace DalSoft.RestClient.Handlers
             }
         }
 
-        private void HandleTransientExceptionDotNetStandardWindowsOnly(Exception exception)
+        private bool HandleTransientExceptionDotNetCore21AndAboveWindowsOnly(Exception exception)
+        {
+            /* .NET Core 2.1 and above uses SocketsHttpHandler by default which means yet another set of low level exceptions to handle  https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-2-1 */
+
+            if (!(exception?.InnerException is Win32Exception win32Exception))
+                return false;
+
+            // ReSharper disable once SwitchStatementMissingSomeCases this is done by design
+            switch (win32Exception.NativeErrorCode) // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socketexception?view=netframework-4.7.2
+            {
+                case (int)WinWSANativeErrorCode.WSA_OPERATION_ABORTED:
+                case (int)WinWSANativeErrorCode.WSAEWOULDBLOCK:
+                case (int)WinWSANativeErrorCode.WSAENETDOWN:
+                case (int)WinWSANativeErrorCode.WSAENETUNREACH:
+                case (int)WinWSANativeErrorCode.WSAENETRESET:
+                case (int)WinWSANativeErrorCode.WSAECONNABORTED:
+                case (int)WinWSANativeErrorCode.WSAECONNRESET:
+                case (int)WinWSANativeErrorCode.WSAENOBUFS:
+                case (int)WinWSANativeErrorCode.WSAETIMEDOUT:
+                case (int)WinWSANativeErrorCode.WSAECONNREFUSED:
+                case (int)WinWSANativeErrorCode.WSAEHOSTDOWN:
+                case (int)WinWSANativeErrorCode.WSAEHOSTUNREACH:
+                case (int)WinWSANativeErrorCode.WSAHOST_NOT_FOUND:
+                case (int)WinWSANativeErrorCode.WSATRY_AGAIN:
+                case (int)WinWSANativeErrorCode.WSANO_DATA:
+                    _lastException = exception;
+                    _lastException.Data.Add("IsTransient", true);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool HandleTransientExceptionDotNetStandardPreCore21WindowsOnly(Exception exception)
         {
             /* The .NET Standard Windows platform exception handling is a bit basic https://github.com/dotnet/corefx/blob/master/src/Common/src/System/Net/Http/WinHttpException.cs
              * So for .NET Standard Windows only I'm having to check the WinHttp Status const https://msdn.microsoft.com/en-us/library/windows/desktop/aa383770(v=vs.85).aspx 
              * Issue raised here https://github.com/dotnet/corefx/issues/19185 */
 
-            var win32Exception = exception?.InnerException as Win32Exception; //Annoying .NET Standard Windows only have to parse the NativeErrorCode
-            if (win32Exception == null)
-                return;
+            if (exception?.InnerException is SocketException)
+                return false;
+
+            if (!(exception?.InnerException is Win32Exception win32Exception))
+                return false;
 
             // ReSharper disable once SwitchStatementMissingSomeCases this is done by design
             switch (win32Exception.NativeErrorCode) //https://msdn.microsoft.com/en-us/library/windows/desktop/aa383770(v=vs.85).aspx
@@ -121,21 +165,20 @@ namespace DalSoft.RestClient.Handlers
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_NAME_NOT_RESOLVED:
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_OPERATION_CANCELLED:
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_RESEND_REQUEST:
-                case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_SHUTDOWN: 
+                case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_SHUTDOWN:
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_TIMEOUT:
                     _lastException = exception;
                     _lastException.Data.Add("IsTransient", true);
-                    break;
+                    return true;
                 default:
-                    throw exception;
+                    return false;
             }
         }
 
-        private void HandleTransientExceptionEveryThingElse(Exception exception)
+        private bool HandleTransientExceptionEveryThingElse(Exception exception)
         {
-            var webException = exception?.InnerException as WebException; //On all platforms except Windows .NET Standard the InnerException is a WebException with a related status
-            if (webException == null)
-                return;
+            if (!(exception?.InnerException is WebException webException))
+                return false;
 
             //https://msdn.microsoft.com/en-us/library/es54hw8e(v=vs.110).aspx https://msdn.microsoft.com/en-us/library/ms346609(v=vs.110).aspx
             // ReSharper disable once SwitchStatementMissingSomeCases this is done by design
@@ -153,9 +196,9 @@ namespace DalSoft.RestClient.Handlers
                 case WebExceptionStatus.Pending:
                     _lastException = exception;
                     _lastException.Data.Add("IsTransient", true);
-                    break;
+                    return true;
                 default:
-                    throw exception; //Not transient throw
+                    return false;
             }  
         }
         
@@ -167,6 +210,7 @@ namespace DalSoft.RestClient.Handlers
         internal enum WinHttpNativeErrorCode
         {
             // ReSharper disable InconsistentNaming https://msdn.microsoft.com/en-us/library/windows/desktop/aa383770(v=vs.85).aspx
+            // ReSharper disable IdentifierTypo
             ERROR_WINHTTP_AUTO_PROXY_SERVICE_ERROR = 12178,
             ERROR_WINHTTP_CANNOT_CALL_AFTER_OPEN = 12103,
             ERROR_WINHTTP_CANNOT_CALL_AFTER_SEND = 12102,
@@ -179,8 +223,32 @@ namespace DalSoft.RestClient.Handlers
             ERROR_WINHTTP_RESEND_REQUEST = 12032,
             ERROR_WINHTTP_SHUTDOWN = 12012,
             ERROR_WINHTTP_TIMEOUT = 12002
+            // ReSharper restore IdentifierTypo
             // ReSharper restore InconsistentNaming
         }
+
+        // ReSharper disable InconsistentNaming
+        // ReSharper disable IdentifierTypo
+        internal enum WinWSANativeErrorCode // Guessing here documentation is pretty poor on this low level stuff // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socketexception?view=netframework-4.7.2
+        {
+            WSA_OPERATION_ABORTED = 995,
+            WSAEWOULDBLOCK = 10035,
+            WSAENETDOWN = 10050,
+            WSAENETUNREACH = 10051,
+            WSAENETRESET = 10052,
+            WSAECONNABORTED = 10053,
+            WSAECONNRESET = 10054,
+            WSAENOBUFS = 10055,
+            WSAETIMEDOUT = 10060,
+            WSAECONNREFUSED = 10061,
+            WSAEHOSTDOWN = 10064,
+            WSAEHOSTUNREACH = 10065,
+            WSAHOST_NOT_FOUND = 11001,
+            WSATRY_AGAIN = 11002,
+            WSANO_DATA = 11004,
+        }
+        // ReSharper restore IdentifierTypo
+        // ReSharper restore InconsistentNaming
 
         public enum BackOffStrategy
         {

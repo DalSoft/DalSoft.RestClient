@@ -13,12 +13,11 @@ namespace DalSoft.RestClient
 
         public Headers(object anonymousObjectRepresentingHeaders)
         {
-            if (anonymousObjectRepresentingHeaders == null)
-                throw new ArgumentNullException(nameof(anonymousObjectRepresentingHeaders));
+            ValidateAnonymousObjectRepresentingHeaders(anonymousObjectRepresentingHeaders);
 
             foreach (var item in anonymousObjectRepresentingHeaders.GetType().GetProperties().Where(_ => _.GetValue(anonymousObjectRepresentingHeaders) != null))
             {
-                Add(FormatHeaderName(item.Name),  item.GetValue(anonymousObjectRepresentingHeaders).ToString());
+                Add(FormatHeaderName(item.Name), item.GetValue(anonymousObjectRepresentingHeaders).ToString());
             }
         }
 
@@ -27,8 +26,11 @@ namespace DalSoft.RestClient
             return Regex.Replace(propertyName, @"(\p{Ll})(\p{Lu})", "$1-$2");
         }
 
-        internal static void VaildateAnonymousObjectRepresentingHeaders(object anonymousObjectRepresentingHeaders)
+        internal static void ValidateAnonymousObjectRepresentingHeaders(object anonymousObjectRepresentingHeaders)
         {
+            if (anonymousObjectRepresentingHeaders == null)
+                throw new ArgumentNullException(nameof(anonymousObjectRepresentingHeaders));
+
             var incorrectTypeException = new ArgumentException("Headers must be Dictionary<string, string> or a simple object representing the Headers new { ContentType = \"application/json\", Accept = \"application/json\" }"); ;
 
             if (anonymousObjectRepresentingHeaders is IEnumerable)
