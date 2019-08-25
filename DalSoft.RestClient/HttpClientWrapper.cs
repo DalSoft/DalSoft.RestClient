@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using DalSoft.RestClient.Handlers;
 
 namespace DalSoft.RestClient
 {
@@ -24,9 +22,8 @@ namespace DalSoft.RestClient
         {
             config = config ?? new Config();
 
-            HttpClient = new HttpClient(CreatePipeline(config.Pipeline.OfType<HttpClientHandler>().SingleOrDefault() ?? new HttpClientHandler(), config.Pipeline.Except(config.Pipeline.OfType<HttpClientHandler>())))
+            HttpClient = new HttpClient(config.CreatePipeline())
             {
-
                 Timeout = config.Timeout,
                 MaxResponseContentBufferSize = config.MaxResponseContentBufferSize
             };
@@ -73,33 +70,6 @@ namespace DalSoft.RestClient
             return await HttpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
         }
         
-        private static HttpMessageHandler CreatePipeline(HttpMessageHandler innerHandler, IEnumerable<HttpMessageHandler> handlers)
-        {
-            var httpMessageHandler = innerHandler;
-
-            foreach (var handler in handlers.Reverse())
-            {
-                if (handler == null)
-                    throw new ArgumentNullException(nameof(handlers), "Delegating Handler Array Contains Null Item");
-
-                var delegatingHandler = handler as DelegatingHandler;
-
-                if (delegatingHandler == null)
-                    delegatingHandler = new HttpMessageHandlerToDelegatingHandler(handler);
-                else
-                {
-                    if (delegatingHandler.InnerHandler != null)
-                        throw new ArgumentException("Delegating Handler Array Has Non Null Inner Handler", nameof(handlers));
-
-                    delegatingHandler.InnerHandler = httpMessageHandler;
-                }
-
-                httpMessageHandler = delegatingHandler;
-            }
-
-            return httpMessageHandler;
-        }
-
         public void Dispose()
         {
             HttpClient.Dispose();

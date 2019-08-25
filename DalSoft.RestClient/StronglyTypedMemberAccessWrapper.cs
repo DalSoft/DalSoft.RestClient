@@ -92,6 +92,11 @@ namespace DalSoft.RestClient
         public Task<dynamic> Patch<TBody>(TBody body) where TBody : class => MemberAccessWrapper.Patch(body);
         public Task<TReturns> Patch<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => ((Task<object>)MemberAccessWrapper.Patch(body)).ContinueWith(task => (TReturns)(dynamic)task.Result);
 
+        public Task<dynamic> Merge() => MemberAccessWrapper.Patch(default(object));
+        public Task<TReturns> Merge<TReturns>() where TReturns : class => ((Task<object>)MemberAccessWrapper.Patch()).ContinueWith(task => (TReturns)(dynamic)task.Result);
+        public Task<dynamic> Merge<TBody>(TBody body) where TBody : class => MemberAccessWrapper.Patch(body);
+        public Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => ((Task<object>)MemberAccessWrapper.Patch(body)).ContinueWith(task => (TReturns)(dynamic)task.Result);
+
         public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
         {
             return ((MemberAccessWrapper)MemberAccessWrapper).TryInvoke(binder, args, out result);

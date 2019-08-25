@@ -52,7 +52,13 @@ namespace DalSoft.RestClient
         {
             if (!_isRoot)
             {
-                throw new InvalidOperationException("Sorry implict cast not supported on child objects yet!");
+                throw new InvalidOperationException("Sorry implicit cast not supported on child objects yet!");
+            }
+
+            if (binder.Type == typeof(string))
+            {
+                result = ToString();
+                return true;
             }
 
             if (binder.Type == typeof(IEnumerable) && _currentObject is JArray)
@@ -71,7 +77,7 @@ namespace DalSoft.RestClient
             {
                 var isValid = ToString().TryParseJson(out result, binder.Type, _httpResponseMessage.RequestMessage.GetConfig().JsonSerializerSettings);
 
-                if (result is Exception exception) throw exception; //Ok to throw the serilization error here to help the caller
+                if (result is Exception exception) throw exception; //Ok to throw the serialization error here to help the caller
 
                 return isValid;
             }

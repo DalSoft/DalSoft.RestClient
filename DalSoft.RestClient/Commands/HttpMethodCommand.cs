@@ -70,7 +70,7 @@ namespace DalSoft.RestClient.Commands
                 currentUri = currentUri.TrimEnd("/".ToCharArray());
 
             if (!Uri.TryCreate(currentUri, UriKind.Absolute, out var uri))
-                throw new ArgumentException($"{currentUri} is not a valid Absolute Uri");
+                throw new UriFormatException($"{currentUri} is not a valid Absolute Uri");
 
             return uri;
         }

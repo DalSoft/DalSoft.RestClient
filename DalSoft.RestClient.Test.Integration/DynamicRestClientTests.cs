@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -346,6 +347,17 @@ namespace DalSoft.RestClient.Test.Integration
             var httpClientResponseString = await client.HttpClient.GetStringAsync(client.BaseUri + "/users/1");
 
             Assert.True(httpClientResponseString.Contains("Leanne Graham"));
+        }
+
+        [Test]
+        public async Task DynamicRestClient_SetCookiesUsingCookieHandler_CorrectlySetsCookie()
+        {
+            dynamic restClient = new RestClient("https://httpbin.org/cookies/set?testcookie=darran", new Config()
+                .UseCookieHandler());
+
+            HttpResponseMessage response = await restClient.Get();
+
+            Assert.AreEqual("darran", response.GetCookieContainer()?.GetCookies(new Uri("https://httpbin.org"))["testcookie"]?.Value);
         }
     }
 }

@@ -51,5 +51,19 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.That(content, Does.Contain("News"));
         }
+
+        [Test]
+        public async Task CreateClient_SetCookiesUsingCookieHandler_CorrectlySetsCookie()
+        {
+            var services = new ServiceCollection();
+
+            services.AddRestClient(Name1, "https://httpbin.org/cookies/set?testcookie=darran")
+                .UseCookieHandler();
+
+            var restClient1 = services.BuildServiceProvider().GetService<IRestClientFactory>().CreateClient(Name1);
+            HttpResponseMessage response = await restClient1.Get();
+
+            Assert.AreEqual("darran", response.GetCookieContainer()?.GetCookies(new Uri("https://httpbin.org"))["testcookie"]?.Value);
+        }
     }
 }

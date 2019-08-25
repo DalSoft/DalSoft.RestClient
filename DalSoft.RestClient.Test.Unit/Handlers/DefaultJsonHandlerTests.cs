@@ -130,19 +130,20 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             Assert.ThrowsAsync<ArgumentException>(async () => await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, primitiveContentToTest));
         }
 
-        [Test]
-        public async Task Send_PassingStringToContent_ThrowsArgumentException()
+        [Test, Description("Test for #49")]
+        public async Task Send_PassingStringToContent_IsUsedAsBodyOfRequestUnchecked()
         {
             const string stringContentToTest = "This is a string";
+            HttpRequestMessage resultingRequest = null;
 
             var httpClientWrapper = new HttpClientWrapper
             (
-                new Config(new UnitTestHandler())
+                new Config(new UnitTestHandler(request => resultingRequest = request))
             );
 
-            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, new { });
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, stringContentToTest);
 
-            Assert.ThrowsAsync<ArgumentException>(async () => await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), null, stringContentToTest));
+            Assert.AreEqual(stringContentToTest, await resultingRequest.Content.ReadAsStringAsync());
         }
 
         [Test]

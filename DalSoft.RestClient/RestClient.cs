@@ -23,6 +23,10 @@ namespace DalSoft.RestClient
         public RestClient(IHttpClientWrapper httpClientWrapper, string baseUri)
         {
             HttpClientWrapper = httpClientWrapper ?? new HttpClientWrapper();
+
+            if (HttpClientWrapper is HttpClientWrapper containsHttpClientWrapper)
+                containsHttpClientWrapper.HttpClient.BaseAddress = new Uri(baseUri);
+
             BaseUri = baseUri;
         }
 
@@ -85,6 +89,11 @@ namespace DalSoft.RestClient
         public Task<TReturns> Patch<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result);
         public Task<dynamic> Patch<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Patch(body);
         public Task<TReturns> Patch<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result);
+
+        public Task<dynamic> Merge() => CreateStronglyTypedMemberAccessWrapper().Patch(default(object));
+        public Task<TReturns> Merge<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result);
+        public Task<dynamic> Merge<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Patch(body);
+        public Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result);
 
         public void Dispose()
         {

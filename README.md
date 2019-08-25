@@ -5,6 +5,7 @@
 > ## **For everything you need to know, please head over to [https://restclient.dalsoft.io](https://restclient.dalsoft.io)**
 > ## **👉 [New Static Typing and Resource Expressions in 4.0](http://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing)**
 
+![alt text](https://www.dalsoft.co.uk/blog/wp-content/uploads/2019/08/intellisense.gif)
 
 ## Just some of the things you can do with DalSoft.RestClient
 

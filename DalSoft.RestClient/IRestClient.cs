@@ -56,5 +56,9 @@ namespace DalSoft.RestClient
         Task<TReturns> Patch<TReturns>() where TReturns : class;
         Task<dynamic> Patch<TBody>(TBody body) where TBody : class;
         Task<TReturns> Patch<TBody, TReturns>(TBody body) where TBody : class where TReturns : class;
+        Task<dynamic> Merge();
+        Task<TReturns> Merge<TReturns>() where TReturns : class;
+        Task<dynamic> Merge<TBody>(TBody body) where TBody : class;
+        Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class;
     }
 }

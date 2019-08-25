@@ -576,10 +576,23 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.AreEqual(HttpStatusCode.OK, statusUpdateResult.HttpResponseMessage.StatusCode);
         }
 
-        //ToD: Refactor These Test
+        [TestCase("www.instagram.com")] // A Grade
+        public async Task Websites_SecurityHeaders_ShouldBeAGradeOrAbove(string url)
+        {
+            var restClient = new RestClient("https://securityheaders.com/");
+            var response = await restClient.Query(new { q = url, followRedirects = "on" }).Head();
+
+            var grade = response.Headers.ToDictionary(pair => pair.Key, pair => pair.Value.FirstOrDefault())["X-Grade"];
+
+            Assert.That(grade.StartsWith("A"), $"GRADE {grade}: {url}");
+
+            Console.WriteLine($"GRADE {grade}: {url}");
+        }
+
+        //ToDO: Refactor These Tests
 
         [Test]
-        public async Task Get_UsingRestClientStrongType_CorrectlyReturnsDynamicResponse()
+        public async Task Get_UsingStronglyTypedRestClient_CorrectlyReturnsDynamicResponse()
         {
             var client = new RestClient(BaseUri);
 
@@ -592,7 +605,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_UsingRestClientStrongType_CanBeCastToHttpResponseMessage()
+        public async Task Get_UsingStronglyTypedRestClient_CanBeCastToHttpResponseMessage()
         {
             var client = new RestClient(BaseUri);
 
@@ -605,7 +618,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_UsingRestClientStrongType_HttpMethodExtension()
+        public async Task Get_UsingStronglyTypedRestClient_HttpMethodExtension()
         {
             var client = new RestClient(BaseUri);
 
@@ -617,7 +630,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_UsingRestClientStrongType_HttpMethodAndResponseExtension()
+        public async Task Get_UsingStronglyTypedRestClient_HttpMethodAndResponseExtension()
         {
             var client = new RestClient(BaseUri);
             
@@ -626,9 +639,8 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.AreEqual(1, user.id);
         }
 
-
         [Test]
-        public async Task Get_UsingRestClientDynamicTye_HttpMethodAndResponseExtension()
+        public async Task Get_UsingDynamicallyTypedRestClient_HttpMethodAndResponseExtension()
         {
             var client = new RestClient(BaseUri);
             
@@ -638,7 +650,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Get_UsingRestClientStrongType_CanBeCastBackToDynamic()
+        public async Task Get_UsingStronglyTypedRestClient_CanBeCastBackToDynamic()
         {
             var client = new RestClient(BaseUri);
 
@@ -647,10 +659,9 @@ namespace DalSoft.RestClient.Test.Integration
 
             Assert.AreEqual(1, user.id);
         }
-
-        
+ 
         [Test]
-        public async Task UsingRestClientStrongType_CanBeCastToUsableHttpClient()
+        public async Task UsingStronglyTypedRestClient_CanBeCastToUsableHttpClient()
         {
             var client = new RestClient(BaseUri);
 
@@ -660,12 +671,10 @@ namespace DalSoft.RestClient.Test.Integration
             var httpClientResponseString = await httpClient.GetStringAsync(client.BaseUri + "/users/1");
 
             Assert.True(httpClientResponseString.Contains("Leanne Graham"));
-
         }
 
-
         [Test]
-        public async Task Delete_UsingRestClientStrongType_CorrectlyReturnsDynamicResponse()
+        public async Task Delete_UsingStronglyTypedRestClient_CorrectlyReturnsDynamicResponse()
         {
             var client = new RestClient(BaseUri);
             
@@ -678,7 +687,7 @@ namespace DalSoft.RestClient.Test.Integration
         }
 
         [Test]
-        public async Task Post_UsingRestClientStrongType_CorrectlyReturnsDynamicResponse()
+        public async Task Post_UsingStronglyTypedRestClient_CorrectlyReturnsDynamicResponse()
         {
             var client = new RestClient(BaseUri);
 

@@ -145,6 +145,7 @@ namespace DalSoft.RestClient.Test.Unit
                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+               () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
            };
        
            foreach (var verb in verbs)
@@ -168,6 +169,7 @@ namespace DalSoft.RestClient.Test.Unit
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
                 () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -177,6 +179,29 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_CastToString_CastsObjectCorrectly(bool callDynamically)
+        {
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => GetMockUserResponse())));
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
+                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
+                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
+
+                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
+                () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
+            };
+
+            foreach (var verb in verbs)
+            {
+                string responseBody = await verb();
+                Assert.AreEqual("{\"id\":1}", responseBody);
+            }
+        }
 
         [TestCase(true), TestCase(false)]
         public async Task AllVerbs_AccessMissingMember_ReturnsNull(bool callDynamically)
@@ -191,7 +216,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -214,7 +240,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -237,7 +264,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -260,7 +288,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -283,7 +312,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -306,7 +336,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                    () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -340,7 +371,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -366,7 +398,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -389,7 +422,8 @@ namespace DalSoft.RestClient.Test.Unit
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
                 () => callDynamically ? client.Users(1).Put() : ((IRestClient)client).Put(),
-                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch()
+                () => callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Patch(),
+                () => callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Merge()
             };
 
             foreach (var verb in verbs)
@@ -439,7 +473,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users(new { id = 1 }).Delete(),
                 ()=>client.Users(new { id = 1 }).Post(),
                 ()=>client.Users(new { id = 1 }).Put(),
-                ()=>client.Users(new { id = 1 }).Patch()
+                ()=>client.Users(new { id = 1 }).Patch(),
+                ()=>client.Users(new { id = 1 }).Merge()
             };
 
             foreach (var verb in verbs)
@@ -475,25 +510,8 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 ()=>client.Users.Post(1),
                 ()=>client.Users.Put(1),
-                ()=>client.Users.Patch(1)
-            };
-
-            foreach (var verb in verbs)
-            {
-                Assert.ThrowsAsync<ArgumentException>(async () => await verb());
-            }
-        }
-
-        [TestCase(true), TestCase(false)]
-        public void MutableVerbs_ChainingMethodsPassingString_ThrowsArgumentException(bool callDynamically)
-        {
-            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
-
-            var verbs = new Func<Task<dynamic>>[]
-            {
-                ()=> callDynamically ? client.Users.Post("This is a string") : ((IRestClient)client).Resource("Users").Post("This is a string"),
-                ()=> callDynamically ? client.Users.Put("This is a string") : ((IRestClient)client).Resource("Users").Put("This is a string"),
-                ()=> callDynamically ? client.Users.Patch("This is a string") : ((IRestClient)client).Resource("Users").Patch("This is a string"),
+                ()=>client.Users.Patch(1),
+                ()=>client.Users.Merge(1)
             };
 
             foreach (var verb in verbs)
@@ -512,7 +530,8 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 ()=> callDynamically ? client.Users.Post(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users").Post(new { my_array = new string[]{} }),
                 ()=> callDynamically ? client.Users(1).Put(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users/1").Put(new { my_array = new string[]{} }),
-                ()=> callDynamically ? client.Users(1).Patch(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users/1").Patch(new { my_array = new string[]{} })
+                ()=> callDynamically ? client.Users(1).Patch(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users/1").Patch(new { my_array = new string[]{} }),
+                ()=> callDynamically ? client.Users(1).Merge(new { my_array = new string[]{} }) : ((IRestClient)client).Resource("Users/1").Merge(new { my_array = new string[]{} })
             };
 
             foreach (var verb in verbs)
@@ -535,7 +554,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Delete(1, new {}),
                 ()=>client.Users.Post(new {}, new {}),
                 ()=>client.Users.Put(new {}, new {}),
-                ()=>client.Users.Patch(new {}, new {})
+                ()=>client.Users.Patch(new {}, new {}),
+                ()=>client.Users.Merge(new {}, new {})
             };
 
             foreach (var verb in verbs)
@@ -557,6 +577,7 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Post(new {}, new Dictionary<string, string>(), 1),
                 ()=>client.Users.Put(new {}, new Dictionary<string, string>(), 1),
                 ()=>client.Users.Patch(new {}, new Dictionary<string, string>(), 1),
+                ()=>client.Users.Merge(new {}, new Dictionary<string, string>(), 1),
             };
 
             foreach (var verb in verbs)
@@ -565,43 +586,94 @@ namespace DalSoft.RestClient.Test.Unit
             }
         }
 
-        [TestCase("this is a invalidUri", true), TestCase("this is a invalidUri", false)]
-        [TestCase(null, true), TestCase(null, false)]
-        public void AllVerbs_UsingInvalidUri_ThrowsArgumentException(string uri, bool callDynamically)
+        [TestCase("this is resource requires escaping", true), TestCase("this is resource requires escaping", false)]
+        public async Task AllVerbs_ResourceRequiresEscaping_CorrectlyEscapesUri(string resource, bool callDynamically)
         {
-            dynamic client = new RestClient(uri, new Config(new UnitTestHandler()));
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
 
             var verbs = new Func<Task<dynamic>>[]
             {
-                ()=>callDynamically ? client.Users.Get() : ((IRestClient)client).Resource("Users").Get(),
+                ()=>callDynamically ? client.Resource(resource).Get() : ((IRestClient)client).Resource(resource).Get(),
                 async () =>
                 {
                     if (callDynamically)
-                        await client.Users.Head();
-                    else
-                        await ((IRestClient)client).Resource("Users").Head();
+                        return await client.Resource(resource).Head();
 
-                    return new object();
+                    return await ((IRestClient)client).Resource(resource).Head();
                 },
-                ()=>callDynamically ? client.Users.Delete() : ((IRestClient)client).Resource("Users").Delete(),
-                ()=>callDynamically ? client.Users.Post() : ((IRestClient)client).Resource("Users").Post(),
-                ()=>callDynamically ? client.Users.Put(new {}) : ((IRestClient)client).Resource("Users").Put(),
-                ()=>callDynamically ? client.Users.Patch(new {}) : ((IRestClient)client).Resource("Users").Patch(),
+                ()=>callDynamically ? client.Resource(resource).Delete() : ((IRestClient)client).Resource(resource).Delete(),
+                ()=>callDynamically ? client.Resource(resource).Post() : ((IRestClient)client).Resource(resource).Post(),
+                ()=>callDynamically ? client.Resource(resource).Put(new {}) : ((IRestClient)client).Resource(resource).Put(),
+                ()=>callDynamically ? client.Resource(resource).Patch(new {}) : ((IRestClient)client).Resource(resource).Patch(),
+                ()=>callDynamically ? client.Resource(resource).Merge(new {}) : ((IRestClient)client).Resource(resource).Merge(),
             };
 
             foreach (var verb in verbs)
             {
-                Assert.ThrowsAsync<ArgumentException>(async () =>
+                HttpResponseMessage response = await verb();
+                Assert.AreEqual(BaseUri + "/this%20is%20resource%20requires%20escaping", response.RequestMessage.RequestUri.AbsoluteUri);
+            }
+        }
+
+        [TestCase(true), TestCase(false)]
+        public async Task AllVerbs_NullResource_NotAddedToUriChain(bool callDynamically)
+        {
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler()));
+
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>callDynamically ? client.Resource(null).Get() : ((IRestClient)client).Resource(null).Get(),
+                async () =>
                 {
-                    try
-                    {
-                        await verb();
-                    }
-                    catch (AggregateException e)
-                    {
-                        throw e.InnerException ?? e;
-                    }
-                });
+                    if (callDynamically)
+                        return await client.Resource(null).Head();
+
+                    return await ((IRestClient)client).Resource(null).Head();
+                },
+                ()=>callDynamically ? client.Resource(null).Delete() : ((IRestClient)client).Resource(null).Delete(),
+                ()=>callDynamically ? client.Resource(null).Post() : ((IRestClient)client).Resource(null).Post(),
+                ()=>callDynamically ? client.Resource(null).Put(new {}) : ((IRestClient)client).Resource(null).Put(),
+                ()=>callDynamically ? client.Resource(null).Patch(new {}) : ((IRestClient)client).Resource(null).Patch(),
+                ()=>callDynamically ? client.Resource(null).Merge(new {}) : ((IRestClient)client).Resource(null).Merge()
+            };
+
+            foreach (var verb in verbs)
+            {
+                HttpResponseMessage response = await verb();
+                Assert.AreEqual(BaseUri + "/", response.RequestMessage.RequestUri.ToString());
+            }
+        }
+
+        [Description("Test for #84")]
+        [TestCase("this is a invalidUri", true, typeof(UriFormatException)), TestCase("this is a invalidUri", false, typeof(UriFormatException))]
+        [TestCase(null, true, typeof(ArgumentNullException)), TestCase(null, false, typeof(ArgumentNullException))]
+        public void RestClient_HttpClientWithInvalidBasedUri_ThrowsCorrectException(string uri, bool callDynamically, Type exceptionType)
+        {
+            // ReSharper disable once ObjectCreationAsStatement
+            Assert.Throws(exceptionType, () => new RestClient(uri));
+        }
+
+        [Description("Test for #49")]
+        [TestCase(true), TestCase(false)]
+        public async Task AllMutableVerbs_PostingAStringInsteadOfObject_CorrectlyPostsStringBody(bool callDynamically)
+        {
+            HttpRequestMessage resultingRequest = null;
+            dynamic client = new RestClient(BaseUri, new Config(new UnitTestHandler(request => resultingRequest = request)));
+
+            const string stringToBePosted = "{ \"name\":\"John\"  }";
+            
+            var verbs = new Func<Task<dynamic>>[]
+            {
+                ()=>callDynamically ? client.Resource("Users").Post(stringToBePosted) : ((IRestClient)client).Resource("Users").Post(stringToBePosted),
+                ()=>callDynamically ? client.Resource("Users").Put(stringToBePosted) : ((IRestClient)client).Resource("Users").Put(stringToBePosted),
+                ()=>callDynamically ? client.Resource("Users").Patch(stringToBePosted) : ((IRestClient)client).Resource("Users").Patch(stringToBePosted),
+                ()=>callDynamically ? client.Resource("Users").Merge(stringToBePosted) : ((IRestClient)client).Resource("Users").Merge(stringToBePosted)
+            };
+
+            foreach (var verb in verbs)
+            {
+                await verb();
+                Assert.AreEqual(stringToBePosted, await resultingRequest.Content.ReadAsStringAsync());
             }
         }
 
@@ -619,7 +691,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("Users/1").Delete(),
                 ()=>callDynamically ? client.Users(1).Post() : ((IRestClient)client).Resource("Users/1").Post(),
                 ()=>callDynamically ? client.Users(1).Put() : ((IRestClient)client).Resource("Users/1").Put(),
-                ()=>callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Resource("Users/1").Patch()
+                ()=>callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Resource("Users/1").Patch(),
+                ()=>callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Resource("Users/1").Merge()
             };
             
             foreach (var verb in verbs)
@@ -643,7 +716,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("Users/1").Delete(),
                 ()=>callDynamically ? client.Users(1).Post() : ((IRestClient)client).Resource("Users/1").Post(),
                 ()=>callDynamically ? client.Users(1).Put() : ((IRestClient)client).Resource("Users/1").Put(),
-                ()=>callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Resource("Users/1").Patch()
+                ()=>callDynamically ? client.Users(1).Patch() : ((IRestClient)client).Resource("Users/1").Patch(),
+                ()=>callDynamically ? client.Users(1).Merge() : ((IRestClient)client).Resource("Users/1").Merge()
             };
 
             foreach (var verb in verbs)
@@ -669,7 +743,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users(testGuid).Delete() : ((IRestClient)client).Resource($"Users/{testGuid}").Delete(),
                 ()=>callDynamically ? client.Users(testGuid).Post() : ((IRestClient)client).Resource($"Users/{testGuid}").Post(),
                 ()=>callDynamically ? client.Users(testGuid).Put() : ((IRestClient)client).Resource($"Users/{testGuid}").Put(),
-                ()=>callDynamically ? client.Users(testGuid).Patch() : ((IRestClient)client).Resource($"Users/{testGuid}").Patch()
+                ()=>callDynamically ? client.Users(testGuid).Patch() : ((IRestClient)client).Resource($"Users/{testGuid}").Patch(),
+                ()=>callDynamically ? client.Users(testGuid).Merge() : ((IRestClient)client).Resource($"Users/{testGuid}").Merge()
             };
 
             foreach (var verb in verbs)
@@ -695,7 +770,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users(testEnum).Delete() : ((IRestClient)client).Resource($"Users/{testEnum}").Delete(),
                 ()=>callDynamically ? client.Users(testEnum).Post() : ((IRestClient)client).Resource($"Users/{testEnum}").Post(),
                 ()=>callDynamically ? client.Users(testEnum).Put() : ((IRestClient)client).Resource($"Users/{testEnum}").Put(),
-                ()=>callDynamically ? client.Users(testEnum).Patch() : ((IRestClient)client).Resource($"Users/{testEnum}").Patch()
+                ()=>callDynamically ? client.Users(testEnum).Patch() : ((IRestClient)client).Resource($"Users/{testEnum}").Patch(),
+                ()=>callDynamically ? client.Users(testEnum).Merge() : ((IRestClient)client).Resource($"Users/{testEnum}").Merge(),
             };
 
             foreach (var verb in verbs)
@@ -740,7 +816,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Resource(new { id=1 }).Delete(),
                 ()=>client.Users.Resource(new { id=1 }).Post(),
                 ()=>client.Users.Resource(new { id=1 }).Put(),
-                ()=>client.Users.Resource(new { id=1 }).Patch()
+                ()=>client.Users.Resource(new { id=1 }).Patch(),
+                ()=>client.Users.Resource(new { id=1 }).Merge()
             };
 
             foreach (var verb in verbs)
@@ -763,7 +840,9 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Resource(1, 1).Delete(),
                 ()=>client.Users.Resource(1, 1).Post(),
                 ()=>client.Users.Resource(1, 1).Put(),
-                ()=>client.Users.Resource(1, 1).Patch()
+                ()=>client.Users.Resource(1, 1).Patch(),
+                ()=>client.Users.Resource(1, 1).Merge()
+
             };
 
             foreach (var verb in verbs)
@@ -786,7 +865,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Resource().Delete(),
                 ()=>client.Users.Resource().Post(),
                 ()=>client.Users.Resource().Put(),
-                ()=>client.Users.Resource().Patch()
+                ()=>client.Users.Resource().Patch(),
+                ()=>client.Users.Resource().Merge()
             };
 
             foreach (var verb in verbs)
@@ -808,7 +888,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Delete() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Delete(),
                 ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Post() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Post(),
                 ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Put() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Put(),
-                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Patch() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Patch()
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Patch() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Patch(),
+                ()=>callDynamically ? client.Users.Resource("this-is-not-valid-in-csharp").Merge() : ((IRestClient)client).Resource("Users/this-is-not-valid-in-csharp").Merge()
             };
 
             foreach (var verb in verbs)
@@ -830,7 +911,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Query(new User { id = 1 }).Delete(),
                 ()=>client.Users.Query(new User { id = 1 }).Post(),
                 ()=>client.Users.Query(new User { id = 1 }).Put(),
-                ()=>client.Users.Query(new User { id = 1 }).Patch()
+                ()=>client.Users.Query(new User { id = 1 }).Patch(),
+                ()=>client.Users.Query(new User { id = 1 }).Merge()
             };
 
             foreach (var verb in verbs)
@@ -851,7 +933,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Query(new { id = 1 }, new { id = 1 }).Delete(),
                 ()=>client.Users.Query(new { id = 1 }, new { id = 1 }).Post(),
                 ()=>client.Users.Query(new { id = 1 }, new { id = 1 }).Put(),
-                ()=>client.Users.Query(new { id = 1 }, new { id = 1 }).Patch()
+                ()=>client.Users.Query(new { id = 1 }, new { id = 1 }).Patch(),
+                ()=>client.Users.Query(new { id = 1 }, new { id = 1 }).Merge()
             };
 
             foreach (var verb in verbs)
@@ -872,7 +955,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Users.Query().Delete(),
                 ()=>client.Users.Query().Post(),
                 ()=>client.Users.Query().Put(),
-                ()=>client.Users.Query().Patch()
+                ()=>client.Users.Query().Patch(),
+                ()=>client.Users.Query().Merge()
             };
 
             foreach (var verb in verbs)
@@ -894,7 +978,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Delete() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Delete(),
                 ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Post() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Post(),
                 ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Put() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Put(),
-                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Patch() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Patch()
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Patch() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Patch(),
+                ()=>callDynamically ? client.Users(1).Query(new { my="query string" }).Merge() : ((IRestClient)client).Resource("Users/1").Query(new { my = "query string" }).Merge()
             };
 
             foreach (var verb in verbs)
@@ -920,7 +1005,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Users.Delete() : ((IRestClient)client).Resource("Users").Delete(),
                 ()=>callDynamically ? client.Users.Post() : ((IRestClient)client).Resource("Users").Post(),
                 ()=>callDynamically ? client.Users.Put() : ((IRestClient)client).Resource("Users").Put(),
-                ()=>callDynamically ? client.Users.Patch() : ((IRestClient)client).Resource("Users").Patch()
+                ()=>callDynamically ? client.Users.Patch() : ((IRestClient)client).Resource("Users").Patch(),
+                ()=>callDynamically ? client.Users.Merge() : ((IRestClient)client).Resource("Users").Merge()
             };
 
             foreach (var verb in verbs)
@@ -945,6 +1031,7 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Post() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Post(),
                 ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Put() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Put(),
                 ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Patch() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Patch(),
+                ()=>callDynamically ? client.Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} }).Headers(new Dictionary<string, string> { { "Accept", "application/json" } }).Users.Merge() : ((IRestClient)client).Headers(new Headers { { "MyDummyHeader", "MyValue"}, { "Accept", "application/json" } }).Resource("Users").Merge(),
             };
 
             foreach (var verb in verbs)
@@ -986,7 +1073,11 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client
                     .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
                     .Users
-                    .Patch()
+                    .Patch(),
+                ()=>client
+                    .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue"} })
+                    .Users
+                    .Merge()
             };
 
             foreach (var verb in verbs)
@@ -1012,6 +1103,7 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Post() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Post(),
                 ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Put() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Put(),
                 ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Patch() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Patch(),
+                ()=>callDynamically ? client.Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Users.Merge() : ((IRestClient)client).Headers(new { DummyHeader = "MyValue", Accpet = "application/json"}).Resource("Users").Merge()
             };
             foreach (var verb in verbs)
             {
@@ -1052,7 +1144,11 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client
                     .Headers(new { DummyHeader = "MyValue" } )
                     .Users
-                    .Patch()
+                    .Patch(),
+                ()=>client
+                    .Headers(new { DummyHeader = "MyValue" } )
+                    .Users
+                    .Merge()
             };
 
             foreach (var verb in verbs)
@@ -1076,7 +1172,8 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>client.Delete(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }),
                 ()=>client.Post(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }),
                 ()=>client.Put(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }),
-                ()=>client.Patch(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } })
+                ()=>client.Patch(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }),
+                ()=>client.Merge(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } })
             };
 
             foreach (var verb in verbs)
@@ -1114,6 +1211,7 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? restClient.Users.Post() : ((IRestClient)restClient).Resource("Users").Post(),
                 ()=>callDynamically ? restClient.Users.Put() : ((IRestClient)restClient).Resource("Users").Put(),
                 ()=>callDynamically ? restClient.Users.Patch() : ((IRestClient)restClient).Resource("Users").Patch(),
+                ()=>callDynamically ? restClient.Users.Merge() : ((IRestClient)restClient).Resource("Users").Merge()
             };
 
             foreach (var verb in verbs)
@@ -1156,6 +1254,7 @@ namespace DalSoft.RestClient.Test.Unit
                 ()=>callDynamically ? restClient.Users.Post() : ((IRestClient)restClient).Resource("Users").Post(),
                 ()=>callDynamically ? restClient.Users.Put() : ((IRestClient)restClient).Resource("Users").Put(),
                 ()=>callDynamically ? restClient.Users.Patch() : ((IRestClient)restClient).Resource("Users").Patch(),
+                ()=>callDynamically ? restClient.Users.Merge() : ((IRestClient)restClient).Resource("Users").Merge()
             };
 
             foreach (var verb in verbs)

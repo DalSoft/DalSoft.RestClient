@@ -11,6 +11,7 @@ namespace DalSoft.RestClient
             POST,
             PUT,
             PATCH,
+            MERGE,
             DELETE,
             HEAD,
             OPTIONS,
@@ -32,7 +33,8 @@ namespace DalSoft.RestClient
         {
             HttpMethod.POST.ToString(),
             HttpMethod.PUT.ToString(),
-            HttpMethod.PATCH.ToString()
+            HttpMethod.PATCH.ToString(),
+            HttpMethod.MERGE.ToString()
         };
 
         internal static bool IsMutableHttpMethod(this string httpMethod)

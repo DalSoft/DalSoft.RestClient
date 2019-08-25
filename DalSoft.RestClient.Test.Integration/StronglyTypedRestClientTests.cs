@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Test.Integration.TestModels;
@@ -126,6 +127,17 @@ namespace DalSoft.RestClient.Test.Integration
                 .Get();
 
             Assert.AreEqual(HttpStatusCode.OK, httpResponseMessage.StatusCode);
+        }
+
+        [Test]
+        public async Task StronglyTypedRestClient_SetCookiesUsingCookieHandler_CorrectlySetsCookie()
+        {
+            var restClient = new RestClient("https://httpbin.org/cookies/set?testcookie=darran", new Config()
+                .UseCookieHandler());
+
+            HttpResponseMessage response = await restClient.Get();
+
+            Assert.AreEqual("darran", response.GetCookieContainer()?.GetCookies(new Uri("https://httpbin.org"))["testcookie"]?.Value);
         }
     }
 }

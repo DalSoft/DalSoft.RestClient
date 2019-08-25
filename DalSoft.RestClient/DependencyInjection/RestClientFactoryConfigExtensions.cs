@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
 
 namespace DalSoft.RestClient.DependencyInjection
@@ -37,10 +39,27 @@ namespace DalSoft.RestClient.DependencyInjection
 
             return config;
         }
-        
+
+        [Obsolete("Use UseHttpClientHandler(RestClientFactoryConfig, Action<HttpClientHandler>) overload instead")]
         public static RestClientFactoryConfig UseHttpClientHandler(this RestClientFactoryConfig config, Func<HttpClientHandler> handler)
         {
             config.HttpClientBuilder.ConfigurePrimaryHttpMessageHandler(handler);
+
+            return config;
+        }
+
+        public static RestClientFactoryConfig UseHttpClientHandler(this RestClientFactoryConfig config, Action<HttpClientHandler> httpClientHandlerOptions)
+        {
+            HttpClientHandler ConfigureHttpClientHandler(IServiceProvider provider) // Delegate called at Factory creation time
+            {
+                var clientHandler = provider.GetRequiredService<HttpClientHandlerWrapper>();
+                httpClientHandlerOptions(clientHandler);
+
+                return clientHandler;
+            }
+
+            config.HttpClientBuilder.Services.TryAddTransient<HttpClientHandlerWrapper>();
+            config.HttpClientBuilder.ConfigurePrimaryHttpMessageHandler(ConfigureHttpClientHandler);
 
             return config;
         }
@@ -113,6 +132,21 @@ namespace DalSoft.RestClient.DependencyInjection
             DelegatingHandler HandlerFactory() => new TwitterHandler(consumerKey, consumerKeySecret, accessToken, accessTokenSecret);
 
             config.HttpClientBuilder.AddHttpMessageHandler(HandlerFactory);
+
+            return config;
+        }
+        
+        public static RestClientFactoryConfig UseCookieHandler(this RestClientFactoryConfig config)
+        {
+            return UseCookieHandler(config, new CookieContainer());
+        }
+
+        public static RestClientFactoryConfig UseCookieHandler(this RestClientFactoryConfig config, CookieContainer cookieContainer)
+        {
+            config.UseHttpClientHandler(httpClientHandler => { httpClientHandler.CookieContainer = cookieContainer; });
+
+            DelegatingHandler HandlerFactory() => new CookieHandler();
+            config.UseHandler(HandlerFactory);
 
             return config;
         }
