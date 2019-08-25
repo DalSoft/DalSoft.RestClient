@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,24 +28,21 @@ namespace DalSoft.RestClient.Extensions
             object result = null;
 
             //JObject
-            var jObject = jToken as JObject;
-            if (jObject != null)
+            if (jToken is JObject jObject)
             {
                 result = new RestClientResponseObject(jObject);
             }
 
             //JValue
-            var jValue = jToken as JValue;
-            if (jValue != null)
+            if (jToken is JValue jValue)
             {
                 result = jValue.Value;
             }
 
             //JArray
-            var jArray = jToken as JArray;
-            if (jArray != null)
+            if (jToken is JArray jArray)
             {
-                result = jArray.Select(WrapJToken).ToArray();
+                result = new List<dynamic>(jArray.Select(WrapJToken));
             }
 
             return result;
