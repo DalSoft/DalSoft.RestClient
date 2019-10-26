@@ -6,7 +6,7 @@
       Chain methods to create the uri and verb for example new RestClient("https://jsonplaceholder.typicode.com").Posts(1).Get() 
       Explicit and implicit casting from dynamic for example Post post = RestClient("https://jsonplaceholder.typicode.com").Posts(1).Get()
     </Description>
-    <VersionPrefix>4.1.0</VersionPrefix>
+    <VersionPrefix>4.2.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient</AssemblyName>
     <PackageId>DalSoft.RestClient</PackageId>
@@ -14,12 +14,8 @@
     <Owners>DalSoft</Owners>
     <Authors>DalSoft, joakimjm</Authors>
     <PackageReleaseNotes>
-      * Supports for Http Merge
-      * Added UseCookies extension
-      * Made configuring HttpClientHander easier
-      * Fixed bug HttpClient Cast / Property passthrough BaseUri is not set #84
-      * Suports posting Raw JSON strings in mutable Http methods   
-      * Supports casting Response to a string
+      * Added RestClient Test extensions Verify and OnVerifyFailed.
+      * Added RestClient Cast extensions As and Map.
     </PackageReleaseNotes>
     <PackageIconUrl>https://dalsoft.co.uk/images/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://restclient.dalsoft.io</PackageProjectUrl>
