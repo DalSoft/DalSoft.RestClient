@@ -1,6 +1,9 @@
 # DalSoft C# RestClient 
 
+![Nuget](https://img.shields.io/nuget/v/DalSoft.RestClient)
 [![Help and chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DalSoft-RestClient)
+[![StackOverflow](https://img.shields.io/badge/questions-on%20StackOverflow-orange.svg?style=flat)](http://stackoverflow.com/questions/tagged/dalsoft.restclient)
+[![Docs](https://img.shields.io/badge/Docs-Website-yellow)](https://restclient.dalsoft.io/)
 
 > ## **For everything you need to know, please head over to [https://restclient.dalsoft.io](https://restclient.dalsoft.io)**
 > ## **👉 [New Static Typing and Resource Expressions in 4.0](http://www.dalsoft.co.uk/blog/index.php/2019/08/04/csharp-rest-client-now-with-static-typing)**
