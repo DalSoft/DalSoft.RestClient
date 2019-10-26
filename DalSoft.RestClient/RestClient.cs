@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 // ReSharper disable InheritdocConsiderUsage
 
@@ -64,38 +65,39 @@ namespace DalSoft.RestClient
         
         // Only called for the edge case where you want call a http verb on the BaseUri RestClient.Get(), see comments in IRestClient.
         public Task<dynamic> Get() => CreateStronglyTypedMemberAccessWrapper().Get();
-        public Task<TReturns> Get<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Get().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Get<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Get().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
 
         public Task<dynamic> Options() => CreateStronglyTypedMemberAccessWrapper().Options();
-        public Task<TReturns> Options<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Options().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Options<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Options().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
 
         public Task<HttpResponseMessage> Head() => CreateStronglyTypedMemberAccessWrapper().Head();
         public Task<HttpResponseMessage> Trace() => CreateStronglyTypedMemberAccessWrapper().Trace();
 
         public Task<dynamic> Post() => CreateStronglyTypedMemberAccessWrapper().Post(default(object));
-        public Task<TReturns> Post<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Post().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Post<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Post().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
         public Task<dynamic> Post<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Post(body);
-        public Task<TReturns> Post<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Post(body).ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Post<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Post(body).ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
 
         public Task<dynamic> Put() => CreateStronglyTypedMemberAccessWrapper().Put(default(object));
-        public Task<TReturns> Put<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Put().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Put<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Put().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
         public Task<dynamic> Put<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Put(body);
-        public Task<TReturns> Put<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Put(body).ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Put<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Put(body).ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
 
         public Task<dynamic> Patch() => CreateStronglyTypedMemberAccessWrapper().Patch(default(object));
-        public Task<TReturns> Patch<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Patch<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
         public Task<dynamic> Patch<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Patch(body);
-        public Task<TReturns> Patch<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Patch<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
 
         public Task<dynamic> Merge() => CreateStronglyTypedMemberAccessWrapper().Patch(default(object));
-        public Task<TReturns> Merge<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Merge<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
         public Task<dynamic> Merge<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Patch(body);
-        public Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
 
         public Task<dynamic> Delete() => CreateStronglyTypedMemberAccessWrapper().Delete(default(object));
-        public Task<TReturns> Delete<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete().ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Delete<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete().ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
         public Task<dynamic> Delete<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Delete(body);
-        public Task<TReturns> Delete<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete(body).ContinueWith(task => (TReturns)task.Result);
+        public Task<TReturns> Delete<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete(body).ContinueWith(task => (TReturns)task.Result, cancellationToken: default, continuationOptions: TaskContinuationOptions.None, scheduler: TaskScheduler.Default);
+
 
         public void Dispose()
         {
