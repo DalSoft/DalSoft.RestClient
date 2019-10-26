@@ -247,7 +247,7 @@ namespace DalSoft.RestClient.Test.Integration
         public async Task Delete_DeleteUser_HttpResponseMessageReturnsOK()
         {
             dynamic client = new RestClient(BaseUri);
-            var result = await client.Users.Delete(1);
+            var result = await client.Users(1).Delete();
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }

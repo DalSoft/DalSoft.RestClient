@@ -70,8 +70,6 @@ namespace DalSoft.RestClient
         
         public Task<dynamic> Get() => MemberAccessWrapper.Get();
         public Task<TReturns> Get<TReturns>() where TReturns : class => ((Task<object>)MemberAccessWrapper.Get()).ContinueWith(task => (TReturns)(dynamic)task.Result);
-        public Task<dynamic> Delete() => MemberAccessWrapper.Delete();
-        public Task<TReturns> Delete<TReturns>() where TReturns : class => ((Task<object>)MemberAccessWrapper.Delete()).ContinueWith(task => (TReturns)(dynamic)task.Result);
         public Task<dynamic> Options() => MemberAccessWrapper.Options();
         public Task<TReturns> Options<TReturns>() where TReturns : class => ((Task<object>)MemberAccessWrapper.Options()).ContinueWith(task => (TReturns)(dynamic)task.Result);
         public Task<HttpResponseMessage> Head() => ((Task<object>) MemberAccessWrapper.Head()).ContinueWith(task => (HttpResponseMessage)(dynamic) task.Result);
@@ -96,6 +94,11 @@ namespace DalSoft.RestClient
         public Task<TReturns> Merge<TReturns>() where TReturns : class => ((Task<object>)MemberAccessWrapper.Patch()).ContinueWith(task => (TReturns)(dynamic)task.Result);
         public Task<dynamic> Merge<TBody>(TBody body) where TBody : class => MemberAccessWrapper.Patch(body);
         public Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => ((Task<object>)MemberAccessWrapper.Patch(body)).ContinueWith(task => (TReturns)(dynamic)task.Result);
+
+        public Task<dynamic> Delete() => MemberAccessWrapper.Delete(default(object));
+        public Task<TReturns> Delete<TReturns>() where TReturns : class => ((Task<object>)MemberAccessWrapper.Delete()).ContinueWith(task => (TReturns)(dynamic)task.Result);
+        public Task<dynamic> Delete<TBody>(TBody body) where TBody : class => MemberAccessWrapper.Delete(body);
+        public Task<TReturns> Delete<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => ((Task<object>)MemberAccessWrapper.Delete(body)).ContinueWith(task => (TReturns)(dynamic)task.Result);
 
         public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
         {

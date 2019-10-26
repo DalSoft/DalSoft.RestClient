@@ -66,9 +66,6 @@ namespace DalSoft.RestClient
         public Task<dynamic> Get() => CreateStronglyTypedMemberAccessWrapper().Get();
         public Task<TReturns> Get<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Get().ContinueWith(task => (TReturns)task.Result);
 
-        public Task<dynamic> Delete() => CreateStronglyTypedMemberAccessWrapper().Delete();
-        public Task<TReturns> Delete<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete().ContinueWith(task => (TReturns)task.Result);
-
         public Task<dynamic> Options() => CreateStronglyTypedMemberAccessWrapper().Options();
         public Task<TReturns> Options<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Options().ContinueWith(task => (TReturns)task.Result);
 
@@ -94,6 +91,11 @@ namespace DalSoft.RestClient
         public Task<TReturns> Merge<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch().ContinueWith(task => (TReturns)task.Result);
         public Task<dynamic> Merge<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Patch(body);
         public Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Patch(body).ContinueWith(task => (TReturns)task.Result);
+
+        public Task<dynamic> Delete() => CreateStronglyTypedMemberAccessWrapper().Delete(default(object));
+        public Task<TReturns> Delete<TReturns>() where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete().ContinueWith(task => (TReturns)task.Result);
+        public Task<dynamic> Delete<TBody>(TBody body) where TBody : class => CreateStronglyTypedMemberAccessWrapper().Delete(body);
+        public Task<TReturns> Delete<TBody, TReturns>(TBody body) where TBody : class where TReturns : class => CreateStronglyTypedMemberAccessWrapper().Delete(body).ContinueWith(task => (TReturns)task.Result);
 
         public void Dispose()
         {

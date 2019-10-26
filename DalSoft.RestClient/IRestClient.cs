@@ -37,8 +37,6 @@ namespace DalSoft.RestClient
     {
         Task<dynamic> Get();
         Task<TReturns> Get<TReturns>() where TReturns : class;
-        Task<dynamic> Delete();
-        Task<TReturns> Delete<TReturns>() where TReturns : class;
         Task<dynamic> Options();
         Task<TReturns> Options<TReturns>() where TReturns : class;
         Task<HttpResponseMessage> Head(); 
@@ -60,5 +58,9 @@ namespace DalSoft.RestClient
         Task<TReturns> Merge<TReturns>() where TReturns : class;
         Task<dynamic> Merge<TBody>(TBody body) where TBody : class;
         Task<TReturns> Merge<TBody, TReturns>(TBody body) where TBody : class where TReturns : class;
+        Task<dynamic> Delete();
+        Task<TReturns> Delete<TReturns>() where TReturns : class;
+        Task<TReturns> Delete<TBody, TReturns>(TBody body) where TBody : class where TReturns : class;
+        Task<dynamic> Delete<TBody>(TBody body) where TBody : class;
     }
 }

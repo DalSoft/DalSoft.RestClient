@@ -139,7 +139,7 @@ namespace DalSoft.RestClient.Test.Unit
            {
                () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-               () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+               
                () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -163,7 +163,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -187,7 +187,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -211,7 +211,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -235,7 +235,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -259,7 +259,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -283,7 +283,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -307,7 +307,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -331,7 +331,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -366,7 +366,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -393,7 +393,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -417,7 +417,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 () => callDynamically ? client.Users.Get(1) : ((IRestClient)client).Get(),
                 () => callDynamically ? client.Users(1).Get() : ((IRestClient)client).Resource("users/1").Get(),
-                () => callDynamically ? client.Users.Delete(1) : ((IRestClient)client).Delete(),
+                
                 () => callDynamically ? client.Users(1).Delete() : ((IRestClient)client).Resource("users/1").Delete(),
 
                 () => callDynamically ? client.Users(1).Post() : ((IRestClient)client).Post(),
@@ -492,7 +492,7 @@ namespace DalSoft.RestClient.Test.Unit
             {
                  ()=>client.Users().Get(new { id = 1 }),
                  ()=>client.Users().Head(new { id = 1 }),
-                 ()=>client.Users().Delete(new { id = 1 })
+                 ()=>client.Users().Trace(new { id = 1 })
             };
 
             foreach (var verb in verbs)
@@ -791,10 +791,9 @@ namespace DalSoft.RestClient.Test.Unit
             {
                 ()=>client.Users().Get(1),
                 ()=>client.Users().Head(1),
-                ()=>client.Users().Delete(1),
                 ()=>client.Users.Get(1),
                 ()=>client.Users.Head(1),
-                ()=>client.Users.Delete(1)
+                ()=>client.Users.Trace(1)
             };
 
             foreach (var verb in verbs)

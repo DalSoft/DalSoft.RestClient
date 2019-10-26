@@ -22,9 +22,7 @@ namespace DalSoft.RestClient
         private static readonly string[] ImmutableHttpMethods = 
         {
             HttpMethod.GET.ToString(),
-            HttpMethod.DELETE.ToString(), //TODO Delete should be a Mutable Verb
             HttpMethod.OPTIONS.ToString(),
-            
             HttpMethod.HEAD.ToString(),
             HttpMethod.TRACE.ToString()
         };
@@ -34,7 +32,8 @@ namespace DalSoft.RestClient
             HttpMethod.POST.ToString(),
             HttpMethod.PUT.ToString(),
             HttpMethod.PATCH.ToString(),
-            HttpMethod.MERGE.ToString()
+            HttpMethod.MERGE.ToString(),
+            HttpMethod.DELETE.ToString()
         };
 
         internal static bool IsMutableHttpMethod(this string httpMethod)
