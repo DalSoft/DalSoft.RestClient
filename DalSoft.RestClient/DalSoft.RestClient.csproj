@@ -6,7 +6,7 @@
       Chain methods to create the uri and verb for example new RestClient("https://jsonplaceholder.typicode.com").Posts(1).Get() 
       Explicit and implicit casting from dynamic for example Post post = RestClient("https://jsonplaceholder.typicode.com").Posts(1).Get()
     </Description>
-    <VersionPrefix>4.2.0</VersionPrefix>
+    <VersionPrefix>4.2.1</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient</AssemblyName>
     <PackageId>DalSoft.RestClient</PackageId>
@@ -14,8 +14,9 @@
     <Owners>DalSoft</Owners>
     <Authors>DalSoft, joakimjm</Authors>
     <PackageReleaseNotes>
-      * Added RestClient Test extensions Verify and OnVerifyFailed.
-      * Added RestClient Cast extensions As and Map.
+      #99 Verify can deadlock in certain situations, because of the use of a local function.
+
+      #96 Verify should take an action as well as a Func
     </PackageReleaseNotes>
     <PackageIconUrl>https://dalsoft.co.uk/images/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://restclient.dalsoft.io</PackageProjectUrl>

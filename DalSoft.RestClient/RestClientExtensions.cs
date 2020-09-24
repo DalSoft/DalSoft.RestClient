@@ -68,7 +68,7 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction:(Func<Task<dynamic>, object, object>)ContinuationFunction,
+                continuationFunction:(Func<Task<dynamic>, object, object>)((task, state) => ContinuationFunction(task, state)) ,
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler:scheduler ?? TaskScheduler.Default,
@@ -105,7 +105,7 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction: (Func<Task<dynamic>, object, object>)ContinuationFunction,
+                continuationFunction: (Func<Task<dynamic>, object, object>) ((task, state) => ContinuationFunction(task, state)) ,
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
@@ -149,7 +149,7 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction: (Func<Task<dynamic>, object, object>)ContinuationFunction,
+                continuationFunction: (Func<Task<dynamic>, object, object>) ((task, state) => ContinuationFunction(task, state)) ,
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
@@ -189,7 +189,42 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction: (Func<Task<dynamic>, object, object>)ContinuationFunction,
+                continuationFunction: (Func<Task<dynamic>, object, object>) ((task, state) =>  ContinuationFunction(task, state)) ,
+                cancellationToken: cancellationToken,
+                continuationOptions: continuationOptions,
+                scheduler: scheduler ?? TaskScheduler.Default,
+                state: result
+            );
+        }
+
+        public static Task<dynamic> Act<TResponse>(this Task<dynamic> request,
+            Action<TResponse, dynamic> onResponse,
+            CancellationToken cancellationToken = default,
+            TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
+            TaskScheduler scheduler = null) where TResponse : class
+        {
+            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
+
+            dynamic ContinuationFunction(Task<dynamic> task, object state)
+            {
+                if (task.IsFaulted || task.IsCanceled)
+                {
+                    bool.TryParse(task.Exception?.InnerException?.Data[ThrowOnExceptionKey]?.ToString(), out var throwOnException);
+
+                    if (throwOnException)
+                        throw task.Exception.ToFlatAggregateException(throwOnException: true);
+
+                    return null;
+                }
+
+                onResponse?.Invoke(task.Result as TResponse, result);
+
+                return state;
+            }
+
+            return request.ContinueWith
+            (
+                continuationFunction: (Func<Task<dynamic>, object, object>)((task, state) => ContinuationFunction(task, state)) ,
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
@@ -220,7 +255,7 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction: ContinuationFunction,
+                continuationFunction: task => ContinuationFunction(task),
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default
@@ -253,7 +288,7 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction: ContinuationFunction,
+                continuationFunction: task => ContinuationFunction(task),
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default
@@ -286,7 +321,7 @@ namespace DalSoft.RestClient
 
             return request.ContinueWith
             (
-                continuationFunction: ContinuationFunction,
+                continuationFunction: task => ContinuationFunction(task),
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default
