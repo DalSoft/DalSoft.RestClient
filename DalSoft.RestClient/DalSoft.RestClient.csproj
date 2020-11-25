@@ -2,25 +2,35 @@
 
   <PropertyGroup>
     <Description>
-      Dynamic Rest Client with fluent API. Supported Platforms: Windows, Linux, Mac, iOS, Android and UWP. 
-      Chain methods to create the uri and verb for example new RestClient("https://jsonplaceholder.typicode.com").Posts(1).Get() 
-      Explicit and implicit casting from dynamic for example Post post = RestClient("https://jsonplaceholder.typicode.com").Posts(1).Get()
+      DalSoft.RestClient - Powerful C# Rest Client
+
+      A beautiful, dynamic and fluent C# Rest Client for all platforms.
+      Create frictionless code whlist still using the HttpClient you already know.
+
+      Extend HttpClient using Pipeline features
+
+      Trusted by enterprises
+
+      Easy Unit Testing
+
+      Everything you need to know: https://restclient.dalsoft.io/
     </Description>
-    <VersionPrefix>4.2.1</VersionPrefix>
+    <VersionPrefix>4.4.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient</AssemblyName>
     <PackageId>DalSoft.RestClient</PackageId>
+    <Title>DalSoft.RestClient - Powerful C# Rest Client</Title>
+    <Summary>C# Rest Client with a fluent API for all platforms</Summary>
     <PackageTags>Rest Client;RestClient;REST;Client;JSON;Dynamic;WebApi;HttpClient;Core;iOS;Android;UWP</PackageTags>
     <Owners>DalSoft</Owners>
     <Authors>DalSoft, joakimjm</Authors>
     <PackageReleaseNotes>
-      #99 Verify can deadlock in certain situations, because of the use of a local function.
-
-      #96 Verify should take an action as well as a Func
+      Added syntactic sugar for testing REST API's
     </PackageReleaseNotes>
     <PackageIconUrl>https://dalsoft.co.uk/images/icon.png</PackageIconUrl>
     <PackageProjectUrl>https://restclient.dalsoft.io</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</PackageLicenseUrl>
+    <Repository>https://github.com/DalSoft/DalSoft.RestClient.git</Repository>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>

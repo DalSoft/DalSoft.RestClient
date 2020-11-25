@@ -9,17 +9,17 @@ using NUnit.Framework;
 namespace DalSoft.RestClient.Test.Unit
 {
     [TestFixture]
-    public class RestExtensionTests
+    public class RestClientExtensionTests
     {
         private const string Json = "{ 'name': 'Leanne Graham', 'username': 'Bret' }";
-        private RestClient _internalServerRestClient;
+        private RestClient _internalServerErrorRestClient;
         private RestClient _restClient;
 
 
         [SetUp]
         public void RestExtensionTestsSetUp()
         {
-            _internalServerRestClient = new RestClient("https://jsonplaceholder.typicode.com/",
+            _internalServerErrorRestClient = new RestClient("https://jsonplaceholder.typicode.com/",
                 new Config().UseUnitTestHandler(message =>
                     new HttpResponseMessage
                     {
@@ -57,7 +57,7 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verifiedFailedException = Assert.ThrowsAsync<AggregateException>(async () =>
             {
-                await _internalServerRestClient.Resource("users/1").Get()
+                await _internalServerErrorRestClient.Resource("users/1").Get()
                     .Verify<HttpResponseMessage>(verifyIsSuccessStatusCode) // Verify using HttpResponseMessage this should fail
                     .Verify<string>(s => s.Contains("Leanne Graham")) // Verify string response body
                     .Verify<User>(user => user.username == "Bret") // Verify model
@@ -75,7 +75,7 @@ namespace DalSoft.RestClient.Test.Unit
         public async Task OnVerifyFailed_FailingVerificationsByDefault_ExceptionNotThrownAndOnlyFirstOnVerifyFailedCalled()
         {
             var invoked = 0;
-            await _internalServerRestClient.Resource("users/1").Get()
+            await _internalServerErrorRestClient.Resource("users/1").Get()
                 .Verify<HttpResponseMessage>(response => response.IsSuccessStatusCode)                    // Verify using HttpResponseMessage
                 .Verify<string>(s => s.Contains("Leanne GrahamXXX"))                                      // Verify string response body
                 .Verify<User>(user => user.username == "Bret")                                            // Verify model
@@ -97,7 +97,7 @@ namespace DalSoft.RestClient.Test.Unit
         {
             var invoked = 0;
 
-            var result = await _internalServerRestClient.Resource("users/1").Get()
+            var result = await _internalServerErrorRestClient.Resource("users/1").Get()
                 .Verify<HttpResponseMessage>(response => response.IsSuccessStatusCode) 
                 .Verify<string>(s => s.Contains("Leanne GrahamXXX")) 
                 .Verify<User>(user => user.username == "Bret") 
@@ -115,7 +115,7 @@ namespace DalSoft.RestClient.Test.Unit
         public async Task OnVerifyFailed_FailingVerificationAndThrowOnVerifyFailedTrue_NextOnVerifyFailedCalledAndExceptionsAreCorrectBetweenCallbacks()
         {
             var invoked = 0;
-            await _internalServerRestClient.Resource("users/1").Get()
+            await _internalServerErrorRestClient.Resource("users/1").Get()
                 .Verify<HttpResponseMessage>(response => response.IsSuccessStatusCode)
                 .Verify<string>(s => s.Contains("Leanne GrahamXXX"))
                 .Verify<User>(user => user.username == "Bret")
@@ -145,7 +145,7 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verifiedFailedException = Assert.ThrowsAsync<AggregateException>(async () =>
             {
-                await _internalServerRestClient.Resource("users/1").Get()
+                await _internalServerErrorRestClient.Resource("users/1").Get()
                     .Verify<HttpResponseMessage>(response => response.IsSuccessStatusCode) 
                     .Verify<string>(s => s.Contains("Leanne GrahamXXX")) 
                     .Verify<User>(user => user.username == "Bret") 
@@ -177,7 +177,7 @@ namespace DalSoft.RestClient.Test.Unit
 
             var verifiedFailedException = Assert.ThrowsAsync<AggregateException>(async () =>
             {
-                await _internalServerRestClient.Resource("users/1").Get()
+                await _internalServerErrorRestClient.Resource("users/1").Get()
                     .Verify<HttpResponseMessage>(response => response.IsSuccessStatusCode)
                     .Verify<string>(s => s.Contains("Leanne GrahamXXX"))
                     .Verify<User>(user => user.username == "Bret")
@@ -268,6 +268,46 @@ namespace DalSoft.RestClient.Test.Unit
             Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
                 await _restClient.Resource("users/1").Get().Map<User, UserCamelCase>(null);
+            });
+        }
+
+        [Test]
+        public async Task Act_ActOnDynamicObject_ActsAsExpected()
+        {
+            await _restClient.Resource("users/1").Get()
+                .Act(response =>
+                { 
+                    Assert.AreEqual("Leanne Graham", response.name);
+                    Assert.AreEqual("Bret", response.username);
+                });
+        }
+
+        [Test]
+        public async Task Act_ActOnObject_ActsAsExpected()
+        {
+            await _restClient.Resource("users/1").Get()
+                .Act<User>(response =>
+                {
+                    Assert.AreEqual("Leanne Graham", response.name);
+                    Assert.AreEqual("Bret", response.username);
+                });
+        }
+
+        [Test]
+        public void Act_ActOnDynamicObjectNullAct_ThrowsArgumentNullException()
+        {
+            Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await _restClient.Resource("users/1").Get().Act(null);
+            });
+        }
+
+        [Test]
+        public void Map_ActOnObjectNullAct_ThrowsArgumentNullException()
+        {
+            Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await _restClient.Resource("users/1").Get().Act<User>(null);
             });
         }
     }
