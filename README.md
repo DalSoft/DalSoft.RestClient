@@ -1,5 +1,7 @@
 # DalSoft C# RestClient 
 
+### `If you find this repo / package useful please star it.`
+
 ![Nuget](https://img.shields.io/nuget/v/DalSoft.RestClient)
 [![Help and chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DalSoft-RestClient)
 [![StackOverflow](https://img.shields.io/badge/questions-on%20StackOverflow-orange.svg?style=flat)](http://stackoverflow.com/questions/tagged/dalsoft.restclient)
