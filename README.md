@@ -1,6 +1,6 @@
 # DalSoft C# RestClient 
 
-### `If you find this repo / package useful please star it.`
+### `If you find this repo / package useful all I ask is you please star it.`
 
 ![Nuget](https://img.shields.io/nuget/v/DalSoft.RestClient)
 [![Help and chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DalSoft-RestClient)
