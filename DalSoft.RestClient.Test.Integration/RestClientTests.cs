@@ -497,7 +497,7 @@ namespace DalSoft.RestClient.Test.Integration
             if (webException!=null) //.NET 4.5, .NET Standard all platforms except Windows
                 Assert.That(webException.Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
 
-            #if NETCOREAPP2_2
+            #if NETCOREAPP2_2_OR_GREATER
                 if (win32Exception != null) //.NET Core > 2.1 windows uses sockets https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socketexception?view=netframework-4.7.2
                     Assert.That(win32Exception.NativeErrorCode, Is.EqualTo(WSAHOST_NOT_FOUND));
             #else

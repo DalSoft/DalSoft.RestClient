@@ -30,7 +30,9 @@
 
 RestClient targets .NET Standard 2.0 therefore **supports Windows, Linux, Mac and Xamarin (iOS, Android and UWP)**.
 
-If you need to target .NET Standard 1.4 use version 3.2.2.
+.NET 5.0 and .NET 6.0 supported
+All versions of .NET Core supported 
+All versions of legacy .NET Framework > 4.6.1 supported
 
 ## Getting Started
 

@@ -58,8 +58,7 @@ namespace DalSoft.RestClient
 
                     return state;
                 }
-
-
+                
                 var message = DalSoft.RestClient.Verify.FailedMessage(verify);
                 var verifiedFailed = new VerifiedFailed(message);
 
@@ -114,16 +113,16 @@ namespace DalSoft.RestClient
         }
 
         /// <summary>Add to the end of the continuation chain</summary>
-        public static Task<dynamic> OnVerifyFailed<TResponse>(this Task<dynamic> request, Action<AggregateException, TResponse> onException) where TResponse : class
-            => OnVerifyFailed(request, onException, false, CancellationToken.None);
+        public static Task<dynamic> OnException<TResponse>(this Task<dynamic> request, Action<AggregateException, TResponse> onException) where TResponse : class
+            => OnException(request, onException, false, CancellationToken.None);
 
         /// <summary>Add to the end of the continuation chain, pass throwException true to throw the exception or to use multiple OnException continuations</summary>
-        public static Task<dynamic> OnVerifyFailed<TResponse>(this Task<dynamic> request, Action<AggregateException, TResponse> onException, bool throwOnVerifyFailed) where TResponse : class
-            => OnVerifyFailed(request, onException, throwOnVerifyFailed, CancellationToken.None);
+        public static Task<dynamic> OnException<TResponse>(this Task<dynamic> request, Action<AggregateException, TResponse> onException, bool throwException) where TResponse : class
+            => OnException(request, onException, throwException, CancellationToken.None);
 
-        public static Task<dynamic> OnVerifyFailed<TResponse>(this Task<dynamic> request,
+        public static Task<dynamic> OnException<TResponse>(this Task<dynamic> request,
             Action<AggregateException, TResponse> onException,
-            bool throwOnVerifyFailed = false,
+            bool throwException = false,
             CancellationToken cancellationToken = default,
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null) where TResponse : class
@@ -132,7 +131,7 @@ namespace DalSoft.RestClient
 
             dynamic ContinuationFunction(Task<dynamic> task, dynamic state)
             {
-                var flatAggregateException = task.Exception.ToFlatAggregateException(throwOnException:throwOnVerifyFailed);
+                var flatAggregateException = task.Exception.ToFlatAggregateException(throwOnException:throwException);
 
                 if (onException != null && task.IsFaulted)
                 {
@@ -141,7 +140,7 @@ namespace DalSoft.RestClient
                     onException(flatAggregateException, response);
                 }
 
-                if (throwOnVerifyFailed)
+                if (throwException)
                     throw flatAggregateException;
                 
                 return state;
@@ -158,16 +157,16 @@ namespace DalSoft.RestClient
         }
 
         /// <summary>Add to the end of the continuation chain</summary>
-        public static Task<dynamic> OnVerifyFailed(this Task<dynamic> request, Action<AggregateException, dynamic> onException)
-            => OnVerifyFailed(request, onException, false, CancellationToken.None);
+        public static Task<dynamic> OnException(this Task<dynamic> request, Action<AggregateException, dynamic> onException)
+            => OnException(request, onException, false, CancellationToken.None);
 
         /// <summary>Add to the end of the continuation chain, pass throwException true to throw the exception or to use multiple OnException continuations</summary>
-        public static Task<dynamic> OnVerifyFailed(this Task<dynamic> request, Action<AggregateException, dynamic> onException, bool throwOnVerifyFailed)
-            => OnVerifyFailed(request, onException, throwOnVerifyFailed, CancellationToken.None);
+        public static Task<dynamic> OnException(this Task<dynamic> request, Action<AggregateException, dynamic> onException, bool throwException)
+            => OnException(request, onException, throwException, CancellationToken.None);
 
-        public static Task<dynamic> OnVerifyFailed(this Task<dynamic> request,
+        public static Task<dynamic> OnException(this Task<dynamic> request,
             Action<AggregateException, dynamic> onException,
-            bool throwOnVerifyFailed = false,
+            bool throwException = false,
             CancellationToken cancellationToken = default,
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null)
@@ -176,12 +175,12 @@ namespace DalSoft.RestClient
 
             dynamic ContinuationFunction(Task<dynamic> task, object state)
             {
-                var flatAggregateException = task.Exception.ToFlatAggregateException(throwOnException:throwOnVerifyFailed);
+                var flatAggregateException = task.Exception.ToFlatAggregateException(throwOnException:throwException);
 
                 if (onException != null && task.IsFaulted)
                     onException(flatAggregateException, result);
                 
-                if (throwOnVerifyFailed)
+                if (throwException)
                     throw flatAggregateException;
 
                 return state;
@@ -207,12 +206,7 @@ namespace DalSoft.RestClient
             {
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    bool.TryParse(task.Exception?.InnerException?.Data[ThrowOnExceptionKey]?.ToString(), out var throwOnException);
-
-                    if (throwOnException)
-                        throw task.Exception.ToFlatAggregateException(throwOnException:true);
-
-                    return null;
+                    throw task.Exception.ToFlatAggregateException(throwOnException: true);
                 }
 
                 return (T)task.Result; 
@@ -227,7 +221,8 @@ namespace DalSoft.RestClient
             );
         }
 
-        public static Task<TTo> Map<TFrom, TTo>(this Task<dynamic> request, Func<TFrom, TTo> map,
+        public static Task<TTo> Map<TFrom, TTo>(this Task<dynamic> request, 
+            Func<TFrom, TTo> map,
             CancellationToken cancellationToken = default,
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null) where TFrom : class where TTo : class
@@ -238,12 +233,7 @@ namespace DalSoft.RestClient
 
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    bool.TryParse(task.Exception?.InnerException?.Data[ThrowOnExceptionKey]?.ToString(), out var throwOnException);
-
-                    if (throwOnException)
-                        throw task.Exception.ToFlatAggregateException(throwOnException: true);
-
-                    return null;
+                    throw task.Exception.ToFlatAggregateException(throwOnException: true);
                 }
 
                 TFrom from = task.Result;
@@ -260,7 +250,8 @@ namespace DalSoft.RestClient
             );
         }
 
-        public static Task<TTo> Map<TTo>(this Task<dynamic> request, Func<dynamic, TTo> map,
+        public static Task<TTo> Map<TTo>(this Task<dynamic> request, 
+            Func<dynamic, TTo> map,
             CancellationToken cancellationToken = default,
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null) where TTo : class
@@ -271,12 +262,7 @@ namespace DalSoft.RestClient
 
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    bool.TryParse(task.Exception?.InnerException?.Data[ThrowOnExceptionKey]?.ToString(), out var throwOnException);
-
-                    if (throwOnException)
-                        throw task.Exception.ToFlatAggregateException(throwOnException: true);
-
-                    return null;
+                    throw task.Exception.ToFlatAggregateException(throwOnException: true);
                 }
 
                 TTo to = map(task.Result);
@@ -297,7 +283,8 @@ namespace DalSoft.RestClient
           Action<TResponse> act,
           CancellationToken cancellationToken = default,
           TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
-          TaskScheduler scheduler = null) where TResponse : class
+          TaskScheduler scheduler = null
+          ) where TResponse : class
         {
             var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
 
@@ -307,12 +294,7 @@ namespace DalSoft.RestClient
 
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    bool.TryParse(task.Exception?.InnerException?.Data[ThrowOnExceptionKey]?.ToString(), out var throwOnException);
-
-                    if (throwOnException)
-                        throw task.Exception.ToFlatAggregateException(throwOnException: true);
-
-                    return null;
+                    throw task.Exception.ToFlatAggregateException(throwOnException: true);
                 }
 
                 TResponse response = task.Result;
@@ -345,12 +327,7 @@ namespace DalSoft.RestClient
 
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    bool.TryParse(task.Exception?.InnerException?.Data[ThrowOnExceptionKey]?.ToString(), out var throwOnException);
-
-                    if (throwOnException)
-                        throw task.Exception.ToFlatAggregateException(throwOnException: true);
-
-                    return null;
+                    throw task.Exception.ToFlatAggregateException(throwOnException: true);
                 }
 
                 act(task.Result);

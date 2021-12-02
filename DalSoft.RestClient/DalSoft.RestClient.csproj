@@ -15,7 +15,8 @@
 
       Everything you need to know: https://restclient.dalsoft.io/
     </Description>
-    <VersionPrefix>4.4.0</VersionPrefix>
+    <VersionPrefix>4.4.1</VersionPrefix>
+    <!-- https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/cross-platform-targeting -->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient</AssemblyName>
     <PackageId>DalSoft.RestClient</PackageId>
@@ -25,11 +26,11 @@
     <Owners>DalSoft</Owners>
     <Authors>DalSoft, joakimjm</Authors>
     <PackageReleaseNotes>
-      Added syntactic sugar for testing REST API's
+      Refined Act(..), As(...), Map(...), Verfiy(...) and OnException(...), tested in .net6.0
     </PackageReleaseNotes>
-    <PackageIconUrl>https://dalsoft.co.uk/images/icon.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://restclient.dalsoft.io</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/DalSoft/DalSoft.RestClient/blob/master/LICENSE</PackageLicenseUrl>
     <Repository>https://github.com/DalSoft/DalSoft.RestClient.git</Repository>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -42,6 +43,7 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <None Include="Assets\icon.png" Pack="true" PackagePath="\"/>
+    <None Include="Assets\LICENSE" Pack="true" PackagePath="\"/>
   </ItemGroup>
-
 </Project>

@@ -5,6 +5,7 @@ using DalSoft.RestClient.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace DalSoft.RestClient.Examples
 {
@@ -20,12 +21,12 @@ namespace DalSoft.RestClient.Examples
                 });
 
             services.AddRestClient("NamedGitHubClient", "https://api.github.com/orgs/", new Headers(new { UserAgent = "DalSoft.RestClient" }));
-            
-            services.AddMvc();
+
+            services.AddMvc(x => x.EnableEndpointRouting = false);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {

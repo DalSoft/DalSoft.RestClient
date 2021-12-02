@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>net461;net5.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient.Test.Unit</AssemblyName>
     <PackageId>DalSoft.RestClient.Test.Unit</PackageId>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

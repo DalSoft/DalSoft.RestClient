@@ -11,10 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Test.Uni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DalSoft.RestClient.Examples", "DalSoft.RestClient.Examples\DalSoft.RestClient.Examples.csproj", "{41991191-F064-44CB-A8E8-27ED78A90707}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DalSoft.RestClient.Benchmark", "DalSoft.RestClient.Benchmark\DalSoft.RestClient.Benchmark.csproj", "{B69A4A5A-F3BE-4CE5-9047-5F9543EC8490}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DalSoft.RestClient.Benchmark.WebApi", "DalSoft.RestClient.Benchmark.WebApi\DalSoft.RestClient.Benchmark.WebApi.csproj", "{CC8A0956-8386-4F29-BEC3-B79A5394F37F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

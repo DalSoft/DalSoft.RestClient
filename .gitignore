@@ -35,3 +35,6 @@ _ReSharper.*
 
 # NUNIT
 TestResult.xml
+
+# Rider
+.idea
