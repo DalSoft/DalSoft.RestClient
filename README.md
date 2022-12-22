@@ -1,4 +1,4 @@
-# DalSoft C# RestClient 
+# DalSoft .NET REST Client for all platforms
 
 ### `If you find this repo / package useful all I ask is you please star it.`
 
