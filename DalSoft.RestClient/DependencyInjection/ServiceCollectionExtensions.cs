@@ -23,6 +23,26 @@ namespace DalSoft.RestClient.DependencyInjection
         
         public static RestClientFactoryConfig AddRestClient(this IServiceCollection services, string name, string baseUri, Headers defaultRequestHeaders)
         {
+            return AddRestClient(services, name, sp => baseUri, sp => defaultRequestHeaders);
+        }
+        
+        public static RestClientFactoryConfig AddRestClient(this IServiceCollection services, Func<IServiceProvider, string> baseUriLoader)
+        {
+            return AddRestClient(services, baseUriLoader, sp => (Headers) null);
+        }
+            
+        public static RestClientFactoryConfig AddRestClient(this IServiceCollection services, Func<IServiceProvider, string> baseUriLoader, Headers defaultRequestHeaders)
+        {
+            return  services.AddRestClient(RestClientFactory.DefaultClientName, baseUriLoader, sp => defaultRequestHeaders);
+        }
+            
+        public static RestClientFactoryConfig AddRestClient(this IServiceCollection services, Func<IServiceProvider, string> baseUriLoader, Func<IServiceProvider, Headers> headerLoader)
+        {
+            return  services.AddRestClient(RestClientFactory.DefaultClientName, baseUriLoader, headerLoader);
+        }
+        
+        public static RestClientFactoryConfig AddRestClient(this IServiceCollection services, string name, Func<IServiceProvider, string> baseUriLoader, Func<IServiceProvider, Headers> headerLoader)
+        {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("name cannot be empty", nameof(name));
             
             services.TryAddSingleton<IRestClientFactory, RestClientFactory>();
@@ -30,7 +50,7 @@ namespace DalSoft.RestClient.DependencyInjection
             var httpClientBuilder = services.AddHttpClient(name);
             var config = new RestClientFactoryConfig(httpClientBuilder); 
             
-            services.AddSingleton(serviceProvider => new RestClientContainer(serviceProvider, name, baseUri, defaultRequestHeaders));
+            services.AddSingleton(serviceProvider => new RestClientContainer(serviceProvider, name, baseUriLoader(sp), headerLoader(sp)));
 
             return config;
         }
