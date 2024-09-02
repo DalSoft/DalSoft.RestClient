@@ -161,7 +161,7 @@ namespace DalSoft.RestClient.Test.Integration
             var content = result.ToString();
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(content, Does.Contain("News"));
+            Assert.That(content, Does.Contain("Terms of Service"));
         }
 
         [Test]
@@ -448,7 +448,7 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(response.form.comments, Is.EqualTo(formUrlEncodedData.comments));
         }
 
-        [Test]
+        [Test, Ignore("Need to find a new site to test this, or better still create a integration test controller")]
         public async Task Post_MultipartForm_CorrectlyPostsFile()
         {
             dynamic restClient = new RestClient("http://en.directupload.net/index.php", new Config
@@ -576,7 +576,7 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.AreEqual(HttpStatusCode.OK, statusUpdateResult.HttpResponseMessage.StatusCode);
         }
 
-        [TestCase("www.instagram.com")] // A Grade
+        [TestCase("www.instagram.com"), Ignore("Requires API key")] // A Grade
         public async Task Websites_SecurityHeaders_ShouldBeAGradeOrAbove(string url)
         {
             var restClient = new RestClient("https://securityheaders.com/");

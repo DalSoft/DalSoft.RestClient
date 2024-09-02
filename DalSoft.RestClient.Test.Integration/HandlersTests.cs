@@ -133,10 +133,10 @@ namespace DalSoft.RestClient.Test.Integration
             Assert.That(response.form.comments, Is.EqualTo(formUrlEncodedData.comments));
         }
 
-        [Test]
+        [Test, Ignore("Need to find a new site to test this, or better still create a integration test controller")]
         public async Task Post_MultipartForm_CorrectlyPostsFile()
         {
-            dynamic restClient = new RestClient("https://www.directupload.net/index.php", new Config
+            dynamic restClient = new RestClient("https://www.directupload.eu/index.php", new Config
             (
                 new MultipartFormDataHandler()
             ));

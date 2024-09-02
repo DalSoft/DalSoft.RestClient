@@ -49,7 +49,7 @@ namespace DalSoft.RestClient.Test.Integration
             var result = await restClient2.Headers(new Headers { { "Accept", "text/html" } } ).news.Get();
             var content = result.ToString();
 
-            Assert.That(content, Does.Contain("News"));
+            Assert.That(content, Does.Contain("Terms of Service"));
         }
 
         [Test]

@@ -157,7 +157,7 @@ namespace DalSoft.RestClient.Test.Integration
             var content = result.ToString();
 
             Assert.That(result.HttpResponseMessage.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(content, Does.Contain("News"));
+            Assert.That(content, Does.Contain("Terms of Service"));
         }
 
         [Test]

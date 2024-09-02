@@ -15,7 +15,7 @@
 
       Everything you need to know: https://restclient.dalsoft.io/
     </Description>
-    <VersionPrefix>4.4.1</VersionPrefix>
+    <VersionPrefix>4.4.2</VersionPrefix>
     <!-- https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/cross-platform-targeting -->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient</AssemblyName>
@@ -26,7 +26,9 @@
     <Owners>DalSoft</Owners>
     <Authors>DalSoft, joakimjm</Authors>
     <PackageReleaseNotes>
-      Refined Act(..), As(...), Map(...), Verfiy(...) and OnException(...), tested in .net6.0
+      Bumps [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) from 12.0.2 to 13.0.1.
+      - [Release notes](https://github.com/JamesNK/Newtonsoft.Json/releases)
+      - [Commits](https://github.com/JamesNK/Newtonsoft.Json/compare/12.0.2...13.0.1)
     </PackageReleaseNotes>
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -45,5 +47,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <None Include="Assets\icon.png" Pack="true" PackagePath="\"/>
     <None Include="Assets\LICENSE" Pack="true" PackagePath="\"/>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 </Project>
