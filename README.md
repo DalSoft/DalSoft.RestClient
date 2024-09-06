@@ -1,6 +1,7 @@
 # DalSoft .NET REST Client for all platforms
 
 ### `If you find this repo / package useful all I ask is you please star it ⭐`
+> ### Do you or the company you work for benefit from the tools I build? <br /> If so please consider [Becoming a Sponsor](https://github.com/sponsors/dalsoft) it would be greatly appreciated ❤️ 
 
 ![Nuget](https://img.shields.io/nuget/v/DalSoft.RestClient)
 [![StackOverflow](https://img.shields.io/badge/questions-on%20StackOverflow-orange.svg?style=flat)](http://stackoverflow.com/questions/tagged/dalsoft.restclient)
