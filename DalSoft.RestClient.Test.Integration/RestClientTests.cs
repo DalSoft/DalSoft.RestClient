@@ -284,95 +284,95 @@ namespace DalSoft.RestClient.Test.Integration
         [Test]
         public async Task Get_SetDefaultHeadersViaCtor_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/",
-                new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }
+            dynamic client = new RestClient("https://httpbin.org/headers",
+                new Dictionary<string, string> { { "Mydummyheader", "MyValue" }, { "Accept", "application/json" } }
             );
 
             var result = await client.Get();
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.headers.Mydummyheader, Is.EqualTo("MyValue"));
         }
 
         [Test]
         public async Task Get_SetHeadersViaHeadersMethodDictionary_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/");
+            dynamic client = new RestClient("https://httpbin.org/headers");
 
             var result = await client
                 .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue" } })
+                .Headers(new Dictionary<string, string> { { "Mydummyheader", "MyValue" } })
                 .Get();
 
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.headers.Mydummyheader, Is.EqualTo("MyValue"));
         }
 
         [Test]
         public async Task Get_SetHeadersViaHeadersMethodObject_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/");
+            dynamic client = new RestClient("https://httpbin.org/headers");
 
             var result = await client
                 .Headers(new { Accept = "application/json" })
-                .Headers(new { DummyHeader = "MyValue" })
+                .Headers(new { Dummyheader = "MyValue" })
                 .Get();
 
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.ToString(), Does.Contain("\"Dummy-Header\": \"MyValue\""));
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.ToString(), Does.Contain("\"Dummyheader\": \"MyValue\""));
         }
 
         [Test]
         public async Task Get_SetHeadersViaVerbMethod_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/");
+            dynamic client = new RestClient("https://httpbin.org/headers");
 
-            var result = await client.Get(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } });
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+            var result = await client.Get(null, new Dictionary<string, string> { { "Mydummyheader", "MyValue" }, { "Accept", "application/json" } });
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.headers.Mydummyheader, Is.EqualTo("MyValue"));
         }
 
         [Test]
         public async Task Get_SetHttpMessageHandlersViaCtor_CorrectlyInvokesHandlers()
         {
-            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config
+            dynamic restClient = new RestClient("https://httpbin.org/headers", new Config
             (
                 new DelegatingHandlerWrapper(async (request, token, next) =>
                 {
-                    request.Headers.Add("TestHandlerHeader1", "TestHandler1");
+                    request.Headers.Add("Testhandlerheader1", "TestHandler1");
                     return await next(request, token);
                 }),
                 new DelegatingHandlerWrapper(async (request, token, next) =>
                 {
-                    request.Headers.Add("TestHandlerHeader2", "TestHandler2");
+                    request.Headers.Add("Testhandlerheader2", "TestHandler2");
                     return await next(request, token);
                 })
             ));
 
             var result = await restClient.Get();
 
-            Assert.That(result.TestHandlerHeader1, Is.EqualTo("TestHandler1"));
-            Assert.That(result.TestHandlerHeader2, Is.EqualTo("TestHandler2"));
+            Assert.That(result.headers.Testhandlerheader1, Is.EqualTo("TestHandler1"));
+            Assert.That(result.headers.Testhandlerheader2, Is.EqualTo("TestHandler2"));
         }
 
         [Test]
         public async Task Get_SetHttpMessageHandlerFuncsViaCtor_CorrectlyInvokesHandlerFuncs()
         {
-            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config(
+            dynamic restClient = new RestClient("https://httpbin.org/headers", new Config(
             async (request, token, next) =>
             {
-                request.Headers.Add("TestHandlerHeader1", "TestHandler1");
+                request.Headers.Add("Testhandlerheader1", "TestHandler1");
                 return await next(request, token);
             },
             async (request, token, next) =>
             {
-                request.Headers.Add("TestHandlerHeader2", "TestHandler2");
+                request.Headers.Add("Testhandlerheader2", "TestHandler2");
                 return await next(request, token);
             }));
 
             var result = await restClient.Get();
 
-            Assert.That(result.TestHandlerHeader1, Is.EqualTo("TestHandler1"));
-            Assert.That(result.TestHandlerHeader2, Is.EqualTo("TestHandler2"));
+            Assert.That(result.headers.Testhandlerheader1, Is.EqualTo("TestHandler1"));
+            Assert.That(result.headers.Testhandlerheader2, Is.EqualTo("TestHandler2"));
         }
 
         [Test]

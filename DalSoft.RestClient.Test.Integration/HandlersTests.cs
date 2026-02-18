@@ -19,45 +19,45 @@ namespace DalSoft.RestClient.Test.Integration
         [Test]
         public async Task Get_SetHttpMessageHandlersViaCtor_CorrectlyInvokesHandlers()
         {
-            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config
+            dynamic restClient = new RestClient("https://httpbin.org/headers", new Config
             (
                 new DelegatingHandlerWrapper(async (request, token, next) =>
                 {
-                    request.Headers.Add("TestHandlerHeader1", "TestHandler1");
+                    request.Headers.Add("Testhandlerheader1", "TestHandler1");
                     return await next(request, token);
                 }),
                 new DelegatingHandlerWrapper(async (request, token, next) =>
                 {
-                    request.Headers.Add("TestHandlerHeader2", "TestHandler2");
+                    request.Headers.Add("Testhandlerheader2", "TestHandler2");
                     return await next(request, token);
                 })
             ));
 
             var result = await restClient.Get();
 
-            Assert.That(result.TestHandlerHeader1, Is.EqualTo("TestHandler1"));
-            Assert.That(result.TestHandlerHeader2, Is.EqualTo("TestHandler2"));
+            Assert.That(result.headers.Testhandlerheader1, Is.EqualTo("TestHandler1"));
+            Assert.That(result.headers.Testhandlerheader2, Is.EqualTo("TestHandler2"));
         }
 
         [Test]
         public async Task Get_SetHttpMessageHandlerFuncsViaCtor_CorrectlyInvokesHandlerFuncs()
         {
-            dynamic restClient = new RestClient("http://headers.jsontest.com/", new Config(
+            dynamic restClient = new RestClient("https://httpbin.org/headers", new Config(
             async (request, token, next) =>
             {
-                request.Headers.Add("TestHandlerHeader1", "TestHandler1");
+                request.Headers.Add("Testhandlerheader1", "TestHandler1");
                 return await next(request, token);
             },
             async (request, token, next) =>
             {
-                request.Headers.Add("TestHandlerHeader2", "TestHandler2");
+                request.Headers.Add("Testhandlerheader2", "TestHandler2");
                 return await next(request, token);
             }));
 
             var result = await restClient.Get();
 
-            Assert.That(result.TestHandlerHeader1, Is.EqualTo("TestHandler1"));
-            Assert.That(result.TestHandlerHeader2, Is.EqualTo("TestHandler2"));
+            Assert.That(result.headers.Testhandlerheader1, Is.EqualTo("TestHandler1"));
+            Assert.That(result.headers.Testhandlerheader2, Is.EqualTo("TestHandler2"));
         }
 
         [Test]

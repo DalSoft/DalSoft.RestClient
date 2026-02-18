@@ -280,51 +280,51 @@ namespace DalSoft.RestClient.Test.Integration
         [Test]
         public async Task Get_SetDefaultHeadersViaCtor_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/",
-                new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } }
+            dynamic client = new RestClient("https://httpbin.org/headers",
+                new Dictionary<string, string> { { "Mydummyheader", "MyValue" }, { "Accept", "application/json" } }
             );
 
             var result = await client.Get();
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.headers.Mydummyheader, Is.EqualTo("MyValue"));
         }
 
         [Test]
         public async Task Get_SetHeadersViaHeadersMethodDictionary_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/");
+            dynamic client = new RestClient("https://httpbin.org/headers");
 
             var result = await client
                 .Headers(new Dictionary<string, string> { { "Accept", "application/json" } })
-                .Headers(new Dictionary<string, string> { { "MyDummyHeader", "MyValue" } })
+                .Headers(new Dictionary<string, string> { { "Mydummyheader", "MyValue" } })
                 .Get();
 
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.headers.Mydummyheader, Is.EqualTo("MyValue"));
         }
 
         [Test]
         public async Task Get_SetHeadersViaHeadersMethodObject_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/");
+            dynamic client = new RestClient("https://httpbin.org/headers");
 
             var result = await client
                 .Headers(new { Accept = "application/json" })
-                .Headers(new { DummyHeader = "MyValue" })
+                .Headers(new { Dummyheader = "MyValue" })
                 .Get();
 
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.ToString(), Does.Contain("\"Dummy-Header\": \"MyValue\""));
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.ToString(), Does.Contain("\"Dummyheader\": \"MyValue\""));
         }
 
         [Test]
         public async Task Get_SetHeadersViaVerbMethod_CorrectlySetsHeaders()
         {
-            dynamic client = new RestClient("http://headers.jsontest.com/");
+            dynamic client = new RestClient("https://httpbin.org/headers");
 
-            var result = await client.Get(null, new Dictionary<string, string> { { "MyDummyHeader", "MyValue" }, { "Accept", "application/json" } });
-            Assert.That(result.Accept, Is.EqualTo("application/json"));
-            Assert.That(result.MyDummyHeader, Is.EqualTo("MyValue"));
+            var result = await client.Get(null, new Dictionary<string, string> { { "Mydummyheader", "MyValue" }, { "Accept", "application/json" } });
+            Assert.That(result.headers.Accept, Is.EqualTo("application/json"));
+            Assert.That(result.headers.Mydummyheader, Is.EqualTo("MyValue"));
         }
 
         [Test]
