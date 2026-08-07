@@ -40,9 +40,11 @@ namespace DalSoft.RestClient.Handlers
 
             foreach (var pairs in formData.GroupBy(_ => _.Key.Split(".".ToCharArray()).Length))
             {
+                var filename = pairs.Where(_ => string.Equals(_.Key, "filename", StringComparison.OrdinalIgnoreCase)).ToList(); //Hoisted out of the loop below so we only scan the group once
+
                 foreach (var groupedPair in pairs)
                 {
-                    if (groupedPair.Key.ToLower() == "filename") continue;
+                    if (string.Equals(groupedPair.Key, "filename", StringComparison.OrdinalIgnoreCase)) continue;
 
                     var bytes = groupedPair.Value as byte[];
                     var stream = groupedPair.Value as Stream;
@@ -50,8 +52,7 @@ namespace DalSoft.RestClient.Handlers
                     if (bytes != null || stream!=null)
                     {
                         stream = stream ?? new MemoryStream(bytes);
-                        var filename = pairs.Where(_ => _.Key.ToLower() == "filename").ToList();
-                        
+
                         if (filename.Any())
                             multipartFormDataContent.Add(new StreamContent(stream), groupedPair.Key, filename.First().Value.ToString());
                         else

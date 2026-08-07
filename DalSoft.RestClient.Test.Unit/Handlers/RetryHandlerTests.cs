@@ -122,7 +122,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
 
             dynamic restClient = new RestClient("http://test.test", new Config(retryHandler).UseUnitTestHandler(request => new HttpResponseMessage
             {
-                Content = new StringContent("{ 'foo' : 'bar' }")
+                Content = new StringContent("{ \"foo\" : \"bar\" }")
             }));
 
             var result = await restClient.Get();
@@ -147,7 +147,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             request =>
             {
                 if (retryCount == 4)
-                    return new HttpResponseMessage { Content = new StringContent("{ 'foo' : 'bar' }")};
+                    return new HttpResponseMessage { Content = new StringContent("{ \"foo\" : \"bar\" }")};
 
                 throw new HttpRequestException(WebExceptionStatus.SendFailure.ToString(), new WebException(WebExceptionStatus.SendFailure.ToString(), WebExceptionStatus.SendFailure));
             }));
@@ -174,7 +174,7 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
             request =>
             {
                 if (retryCount == 4)
-                    return new HttpResponseMessage { Content = new StringContent("{ 'foo' : 'bar' }") };
+                    return new HttpResponseMessage { Content = new StringContent("{ \"foo\" : \"bar\" }") };
 
                 throw new HttpRequestException(WebExceptionStatus.SendFailure.ToString(), new Win32Exception((int)RetryHandler.WinHttpNativeErrorCode.ERROR_WINHTTP_CONNECTION_ERROR));
             }));

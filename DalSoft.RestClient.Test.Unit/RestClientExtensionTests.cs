@@ -12,7 +12,7 @@ namespace DalSoft.RestClient.Test.Unit
     [TestFixture]
     public class RestClientExtensionTests
     {
-        private const string Json = "{ 'name': 'Leanne Graham', 'username': 'Bret' }";
+        private const string Json = "{ \"name\": \"Leanne Graham\", \"username\": \"Bret\" }";
         private RestClient _internalServerErrorRestClient;
         private RestClient _restClient;
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
 using System.Net.Http;
 using DalSoft.RestClient.Commands;
 
@@ -9,6 +8,8 @@ namespace DalSoft.RestClient
 {
     internal class MemberAccessWrapper : DynamicObject
     {
+        private static readonly char[] Slash = { '/' };
+
         internal readonly IHttpClientWrapper HttpClientWrapper;
         internal readonly string BaseUri;
         internal readonly string Uri;
@@ -50,7 +51,7 @@ namespace DalSoft.RestClient
                 return true;
             }
 
-            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri.TrimStart("/".ToCharArray()) + "/" + binder.Name, Headers);
+            result = new MemberAccessWrapper(HttpClientWrapper, BaseUri, Uri.TrimStart(Slash) + "/" + binder.Name, Headers);
             return true;
         }
         
@@ -72,18 +73,19 @@ namespace DalSoft.RestClient
 
         internal string GetRelativeUri()
         {
-            var resources = Uri.Split("/".ToCharArray());
-            return string.Join("/", resources.Take(resources.Length - 1));
+            var lastSlash = Uri.LastIndexOf('/');
+            return lastSlash == -1 ? string.Empty : Uri.Substring(0, lastSlash);
         }
-        
+
         internal string GetLastCall()
         {
-            return Uri.Split("/".ToCharArray()).Last();
+            var lastSlash = Uri.LastIndexOf('/');
+            return lastSlash == -1 ? Uri : Uri.Substring(lastSlash + 1);
         }
-        
+
         public override string ToString()
         {
-            var baseUri = BaseUri.TrimEnd("/".ToCharArray()) + "/";
+            var baseUri = BaseUri.TrimEnd(Slash) + "/";
             return baseUri + GetRelativeUri();
         }
     }

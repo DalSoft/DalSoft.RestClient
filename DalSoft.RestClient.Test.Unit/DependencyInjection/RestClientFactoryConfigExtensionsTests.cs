@@ -9,8 +9,10 @@ using DalSoft.RestClient.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using DalSoft.RestClient.Serialization;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using System.Text.Json;
 
 namespace DalSoft.RestClient.Test.Unit.DependencyInjection
 {
@@ -20,15 +22,27 @@ namespace DalSoft.RestClient.Test.Unit.DependencyInjection
         private const string Name = "MyClient1";
 
         [Test]
-        public void SetJsonSerializerSettings_WhenCalled_SetsJsonSerializerSettings()
+        public void SetJsonSerializerOptions_WhenCalled_SetsSystemTextJsonSerializerWithOptions()
+        {
+            var services = new ServiceCollection();
+            var expected = new JsonSerializerOptions();
+
+            var config = services.AddRestClient(Name, "http://dalsoft.co.uk")
+                .SetJsonSerializerOptions(expected);
+
+            Assert.AreSame(expected, ((SystemTextJsonSerializer)config.JsonSerializer).Options);
+        }
+
+        [Test]
+        public void UseNewtonsoftJson_WhenCalled_SetsNewtonsoftJsonSerializerWithSettings()
         {
             var services = new ServiceCollection();
             var expected = new JsonSerializerSettings();
 
             var config = services.AddRestClient(Name, "http://dalsoft.co.uk")
-                .SetJsonSerializerSettings(expected);
+                .UseNewtonsoftJson(expected);
 
-            Assert.AreSame(expected, config.JsonSerializerSettings);
+            Assert.AreSame(expected, ((NewtonsoftJsonSerializer)config.JsonSerializer).Settings);
         }
 
         [Test]

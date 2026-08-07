@@ -3,7 +3,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using DalSoft.RestClient.Handlers;
+using DalSoft.RestClient.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Newtonsoft.Json;
@@ -12,9 +14,15 @@ namespace DalSoft.RestClient.DependencyInjection
 {
     public static class RestClientFactoryRestClientFactoryConfigExtensions
     {
-        public static RestClientFactoryConfig SetJsonSerializerSettings(this RestClientFactoryConfig config, JsonSerializerSettings jsonSerializerSettings)
+        public static RestClientFactoryConfig SetJsonSerializerOptions(this RestClientFactoryConfig config, JsonSerializerOptions jsonSerializerOptions)
         {
-            config.JsonSerializerSettings = jsonSerializerSettings;
+            config.JsonSerializer = new SystemTextJsonSerializer(jsonSerializerOptions);
+            return config;
+        }
+
+        public static RestClientFactoryConfig UseNewtonsoftJson(this RestClientFactoryConfig config, JsonSerializerSettings jsonSerializerSettings = null)
+        {
+            config.JsonSerializer = new NewtonsoftJsonSerializer(jsonSerializerSettings);
             return config;
         }
         

@@ -8,6 +8,21 @@ namespace DalSoft.RestClient.Commands
 {
     internal class HttpMethodCommand : Command
     {
+        private static readonly char[] Slash = { '/' };
+
+        private static readonly Dictionary<string, HttpMethod> CachedHttpMethods = new Dictionary<string, HttpMethod>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "GET", HttpMethod.Get },
+            { "POST", HttpMethod.Post },
+            { "PUT", HttpMethod.Put },
+            { "DELETE", HttpMethod.Delete },
+            { "HEAD", HttpMethod.Head },
+            { "OPTIONS", HttpMethod.Options },
+            { "TRACE", HttpMethod.Trace },
+            { "PATCH", new HttpMethod("PATCH") },
+            { "MERGE", new HttpMethod("MERGE") }
+        };
+
         internal override bool IsCommandFor(string method, object[] args)
         {
             return method.IsHttpMethod();
@@ -43,19 +58,24 @@ namespace DalSoft.RestClient.Commands
                     requestHeaders.Add(header.Key, header.Value);
             }
 
-            var httpResponseMessage = await memberAccessWrapper.HttpClientWrapper.Send(new HttpMethod(httpMethodString.ToUpperInvariant()), uri, requestHeaders, httpContent)
+            var httpResponseMessage = await memberAccessWrapper.HttpClientWrapper.Send(CachedHttpMethods[httpMethodString], uri, requestHeaders, httpContent)
                 .ConfigureAwait(false);
 
-            using (var content = httpResponseMessage.Content)
+            //Don't dispose the content here, the response is handed to the caller who can cast to HttpResponseMessage - reading buffers so the content can be re-read
+            var content = httpResponseMessage.Content;
+
+            if (content == null)
+                return new RestClientResponseObject(httpResponseMessage, string.Empty);
+
+            var charSet = content.Headers.ContentType?.CharSet;
+            if (charSet == null || string.Equals(charSet, "utf-8", StringComparison.OrdinalIgnoreCase))
             {
-                string responseString;
-                if (content == null) 
-                    responseString = string.Empty;
-                else
-                    responseString = await content.ReadAsStringAsync();
-               
-                return new RestClientResponseObject(httpResponseMessage, responseString);   
+                var utf8Body = await content.ReadAsByteArrayAsync().ConfigureAwait(false); //Skip the utf-16 string, the serializer can work on utf-8 bytes and the string is decoded lazily
+                return new RestClientResponseObject(httpResponseMessage, utf8Body);
             }
+
+            var responseString = await content.ReadAsStringAsync().ConfigureAwait(false); //Non utf-8 charset, let HttpContent do the decoding
+            return new RestClientResponseObject(httpResponseMessage, responseString);
         }
 
         private static Uri ParseUri(string httpMethod, string currentUri, object[] args)
@@ -67,7 +87,7 @@ namespace DalSoft.RestClient.Commands
             }
 
             if (currentUri.EndsWith("/"))
-                currentUri = currentUri.TrimEnd("/".ToCharArray());
+                currentUri = currentUri.TrimEnd(Slash);
 
             if (!Uri.TryCreate(currentUri, UriKind.Absolute, out var uri))
                 throw new UriFormatException($"{currentUri} is not a valid Absolute Uri");

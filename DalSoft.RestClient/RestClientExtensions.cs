@@ -45,18 +45,17 @@ namespace DalSoft.RestClient
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null) where TResponse : class
         {
-            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
-
             dynamic ContinuationFunction(Task<dynamic> task, dynamic state)
             {
-                var response = typeof(TResponse) == typeof(string) ? state?.ToString() : (TResponse) state;
+                var responseState = ResolveStateObject(state) ?? ResolveContinuationState(task);
+                var response = typeof(TResponse) == typeof(string) ? responseState?.ToString() : (TResponse)responseState;
 
                 if (verify == null || verify.Compile()(response) == true)
                 {
                     if (task.IsFaulted)
                         throw task.Exception.ToFlatAggregateException();
 
-                    return state;
+                    return responseState;
                 }
                 
                 var message = DalSoft.RestClient.Verify.FailedMessage(verify);
@@ -71,7 +70,7 @@ namespace DalSoft.RestClient
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler:scheduler ?? TaskScheduler.Default,
-                state: result
+                state: GetContinuationState(request)
             );
         }
 
@@ -84,16 +83,16 @@ namespace DalSoft.RestClient
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null)
         {
-            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
-
             dynamic ContinuationFunction(Task<dynamic> task, dynamic state)
             {
-                if (verify == null || verify(state) == true)
+                var responseState = ResolveStateObject(state) ?? ResolveContinuationState(task);
+
+                if (verify == null || verify(responseState) == true)
                 {
                     if (task.IsFaulted)
                         throw task.Exception.ToFlatAggregateException();
 
-                    return state;
+                    return responseState;
                 }
 
                 var message = DalSoft.RestClient.Verify.FailedMessage(verify);
@@ -108,7 +107,7 @@ namespace DalSoft.RestClient
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
-                state: result
+                state: GetContinuationState(request)
             );
         }
 
@@ -127,23 +126,22 @@ namespace DalSoft.RestClient
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null) where TResponse : class
         {
-            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
-
             dynamic ContinuationFunction(Task<dynamic> task, dynamic state)
             {
+                var responseState = ResolveStateObject(state) ?? ResolveContinuationState(task);
                 var flatAggregateException = task.Exception.ToFlatAggregateException(throwOnException:throwException);
 
                 if (onException != null && task.IsFaulted)
                 {
-                    var response = typeof(TResponse) == typeof(string) ? state?.ToString() : (TResponse)state;
+                    var response = typeof(TResponse) == typeof(string) ? responseState?.ToString() : (TResponse)responseState;
 
                     onException(flatAggregateException, response);
                 }
 
                 if (throwException)
                     throw flatAggregateException;
-                
-                return state;
+                 
+                return responseState;
             }
 
             return request.ContinueWith
@@ -152,7 +150,7 @@ namespace DalSoft.RestClient
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
-                state: result
+                state: GetContinuationState(request)
             );
         }
 
@@ -171,19 +169,18 @@ namespace DalSoft.RestClient
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null)
         {
-            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
-
             dynamic ContinuationFunction(Task<dynamic> task, object state)
             {
+                var responseState = ResolveStateObject(state) ?? ResolveContinuationState(task);
                 var flatAggregateException = task.Exception.ToFlatAggregateException(throwOnException:throwException);
 
                 if (onException != null && task.IsFaulted)
-                    onException(flatAggregateException, result);
-                
+                    onException(flatAggregateException, responseState);
+                 
                 if (throwException)
                     throw flatAggregateException;
 
-                return state;
+                return responseState;
             }
 
             return request.ContinueWith
@@ -192,7 +189,7 @@ namespace DalSoft.RestClient
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
-                state: result
+                state: GetContinuationState(request)
             );
         }
 
@@ -286,8 +283,6 @@ namespace DalSoft.RestClient
           TaskScheduler scheduler = null
           ) where TResponse : class
         {
-            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
-
             dynamic ContinuationFunction(Task<dynamic> task, object state)
             {
                 if (act == null) throw new ArgumentNullException(nameof(act));
@@ -300,7 +295,7 @@ namespace DalSoft.RestClient
                 TResponse response = task.Result;
                 act(response);
 
-                return state;
+                return ResolveStateObject(state) ?? ResolveContinuationState(task);
             }
 
             return request.ContinueWith
@@ -309,7 +304,7 @@ namespace DalSoft.RestClient
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
-                state: result
+                state: GetContinuationState(request)
             );
         }
 
@@ -319,8 +314,6 @@ namespace DalSoft.RestClient
             TaskContinuationOptions continuationOptions = TaskContinuationOptions.None,
             TaskScheduler scheduler = null)
         {
-            var result = request.AsyncState ?? request.Result; // In the case of a faulted task and use the first to verify the result
-
             dynamic ContinuationFunction(Task<dynamic> task, object state)
             {
                 if (act == null) throw new ArgumentNullException(nameof(act));
@@ -330,9 +323,10 @@ namespace DalSoft.RestClient
                     throw task.Exception.ToFlatAggregateException(throwOnException: true);
                 }
 
-                act(task.Result);
+                var responseState = ResolveStateObject(state) ?? ResolveContinuationState(task);
+                act(responseState);
 
-                return state;
+                return responseState;
             }
 
             return request.ContinueWith
@@ -341,8 +335,45 @@ namespace DalSoft.RestClient
                 cancellationToken: cancellationToken,
                 continuationOptions: continuationOptions,
                 scheduler: scheduler ?? TaskScheduler.Default,
-                state: result
+                state: GetContinuationState(request)
             );
+        }
+
+        private static object GetContinuationState(Task<dynamic> request)
+        {
+            return request?.AsyncState ?? (object)request;
+        }
+
+        private static dynamic ResolveContinuationState(Task<dynamic> task)
+        {
+            if (task == null)
+                return null;
+
+            if (task.AsyncState != null)
+                return ResolveStateObject(task.AsyncState);
+
+            if (task.Status == TaskStatus.RanToCompletion)
+                return task.Result;
+
+            return null;
+        }
+
+        private static object ResolveStateObject(object state)
+        {
+            if (!(state is Task stateTask))
+                return state;
+
+            if (stateTask.AsyncState != null)
+                return ResolveStateObject(stateTask.AsyncState);
+
+            if (stateTask.Status == TaskStatus.RanToCompletion)
+            {
+                var resultProperty = stateTask.GetType().GetProperty("Result");
+                var taskResult = resultProperty?.GetValue(stateTask);
+                return ResolveStateObject(taskResult);
+            }
+
+            return null;
         }
 
         private static AggregateException ToFlatAggregateException(this AggregateException aggregateException, Exception currentException = null, bool throwOnException = false)

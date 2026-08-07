@@ -14,9 +14,9 @@
 
       Everything you need to know: https://restclient.dalsoft.io/
     </Description>
-    <VersionPrefix>4.4.2</VersionPrefix>
+    <VersionPrefix>5.0.0</VersionPrefix>
     <!-- https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/cross-platform-targeting -->
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <AssemblyName>DalSoft.RestClient</AssemblyName>
     <PackageId>DalSoft.RestClient</PackageId>
     <Title>DalSoft.RestClient - Powerful C# Rest Client</Title>
@@ -25,9 +25,15 @@
     <Owners>DalSoft</Owners>
     <Authors>DalSoft, joakimjm</Authors>
     <PackageReleaseNotes>
-      Bumps [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) from 12.0.2 to 13.0.1.
-      - [Release notes](https://github.com/JamesNK/Newtonsoft.Json/releases)
-      - [Commits](https://github.com/JamesNK/Newtonsoft.Json/compare/12.0.2...13.0.1)
+      5.0.0 - System.Text.Json is now the default serializer with stock System.Text.Json behaviour (plus trailing commas and comments accepted when reading, because real world systems are less than perfect).
+
+      Big performance improvements - requests and responses are serialized straight to and from utf-8 bytes skipping intermediate strings, the JSON DOM is only built if you use dynamic access (typed casts skip it entirely), arrays are wrapped lazily, and the request pipeline allocates far less. Request bodies and typed responses now allocate about the same as using HttpClient and System.Text.Json by hand. Also now multi targets netstandard2.0 and net8.0.
+
+      Breaking changes:
+      - [JsonPropertyName] attributes are honoured and property matching is case sensitive, [JsonProperty] attributes are no longer honoured by default.
+      - Config.JsonSerializerSettings and SetJsonSerializerSettings have been removed, use SetJsonSerializerOptions(JsonSerializerOptions) to customise System.Text.Json.
+      - Failed typed casts now throw System.Text.Json.JsonException.
+      - To restore the legacy Json.NET 4.x behaviour exactly call UseNewtonsoftJson() optionally passing your JsonSerializerSettings.
     </PackageReleaseNotes>
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -39,10 +45,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.5" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <None Include="Assets\icon.png" Pack="true" PackagePath="\"/>

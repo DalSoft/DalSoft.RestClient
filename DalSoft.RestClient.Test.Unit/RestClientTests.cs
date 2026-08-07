@@ -12,6 +12,7 @@ using DalSoft.RestClient.Test.Unit.TestData.Resources;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Text.Json;
 
 namespace DalSoft.RestClient.Test.Unit
 {
@@ -1265,10 +1266,29 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [TestCase(true), TestCase(false)]
-        public async Task Deserialize_UsingModelWithJsonProperty_CorrectlyDeserializes(bool callDynamically)
+        public async Task Deserialize_UsingModelWithJsonPropertyName_CorrectlyDeserializes(bool callDynamically)
         {
             var user = new { phone_number = "+44 12345" };
             var config = new Config()
+                .UseUnitTestHandler(request => new HttpResponseMessage
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(user))
+                });
+
+            dynamic restClient = new RestClient(BaseUri, config);
+
+            UserJsonPropertyName response = callDynamically ? await restClient.Users(1).Get() : await ((IRestClient)restClient).Resource("Users/1").Get();
+            //PhoneNumber has JsonPropertyName attribute
+            Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
+
+        }
+
+        [TestCase(true), TestCase(false)]
+        public async Task Deserialize_UsingNewtonsoftJsonWithModelWithJsonProperty_CorrectlyDeserializes(bool callDynamically)
+        {
+            var user = new { phone_number = "+44 12345" };
+            var config = new Config()
+                .UseNewtonsoftJson()
                 .UseUnitTestHandler(request => new HttpResponseMessage
                 {
                     Content = new StringContent(JsonConvert.SerializeObject(user))
@@ -1283,11 +1303,30 @@ namespace DalSoft.RestClient.Test.Unit
         }
 
         [TestCase(true), TestCase(false)]
-        public async Task Deserialize_WhenSettingJsonSerializerSettings_CorrectlyDeserializes(bool callDynamically)
+        public async Task Deserialize_WhenSettingJsonSerializerOptions_CorrectlyDeserializes(bool callDynamically)
         {
             var user = new { phone_number = "+44 12345", user_name = "dalsoft" };
             var config = new Config()
-                .SetJsonSerializerSettings(new JsonSerializerSettings { ContractResolver =  new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() } })
+                .SetJsonSerializerOptions(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })
+                .UseUnitTestHandler(request => new HttpResponseMessage
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(user))
+                });
+
+            dynamic restClient = new RestClient(BaseUri, config);
+
+            UserCamelCase response = callDynamically ? await restClient.Users(1).Get() : await ((IRestClient)restClient).Resource("Users/1").Get(); ;
+            //Should map SnakeCase to CamelCase using JsonSerializerOptions
+            Assert.That(response.PhoneNumber, Is.EqualTo(user.phone_number));
+            Assert.That(response.UserName, Is.EqualTo(user.user_name));
+        }
+
+        [TestCase(true), TestCase(false)]
+        public async Task Deserialize_UsingNewtonsoftJsonWithJsonSerializerSettings_CorrectlyDeserializes(bool callDynamically)
+        {
+            var user = new { phone_number = "+44 12345", user_name = "dalsoft" };
+            var config = new Config()
+                .UseNewtonsoftJson(new JsonSerializerSettings { ContractResolver =  new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() } })
                 .UseUnitTestHandler(request => new HttpResponseMessage
                 {
                     Content = new StringContent(JsonConvert.SerializeObject(user))

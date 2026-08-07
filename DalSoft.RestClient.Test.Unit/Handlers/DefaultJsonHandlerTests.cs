@@ -7,6 +7,7 @@ using DalSoft.RestClient.Handlers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NUnit.Framework;
+using System.Text.Json;
 
 namespace DalSoft.RestClient.Test.Unit.Handlers
 {
@@ -214,22 +215,37 @@ namespace DalSoft.RestClient.Test.Unit.Handlers
         }
 
         [Test]
-        public async Task Send_SettingJsonSerializerSettings_CorrectSerializesContent()
+        public async Task Send_SettingJsonSerializerOptions_CorrectSerializesContent()
         {
             HttpRequestMessage actualRequest = null;
             var httpClientWrapper = new HttpClientWrapper
             (
                 new Config(new UnitTestHandler(request => actualRequest = request))
-                {
-                    JsonSerializerSettings =  new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() } }
-                }
+                    .SetJsonSerializerOptions(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })
             );
 
             await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Headers(), new { HelloWorld = "world" });
 
             dynamic deserializedContent = JsonConvert.DeserializeObject<dynamic>(await actualRequest.Content.ReadAsStringAsync());
             Assert.That(deserializedContent.hello_world.Value, Is.EqualTo("world"));
-            
+
+        }
+
+        [Test]
+        public async Task Send_UsingNewtonsoftJsonWithJsonSerializerSettings_CorrectSerializesContent()
+        {
+            HttpRequestMessage actualRequest = null;
+            var httpClientWrapper = new HttpClientWrapper
+            (
+                new Config(new UnitTestHandler(request => actualRequest = request))
+                    .UseNewtonsoftJson(new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() } })
+            );
+
+            await httpClientWrapper.Send(HttpMethod.Post, new Uri(BaseUrl), new Headers(), new { HelloWorld = "world" });
+
+            dynamic deserializedContent = JsonConvert.DeserializeObject<dynamic>(await actualRequest.Content.ReadAsStringAsync());
+            Assert.That(deserializedContent.hello_world.Value, Is.EqualTo("world"));
+
         }
     }
 }

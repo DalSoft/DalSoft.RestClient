@@ -49,8 +49,7 @@ namespace DalSoft.RestClient
                     requestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
             
-            var httpRequestMessage = new HttpRequestMessage(method, uri);
-            httpRequestMessage.Headers.Clear(); //Clear the defaults we want to control all the headers
+            var httpRequestMessage = new HttpRequestMessage(method, uri); //A new HttpRequestMessage has no headers, we control all the headers below
 
             foreach (var header in requestHeaders)
             {
@@ -59,7 +58,7 @@ namespace DalSoft.RestClient
                  * and content headers with HttpContent objects.
                  * So add it to the StateBag so that the Handlers can set the Content-Type header when building the HttpContent object */
 
-                if (header.Key.ToLower() == "content-type")
+                if (string.Equals(header.Key, "content-type", StringComparison.OrdinalIgnoreCase))
                     httpRequestMessage.SetContentType(header.Value);
                 else
                     httpRequestMessage.Headers.Add(header.Key, header.Value);

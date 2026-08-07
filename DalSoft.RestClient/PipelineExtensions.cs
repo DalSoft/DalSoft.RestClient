@@ -5,68 +5,81 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using DalSoft.RestClient.DependencyInjection;
 using DalSoft.RestClient.Handlers;
+using DalSoft.RestClient.Serialization;
 using Newtonsoft.Json;
 
 namespace DalSoft.RestClient
 {
     public static class PipelineExtensions
     {
+#if NET8_0_OR_GREATER
+        internal static IDictionary<string, object> GetStateBag(this HttpRequestMessage request) => request.Options; //HttpRequestMessage.Properties is obsolete on modern runtimes
+#else
+        internal static IDictionary<string, object> GetStateBag(this HttpRequestMessage request) => request.Properties;
+#endif
+
         internal static void SetConfig(this HttpRequestMessage request, Config config)
         {
-            request.Properties[Config.ConfigKey] = config ?? throw new ArgumentNullException(nameof(config));
+            request.GetStateBag()[Config.ConfigKey] = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public static Config GetConfig(this HttpRequestMessage request)
         {
-            return request.Properties.ContainsKey(Config.ConfigKey) ? request.Properties[Config.ConfigKey] as Config : null;
+            return request.GetStateBag().TryGetValue(Config.ConfigKey, out var config) ? config as Config : null;
         }
-        
+
         internal static void SetContent(this HttpRequestMessage request, object content)
         {
-            request.Properties[Config.RequestContentKey] = content;
+            request.GetStateBag()[Config.RequestContentKey] = content;
         }
 
         public static object GetContent(this HttpRequestMessage request)
         {
-            return request.Properties.ContainsKey(Config.RequestContentKey) ? request.Properties[Config.RequestContentKey] : null;
+            return request.GetStateBag().TryGetValue(Config.RequestContentKey, out var content) ? content : null;
         }
 
         internal static void SetContentType(this HttpRequestMessage request, string contentType)
         {
-            request.Properties[Config.RequestContentType] = contentType;
+            request.GetStateBag()[Config.RequestContentType] = contentType;
         }
 
         public static string GetContentType(this HttpRequestMessage request)
         {
-            return request.Properties.ContainsKey(Config.RequestContentType) ? request.Properties[Config.RequestContentType] as string : null;
+            return request.GetStateBag().TryGetValue(Config.RequestContentType, out var contentType) ? contentType as string : null;
         }
 
         public static void ExpectJsonResponse(this HttpRequestMessage request, bool expectJson)
         {
-            request.Properties[Config.ResponseIsJsonKey] = expectJson;
+            request.GetStateBag()[Config.ResponseIsJsonKey] = expectJson;
         }
 
         public static bool ExpectJsonResponse(this HttpRequestMessage request)
         {
-            return request.Properties.ContainsKey(Config.ResponseIsJsonKey) && (request.Properties[Config.ResponseIsJsonKey] as bool? ?? false);
+            return request.GetStateBag().TryGetValue(Config.ResponseIsJsonKey, out var expectJson) && (expectJson as bool? ?? false);
         }
 
         internal static void SetCookieContainer(this HttpRequestMessage request, CookieContainer cookieContainer)
         {
-            request.Properties[Config.CookieContainerKey] = cookieContainer;
+            request.GetStateBag()[Config.CookieContainerKey] = cookieContainer;
         }
 
         public static CookieContainer GetCookieContainer(this HttpResponseMessage response)
         {
-            var cookieContainer = response.RequestMessage.Properties.ContainsKey(Config.CookieContainerKey) ? response.RequestMessage.Properties[Config.CookieContainerKey] : null;
-            return cookieContainer as CookieContainer;
+            return response.RequestMessage.GetStateBag().TryGetValue(Config.CookieContainerKey, out var cookieContainer) ? cookieContainer as CookieContainer : null;
         }
 
-        public static Config SetJsonSerializerSettings(this Config config, JsonSerializerSettings jsonSerializerSettings)
+        public static Config SetJsonSerializerOptions(this Config config, JsonSerializerOptions jsonSerializerOptions)
         {
-            config.JsonSerializerSettings = jsonSerializerSettings;
+            config.JsonSerializer = new SystemTextJsonSerializer(jsonSerializerOptions);
+            return config;
+        }
+
+        public static Config UseNewtonsoftJson(this Config config, JsonSerializerSettings jsonSerializerSettings = null)
+        {
+            config.JsonSerializer = new NewtonsoftJsonSerializer(jsonSerializerSettings);
             return config;
         }
 

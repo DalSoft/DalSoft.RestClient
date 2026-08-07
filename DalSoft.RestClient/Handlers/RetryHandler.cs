@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -17,11 +19,9 @@ namespace DalSoft.RestClient.Handlers
         internal readonly double MaxWaitToRetryInSeconds;
         internal readonly BackOffStrategy CurrentBackOffStrategy;
 
-        private Exception _lastException;
-       
         //https://docs.microsoft.com/en-us/azure/architecture/best-practices/retry-service-specific
         public RetryHandler() : this(3, 1.44, 10, BackOffStrategy.Exponential) { }
-        
+
         public RetryHandler(int maxRetries, double waitToRetryInSeconds, double maxWaitToRetryInSeconds, BackOffStrategy backOffStrategy)
         {
             MaxRetries = maxRetries;
@@ -46,49 +46,59 @@ namespace DalSoft.RestClient.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+
+            var requestTemplate = await RequestTemplate.Create(request, cancellationToken).ConfigureAwait(false);
             HttpResponseMessage response = null;
+            Exception lastException = null;
 
             for (var retryCount = 0; retryCount < MaxRetries + 1; retryCount++)
             {
-                if (retryCount!=0)
-                    await BackOff(retryCount); //start backing off after the first try
+                if (retryCount != 0)
+                    await BackOff(retryCount).ConfigureAwait(false); //start backing off after the first try
 
-                _lastException = null;
+                lastException = null;
+                var requestForAttempt = requestTemplate.CreateHttpRequestMessage();
 
                 try
                 {
-                    response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false); //next in the pipeline
+                    response = await base.SendAsync(requestForAttempt, cancellationToken).ConfigureAwait(false); //next in the pipeline
                 }
-                catch (TaskCanceledException taskCanceledException) //Task times out before HttpClient 
+                catch (TaskCanceledException taskCanceledException) //Task times out before HttpClient
                 {
                     if (taskCanceledException.CancellationToken != cancellationToken)
-                        _lastException = new HttpRequestException("Request timed out", taskCanceledException); //not cancelled by the caller
+                        lastException = new HttpRequestException("Request timed out", taskCanceledException); //not cancelled by the caller
                     else
                         throw;
                 }
                 catch (HttpRequestException httpRequestException)
                 {
-                    var handled = HandleTransientExceptionDotNetCore21AndAboveWindowsOnly(httpRequestException);
+                    var handled = HandleTransientExceptionDotNetCore21AndAboveWindowsOnly(httpRequestException, out lastException);
 
                     if (!handled)
-                        handled = HandleTransientExceptionDotNetStandardPreCore21WindowsOnly(httpRequestException);
+                        handled = HandleTransientExceptionDotNetStandardPreCore21WindowsOnly(httpRequestException, out lastException);
 
                     if (!handled)
-                        handled = HandleTransientExceptionEveryThingElse(httpRequestException);
+                        handled = HandleTransientExceptionEveryThingElse(httpRequestException, out lastException);
 
                     if (!handled)
-                        throw;    
+                        throw;
                 }
 
-                if (!IsServerErrorStatusCode(response?.StatusCode) && _lastException == null)
+                if (!IsServerErrorStatusCode(response?.StatusCode) && lastException == null)
                 {
                     return response;
                 }
 
+                if (response != null && retryCount < MaxRetries)
+                {
+                    response.Dispose();
+                    response = null;
+                }
             }
 
-            if (_lastException != null)
-                throw _lastException;
+            if (lastException != null)
+                throw lastException;
 
             return response;
         }
@@ -107,8 +117,10 @@ namespace DalSoft.RestClient.Handlers
             }
         }
 
-        private bool HandleTransientExceptionDotNetCore21AndAboveWindowsOnly(Exception exception)
+        private static bool HandleTransientExceptionDotNetCore21AndAboveWindowsOnly(Exception exception, out Exception lastException)
         {
+            lastException = null;
+
             /* .NET Core 2.1 and above uses SocketsHttpHandler by default which means yet another set of low level exceptions to handle  https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-2-1 */
 
             if (!(exception?.InnerException is Win32Exception win32Exception))
@@ -132,18 +144,19 @@ namespace DalSoft.RestClient.Handlers
                 case (int)WinWSANativeErrorCode.WSAHOST_NOT_FOUND:
                 case (int)WinWSANativeErrorCode.WSATRY_AGAIN:
                 case (int)WinWSANativeErrorCode.WSANO_DATA:
-                    _lastException = exception;
-                    _lastException.Data.Add("IsTransient", true);
+                    lastException = MarkTransient(exception);
                     return true;
                 default:
                     return false;
             }
         }
 
-        private bool HandleTransientExceptionDotNetStandardPreCore21WindowsOnly(Exception exception)
+        private static bool HandleTransientExceptionDotNetStandardPreCore21WindowsOnly(Exception exception, out Exception lastException)
         {
+            lastException = null;
+
             /* The .NET Standard Windows platform exception handling is a bit basic https://github.com/dotnet/corefx/blob/master/src/Common/src/System/Net/Http/WinHttpException.cs
-             * So for .NET Standard Windows only I'm having to check the WinHttp Status const https://msdn.microsoft.com/en-us/library/windows/desktop/aa383770(v=vs.85).aspx 
+             * So for .NET Standard Windows only I'm having to check the WinHttp Status const https://msdn.microsoft.com/en-us/library/windows/desktop/aa383770(v=vs.85).aspx
              * Issue raised here https://github.com/dotnet/corefx/issues/19185 */
 
             if (exception?.InnerException is SocketException)
@@ -167,16 +180,17 @@ namespace DalSoft.RestClient.Handlers
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_RESEND_REQUEST:
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_SHUTDOWN:
                 case (int)WinHttpNativeErrorCode.ERROR_WINHTTP_TIMEOUT:
-                    _lastException = exception;
-                    _lastException.Data.Add("IsTransient", true);
+                    lastException = MarkTransient(exception);
                     return true;
                 default:
                     return false;
             }
         }
 
-        private bool HandleTransientExceptionEveryThingElse(Exception exception)
+        private static bool HandleTransientExceptionEveryThingElse(Exception exception, out Exception lastException)
         {
+            lastException = null;
+
             if (!(exception?.InnerException is WebException webException))
                 return false;
 
@@ -194,17 +208,92 @@ namespace DalSoft.RestClient.Handlers
                 case WebExceptionStatus.KeepAliveFailure:
                 case WebExceptionStatus.Timeout:
                 case WebExceptionStatus.Pending:
-                    _lastException = exception;
-                    _lastException.Data.Add("IsTransient", true);
+                    lastException = MarkTransient(exception);
                     return true;
                 default:
                     return false;
-            }  
+            }
         }
-        
+
         private static bool IsServerErrorStatusCode(HttpStatusCode? statusCode)
         {
             return statusCode == null || (int)statusCode >= 500;
+        }
+
+        private static Exception MarkTransient(Exception exception)
+        {
+            exception.Data["IsTransient"] = true;
+            return exception;
+        }
+
+        private sealed class RequestTemplate
+        {
+            private readonly HttpMethod _method;
+            private readonly Uri _requestUri;
+            private readonly Version _version;
+            private readonly List<KeyValuePair<string, IEnumerable<string>>> _headers;
+            private readonly List<KeyValuePair<string, object>> _properties;
+            private readonly byte[] _contentBytes;
+            private readonly List<KeyValuePair<string, IEnumerable<string>>> _contentHeaders;
+
+            private RequestTemplate(HttpMethod method, Uri requestUri, Version version, List<KeyValuePair<string, IEnumerable<string>>> headers, List<KeyValuePair<string, object>> properties, byte[] contentBytes, List<KeyValuePair<string, IEnumerable<string>>> contentHeaders)
+            {
+                _method = method;
+                _requestUri = requestUri;
+                _version = version;
+                _headers = headers;
+                _properties = properties;
+                _contentBytes = contentBytes;
+                _contentHeaders = contentHeaders;
+            }
+
+            internal static async Task<RequestTemplate> Create(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var contentBytes = default(byte[]);
+                var contentHeaders = new List<KeyValuePair<string, IEnumerable<string>>>();
+
+                if (request.Content != null)
+                {
+                    contentBytes = await request.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    contentHeaders = request.Content.Headers.Select(x => new KeyValuePair<string, IEnumerable<string>>(x.Key, x.Value.ToArray())).ToList();
+                }
+
+                return new RequestTemplate
+                (
+                    request.Method,
+                    request.RequestUri,
+                    request.Version,
+                    request.Headers.Select(x => new KeyValuePair<string, IEnumerable<string>>(x.Key, x.Value.ToArray())).ToList(),
+                    request.GetStateBag().ToList(),
+                    contentBytes,
+                    contentHeaders
+                );
+            }
+
+            internal HttpRequestMessage CreateHttpRequestMessage()
+            {
+                var request = new HttpRequestMessage(_method, _requestUri)
+                {
+                    Version = _version
+                };
+
+                foreach (var header in _headers)
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+                foreach (var property in _properties)
+                    request.GetStateBag()[property.Key] = property.Value;
+
+                if (_contentBytes != null)
+                {
+                    request.Content = new ByteArrayContent(_contentBytes);
+
+                    foreach (var header in _contentHeaders)
+                        request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+
+                return request;
+            }
         }
 
         internal enum WinHttpNativeErrorCode

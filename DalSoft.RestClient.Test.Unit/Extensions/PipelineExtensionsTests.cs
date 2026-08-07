@@ -4,8 +4,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.Handlers;
+using DalSoft.RestClient.Serialization;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using System.Text.Json;
 
 namespace DalSoft.RestClient.Test.Unit.Extensions
 {
@@ -13,14 +15,25 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
     public class PipelineExtensionsTests
     {
         [Test]
-        public void SetJsonSerializerSettings_WhenCalled_SetsJsonSerializerSettings()
+        public void SetJsonSerializerOptions_WhenCalled_SetsSystemTextJsonSerializerWithOptions()
+        {
+            var expected = new JsonSerializerOptions();
+
+            var config = new Config()
+                .SetJsonSerializerOptions(expected);
+
+            Assert.AreSame(expected, ((SystemTextJsonSerializer)config.JsonSerializer).Options);
+        }
+
+        [Test]
+        public void UseNewtonsoftJson_WhenCalled_SetsNewtonsoftJsonSerializerWithSettings()
         {
             var expected = new JsonSerializerSettings();
-            
-            var config = new Config()
-                .SetJsonSerializerSettings(expected);
 
-            Assert.AreSame(expected, config.JsonSerializerSettings);
+            var config = new Config()
+                .UseNewtonsoftJson(expected);
+
+            Assert.AreSame(expected, ((NewtonsoftJsonSerializer)config.JsonSerializer).Settings);
         }
         
         [Test]
@@ -204,7 +217,7 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
         }
 
         [Test]
-        public void SetJsonSerializerSettings_NullConfig_ThrowsNullArgumentException()
+        public void SetConfig_NullConfig_ThrowsNullArgumentException()
         {
             var request = new HttpRequestMessage();
             var expected = default(Config);
@@ -214,7 +227,7 @@ namespace DalSoft.RestClient.Test.Unit.Extensions
         }
 
         [Test]
-        public void SetJsonSerializerSettings_SetStateBagProperty_ReturnsSetJsonSerializerSettings()
+        public void SetConfig_SetStateBagProperty_ReturnsSetConfig()
         {
             var request = new HttpRequestMessage();
             var expected = new Config();

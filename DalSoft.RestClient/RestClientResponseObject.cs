@@ -1,21 +1,27 @@
-﻿using System.Text;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Dynamic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using DalSoft.RestClient.Extensions;
+using DalSoft.RestClient.Serialization;
 
 namespace DalSoft.RestClient
 {
     internal class RestClientResponseObject : DynamicObject
     {
-        private readonly string _responseString;
+        private static readonly MediaTypeWithQualityHeaderValue JsonAcceptHeader = new MediaTypeWithQualityHeaderValue(Config.JsonMediaType);
+
+        private readonly byte[] _utf8Body;
         private readonly HttpResponseMessage _httpResponseMessage;
         private readonly bool _isRoot;
-        private readonly bool _isJson;
-        private readonly dynamic _currentObject;
+        private readonly bool _expectJson;
+        private readonly IJsonSerializer _serializer;
+        private string _responseString;
+        private bool _parseAttempted;
+        private bool _isJson;
+        private IJsonNode _currentObject;
 
         public RestClientResponseObject(HttpResponseMessage httpResponseMessage, string responseString) //Root
         {
@@ -26,22 +32,31 @@ namespace DalSoft.RestClient
 
             if (_httpResponseMessage.RequestMessage == null) return;
 
-            // ReSharper disable once InvertIf
-            if (_httpResponseMessage.RequestMessage.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue(Config.JsonMediaType)) ||
-                _httpResponseMessage.RequestMessage.ExpectJsonResponse())
-            {
-                var isValidJson = ToString().TryParseJson(out _currentObject); //Just because we told the server we accpet JSON doesn't mean it will send us valid JSON back
+            _serializer = _httpResponseMessage.RequestMessage.GetConfig()?.JsonSerializer ?? SystemTextJsonSerializer.Default;
 
-                if (isValidJson)
-                    _isJson = true;
-                
-            }
+            _expectJson = _httpResponseMessage.RequestMessage.Headers.Accept.Contains(JsonAcceptHeader) ||
+                          _httpResponseMessage.RequestMessage.ExpectJsonResponse();
         }
 
-        public RestClientResponseObject(JObject jObjectToWrap)
+        public RestClientResponseObject(HttpResponseMessage httpResponseMessage, byte[] utf8Body) //Root over a utf-8 body, the string is only decoded if asked for
+            : this(httpResponseMessage, (string)null)
+        {
+            _utf8Body = utf8Body;
+        }
+
+        public RestClientResponseObject(IJsonNode nodeToWrap)
         {
             _isRoot = false;
-            _currentObject = jObjectToWrap;
+            _currentObject = nodeToWrap;
+        }
+
+        private void EnsureParsed() //Parse lazily so typed casts and non json access never pay for building the DOM
+        {
+            if (_parseAttempted || !_expectJson) return;
+
+            //Just because we told the server we accpet JSON doesn't mean it will send us valid JSON back
+            _isJson = _utf8Body != null && _serializer.SupportsUtf8 ? _serializer.TryParseUtf8(_utf8Body, out _currentObject) : _serializer.TryParse(ToString(), out _currentObject);
+            _parseAttempted = true; //Benign race if a response is shared across threads, worst case we parse twice
         }
 
         /// <summary>
@@ -61,10 +76,15 @@ namespace DalSoft.RestClient
                 return true;
             }
 
-            if (binder.Type == typeof(IEnumerable) && _currentObject is JArray)
+            if (binder.Type == typeof(IEnumerable))
             {
-                result = Json.WrapJToken(_currentObject);
-                return true;
+                EnsureParsed();
+
+                if (_currentObject?.Kind == JsonNodeKind.Array)
+                {
+                    result = _currentObject.Wrap();
+                    return true;
+                }
             }
 
             if (binder.Type == typeof(HttpResponseMessage))
@@ -73,13 +93,23 @@ namespace DalSoft.RestClient
                 return true;
             }
 
-            if (_isJson)
+            if (_expectJson)
             {
-                var isValid = ToString().TryParseJson(out result, binder.Type, _httpResponseMessage.RequestMessage.GetConfig().JsonSerializerSettings);
+                try
+                {
+                    //Ok to throw the serialization error here to help the caller
+                    result = _utf8Body != null && _serializer.SupportsUtf8 ? _serializer.DeserializeUtf8(_utf8Body, binder.Type) : _serializer.Deserialize(ToString(), binder.Type);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    EnsureParsed();
 
-                if (result is Exception exception) throw exception; //Ok to throw the serialization error here to help the caller
+                    if (!_isJson)
+                        throw new InvalidCastException("Can not cast to " + binder.Type.FullName + OutputErrorString());
 
-                return isValid;
+                    throw;
+                }
             }
 
             throw new InvalidCastException("Can not cast to " + binder.Type.FullName + OutputErrorString());
@@ -93,16 +123,17 @@ namespace DalSoft.RestClient
                 return true;
             }
 
-            //JToken
-            if (_currentObject is JToken jToken)
+            EnsureParsed();
+
+            if (_currentObject != null)
             {
-                result = jToken[binder.Name].WrapJToken();
+                result = _currentObject.GetMember(binder.Name).Wrap();
                 if (result != null)
                 {
                     return true;
                 }
             }
-            
+
             //Member not found return null instead of throwing
             result = null;
 
@@ -111,10 +142,11 @@ namespace DalSoft.RestClient
 
         public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
         {
-            var jArray = _currentObject as JArray;
-            if (_currentObject is JArray)
+            EnsureParsed();
+
+            if (_currentObject?.Kind == JsonNodeKind.Array)
             {
-                result = jArray[(int)indexes[0]].WrapJToken(); //TODO could do better validation here
+                result = _currentObject.GetIndex((int)indexes[0]).Wrap(); //TODO could do better validation here
                 return true;
             }
 
@@ -123,7 +155,20 @@ namespace DalSoft.RestClient
 
         public sealed override string ToString()
         {
-            return !_isRoot ? (string) _currentObject.ToString() : _responseString;
+            if (!_isRoot) return _currentObject.ToJsonString();
+
+            return _responseString ?? (_responseString = DecodeUtf8(_utf8Body)); //Root over a utf-8 body decodes once on first ask
+        }
+
+        private static string DecodeUtf8(byte[] utf8Body)
+        {
+            if (utf8Body == null || utf8Body.Length == 0)
+                return string.Empty;
+
+            if (utf8Body.Length >= 3 && utf8Body[0] == 0xEF && utf8Body[1] == 0xBB && utf8Body[2] == 0xBF) //Skip the BOM like ReadAsStringAsync does
+                return Encoding.UTF8.GetString(utf8Body, 3, utf8Body.Length - 3);
+
+            return Encoding.UTF8.GetString(utf8Body);
         }
 
         private string OutputErrorString()

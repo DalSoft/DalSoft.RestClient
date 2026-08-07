@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -10,6 +11,13 @@ namespace DalSoft.RestClient.Extensions
 {
     internal static class Object //TODO: this whole class is ugly and hurts my eye
     {
+        private static readonly ConcurrentDictionary<Type, PropertyInfo[]> PropertyCache = new ConcurrentDictionary<Type, PropertyInfo[]>();
+
+        private static PropertyInfo[] GetCachedProperties(this Type type)
+        {
+            return PropertyCache.GetOrAdd(type, t => t.GetProperties());
+        }
+
         /// <summary>Returns a List KeyValuePair to pass into FormUrlEncodedContent supports complex objects People[0]First=Darran&amp;People[0]Last=Darran</summary>
         internal static List<KeyValuePair<string, TValue>> FlattenObjectToKeyValuePairs<TValue>(
             this object o,
@@ -23,7 +31,7 @@ namespace DalSoft.RestClient.Extensions
 
             nameValueCollection = nameValueCollection ?? new List<KeyValuePair<string, TValue>>();
 
-            foreach (var property in o.GetType().GetProperties())
+            foreach (var property in o.GetType().GetCachedProperties())
             {
                 var propertyName = prefix == null ? property.Name : $"{prefix}.{property.Name}";
                 var propertyValue = property.GetValue(o);
@@ -46,7 +54,7 @@ namespace DalSoft.RestClient.Extensions
                             continue;
                         }
 
-                        foreach (var propertyItem in enumerable[i].GetType().GetProperties())
+                        foreach (var propertyItem in enumerable[i].GetType().GetCachedProperties())
                         {
                             var propertyItemName = $"{propertyName}[{i}].{propertyItem.Name}";
                             var propertyItemValue = propertyItem.GetValue(enumerable[i]);
@@ -66,7 +74,7 @@ namespace DalSoft.RestClient.Extensions
                 }
                 else
                 {
-                    FlattenObjectToKeyValuePairs<TValue>(property.GetValue(o), includeThisType, nameValueCollection, propertyName, recrusions);
+                    FlattenObjectToKeyValuePairs<TValue>(propertyValue, includeThisType, nameValueCollection, propertyName, recrusions);
                 }
             }
 

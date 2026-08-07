@@ -27,6 +27,9 @@ _ReSharper.*
 # DotCover
 *.dotCover
 
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts
+
 #nuget
 *.nupkg
 

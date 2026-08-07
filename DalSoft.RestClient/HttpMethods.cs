@@ -1,45 +1,30 @@
-﻿using System.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace DalSoft.RestClient
 {
     internal static class HttpMethods
     {
-        private enum HttpMethod
+        private static readonly HashSet<string> ImmutableHttpMethods = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            // ReSharper disable InconsistentNaming
-            GET,
-            POST,
-            PUT,
-            PATCH,
-            MERGE,
-            DELETE,
-            HEAD,
-            OPTIONS,
-            TRACE
-            // ReSharper restore InconsistentNaming
-        }
-        
-        private static readonly string[] ImmutableHttpMethods = 
-        {
-            HttpMethod.GET.ToString(),
-            HttpMethod.OPTIONS.ToString(),
-            HttpMethod.HEAD.ToString(),
-            HttpMethod.TRACE.ToString()
+            "GET",
+            "OPTIONS",
+            "HEAD",
+            "TRACE"
         };
 
-        private static readonly string[] MutableHttpMethods = 
+        private static readonly HashSet<string> MutableHttpMethods = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            HttpMethod.POST.ToString(),
-            HttpMethod.PUT.ToString(),
-            HttpMethod.PATCH.ToString(),
-            HttpMethod.MERGE.ToString(),
-            HttpMethod.DELETE.ToString()
+            "POST",
+            "PUT",
+            "PATCH",
+            "MERGE",
+            "DELETE"
         };
 
         internal static bool IsMutableHttpMethod(this string httpMethod)
         {
-            httpMethod = httpMethod.ToUpperInvariant();
-            return MutableHttpMethods.Any(x => x == httpMethod);
+            return MutableHttpMethods.Contains(httpMethod);
         }
 
         internal static bool IsHttpMethod(this string httpMethod)
@@ -49,8 +34,7 @@ namespace DalSoft.RestClient
 
         internal static bool IsImmutableHttpMethod(this string httpMethod)
         {
-            httpMethod = httpMethod.ToUpperInvariant();
-            return ImmutableHttpMethods.Any(x => x == httpMethod);
+            return ImmutableHttpMethods.Contains(httpMethod);
         }
     }
 }

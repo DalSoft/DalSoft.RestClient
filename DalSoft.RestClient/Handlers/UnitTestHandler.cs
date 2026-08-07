@@ -62,7 +62,7 @@ namespace DalSoft.RestClient.Handlers
 
             httpRequestMessage.Content.Headers.ToList().ForEach(contentHeader => { request.Content.Headers.Add(contentHeader.Key, contentHeader.Value); });
             httpRequestMessage.Headers.ToList().ForEach(header => { request.Headers.Add(header.Key, header.Value); });
-            httpRequestMessage.Properties.ToList().ForEach(property => { request.Properties.Add(property.Key, property.Value);});
+            httpRequestMessage.GetStateBag().ToList().ForEach(property => { request.GetStateBag().Add(property.Key, property.Value);});
 
             return request;
         }

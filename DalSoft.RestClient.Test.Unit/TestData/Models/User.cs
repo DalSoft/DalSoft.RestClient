@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace DalSoft.RestClient.Test.Unit.TestData.Models
 {
@@ -10,6 +11,19 @@ namespace DalSoft.RestClient.Test.Unit.TestData.Models
         public string email { get; set; }
 
         [JsonProperty("phone_number")]
+        public string PhoneNumber { get; set; }
+
+        public string website { get; set; }
+    }
+
+    public class UserJsonPropertyName
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string username { get; set; }
+        public string email { get; set; }
+
+        [JsonPropertyName("phone_number")]
         public string PhoneNumber { get; set; }
 
         public string website { get; set; }

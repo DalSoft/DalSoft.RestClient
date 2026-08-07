@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DalSoft.RestClient.DependencyInjection;
 using DalSoft.RestClient.Handlers;
-using Newtonsoft.Json;
+using DalSoft.RestClient.Serialization;
 
 namespace DalSoft.RestClient
 {
@@ -24,7 +24,7 @@ namespace DalSoft.RestClient
         public TimeSpan Timeout { get; set; }
         public long MaxResponseContentBufferSize { get; set; }
         public bool UseDefaultHandlers { get; set; }
-        public JsonSerializerSettings JsonSerializerSettings { get; set; }
+        internal IJsonSerializer JsonSerializer { get; set; }
         
         public Config() : this((HttpMessageHandler[])null) { }
 
@@ -43,6 +43,7 @@ namespace DalSoft.RestClient
             Timeout = TimeSpan.FromSeconds(100.0);        //Same default as HttpClient
             MaxResponseContentBufferSize = int.MaxValue;  //Same default as HttpClient
             UseDefaultHandlers = true;
+            JsonSerializer = SystemTextJsonSerializer.Default;
         }
 
         internal bool TryGetHttpClientHandler(out HttpClientHandler httpClientHandler)

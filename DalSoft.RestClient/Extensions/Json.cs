@@ -1,51 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using DalSoft.RestClient.Serialization;
 
 namespace DalSoft.RestClient.Extensions
 {
     internal static class Json
     {
-        internal static bool TryParseJson(this string json, out object result, Type type = null, JsonSerializerSettings jsonSerializerSettings = null)
+        internal static object Wrap(this IJsonNode node)
         {
-            type = type ?? typeof(object);
-            try
-            {
-                result = JsonConvert.DeserializeObject(json, type, jsonSerializerSettings);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                result = ex;
-                return false; //Eat invalid json  
-            }
-        }
+            if (node == null)
+                return null;
 
-        internal static object WrapJToken(this JToken jToken)
-        {
-            object result = null;
-
-            //JObject
-            if (jToken is JObject jObject)
+            switch (node.Kind)
             {
-                result = new RestClientResponseObject(jObject);
+                case JsonNodeKind.Object:
+                    return new RestClientResponseObject(node);
+                case JsonNodeKind.Value:
+                    return node.GetValue();
+                case JsonNodeKind.Array:
+                    return new LazyJsonArray(node);
+                default:
+                    return null;
             }
-
-            //JValue
-            if (jToken is JValue jValue)
-            {
-                result = jValue.Value;
-            }
-
-            //JArray
-            if (jToken is JArray jArray)
-            {
-                result = new List<dynamic>(jArray.Select(WrapJToken));
-            }
-
-            return result;
         }
     }
 }
